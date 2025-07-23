@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { 
   MessageSquare, 
@@ -56,6 +55,11 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({})
   const [comments, setComments] = useState<{ [key: string]: any[] }>({})
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
+  const [newDiscussion, setNewDiscussion] = useState({ title: '', content: '', category: 'general' })
+  const [showNewDiscussionModal, setShowNewDiscussionModal] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [replyContent, setReplyContent] = useState('')
+  const [replies, setReplies] = useState<{[key: string]: any[]}>>({})
 
   const categories = [
     { id: 'all', name: 'All Discussions', icon: MessageSquare },
@@ -120,9 +124,9 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    
+
     const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory
-    
+
     return matchesSearch && matchesCategory
   })
 
@@ -153,7 +157,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
   const getTimeAgo = (date: Date) => {
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return 'Just now'
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
@@ -187,7 +191,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
 
   const toggleComments = (postId: string) => {
     setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }))
-    
+
     // Initialize comments for this post if not already done
     if (!comments[postId]) {
       setComments(prev => ({ ...prev, [postId]: [] }))
@@ -221,6 +225,68 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
     setNewComment(prev => ({ ...prev, [postId]: '' }))
   }
 
+  const createDiscussion = () => {
+    if (newDiscussion.title.trim() && newDiscussion.content.trim()) {
+      const newPost = {
+        id: Date.now().toString(),
+        title: newDiscussion.title,
+        content: newDiscussion.content,
+        author: { id: currentUser?.id || '1', name: currentUser?.name || 'Current User' },
+        category: newDiscussion.category,
+        tags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        likes: 0,
+        replies: 0,
+        isPinned: false,
+        isLiked: false
+      }
+      setPosts([newPost, ...posts])
+      setNewDiscussion({ title: '', content: '', category: 'general' })
+      setShowNewDiscussionModal(false)
+    }
+  }
+
+  const submitReply = (postId: string) => {
+    if (replyContent.trim()) {
+      const newReply = {
+        id: Date.now().toString(),
+        content: replyContent,
+        author: { id: currentUser?.id || '1', name: currentUser?.name || 'Current User' },
+        createdAt: new Date(),
+        likes: 0,
+        isLiked: false
+      }
+
+      setReplies(prev => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), newReply]
+      }))
+
+      // Update reply count
+      setPosts(prev => prev.map(post => 
+        post.id === postId 
+          ? { ...post, replies: post.replies + 1 }
+          : post
+      ))
+
+      setReplyContent('')
+      setReplyingTo(null)
+    }
+  }
+
+  const toggleLike = (postId: string) => {
+    setPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { 
+            ...post, 
+            isLiked: !post.isLiked,
+            likes: post.isLiked ? post.likes - 1 : post.likes + 1
+          }
+        : post
+    ))
+  }
+
   return (
     <div className="flex-1 bg-gray-50">
       {/* Header */}
@@ -251,7 +317,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          
+
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
@@ -304,9 +370,9 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                         {post.title}
                       </h3>
                     </div>
-                    
+
                     <p className="text-gray-600 mb-3 line-clamp-2">{post.content}</p>
-                    
+
                     <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                       <div className="flex items-center space-x-1">
                         <User className="w-4 h-4" />
@@ -317,7 +383,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                         <span>{getTimeAgo(post.createdAt)}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         {post.tags.map((tag) => (
@@ -330,7 +396,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                           </span>
                         ))}
                       </div>
-                      
+
                       <div className="flex items-center space-x-4">
                         <button
                           onClick={() => handleLike(post.id)}
@@ -341,7 +407,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                           <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
                           <span>{post.likes}</span>
                         </button>
-                        
+
                         <button
                           onClick={() => toggleComments(post.id)}
                           className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-600"
@@ -412,7 +478,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Start a New Discussion</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>

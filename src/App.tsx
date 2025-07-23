@@ -34,7 +34,7 @@ import DiscussionBoard from './components/DiscussionBoard'
 import Timeline from './components/Timeline'
 
 export default function App() {
-  const { theme } = useTheme()
+  const { theme, changeTheme } = useTheme()
   const auth = useAuthState()
   const [pages, setPages] = useState<Page[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -527,11 +527,13 @@ export default function App() {
       <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
         <div className="flex bg-gray-50 dark:bg-gray-900 min-h-screen">
           <Sidebar 
+            pages={pages}
+            currentPageId={currentPageId}
             currentView={currentView}
             onNavigate={handleNavigate}
-            pages={pages}
-            projects={projects}
-            onUpdateTags={handleUpdateTags}
+            onCreatePage={createNewPage}
+            onDeletePage={deletePage}
+            onToggleStar={toggleStar}
             user={auth.user}
             onSignOut={auth.signOut}
           />

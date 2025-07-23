@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { 
   Heart,
@@ -52,6 +51,11 @@ interface TimelineProps {
 }
 
 export default function Timeline({ onNavigate, currentUser }: TimelineProps) {
+  const [newPost, setNewPost] = useState('')
+  const [showNewPostModal, setShowNewPostModal] = useState(false)
+  const [activeFilter, setActiveFilter] = useState('all')
+  const [posts, setPosts] = useState<any[]>([])
+  const [following, setFollowing] = useState<Set<string>>(new Set())
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([])
   const [filter, setFilter] = useState<'all' | 'following' | 'trending' | 'research'>('all')
 
@@ -114,6 +118,43 @@ export default function Timeline({ onNavigate, currentUser }: TimelineProps) {
     setTimelineItems(mockItems)
   }, [])
 
+  useEffect(() => {
+    // Initialize with some mock data
+    const mockPosts = [
+      {
+        id: '1',
+        content: 'Just published my latest research on machine learning applications in healthcare. Excited to share findings!',
+        author: { 
+          id: '2', 
+          name: 'Dr. Sarah Chen',
+          avatar: 'https://ui-avatars.com/api/?name=Sarah+Chen&background=3b82f6&color=fff'
+        },
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        likes: 15,
+        comments: 8,
+        isLiked: false,
+        isBookmarked: false,
+        type: 'research'
+      },
+      {
+        id: '2',
+        content: 'Looking for collaborators on a climate change research project. DM me if interested!',
+        author: { 
+          id: '3', 
+          name: 'Prof. Alex Johnson',
+          avatar: 'https://ui-avatars.com/api/?name=Alex+Johnson&background=10b981&color=fff'
+        },
+        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+        likes: 23,
+        comments: 12,
+        isLiked: true,
+        isBookmarked: false,
+        type: 'collaboration'
+      }
+    ]
+    setPosts(prevPosts => prevPosts.length === 0 ? mockPosts : prevPosts)
+  }, [])
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'research': return <Lightbulb className="w-5 h-5 text-yellow-500" />
@@ -159,7 +200,7 @@ export default function Timeline({ onNavigate, currentUser }: TimelineProps) {
   const getTimeAgo = (date: Date) => {
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return 'Just now'
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
@@ -174,6 +215,69 @@ export default function Timeline({ onNavigate, currentUser }: TimelineProps) {
       default: return true
     }
   })
+  const createPost = () => {
+    if (newPost.trim()) {
+      const post = {
+        id: Date.now().toString(),
+        content: newPost,
+        author: { 
+          id: currentUser?.id || '1', 
+          name: currentUser?.name || 'Current User',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || 'User')}&background=3b82f6&color=fff`
+        },
+        createdAt: new Date(),
+        likes: 0,
+        comments: 0,
+        isLiked: false,
+        isBookmarked: false,
+        type: 'update'
+      }
+      setPosts([post, ...posts])
+      setNewPost('')
+      setShowNewPostModal(false)
+    }
+  }
+  const toggleFollow = (userId: string) => {
+    setFollowing(prev => {
+      const newFollowing = new Set(prev)
+      if (newFollowing.has(userId)) {
+        newFollowing.delete(userId)
+      } else {
+        newFollowing.add(userId)
+      }
+      return newFollowing
+    })
+  }
+  const toggleLike = (postId: string) => {
+    setPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { 
+            ...post, 
+            isLiked: !post.isLiked,
+            likes: post.isLiked ? post.likes - 1 : post.likes + 1
+          }
+        : post
+    ))
+  }
+
+  const toggleBookmark = (postId: string) => {
+    setPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { ...post, isBookmarked: !post.isBookmarked }
+        : post
+    ))
+  }
+
+  const allPosts = [...posts, ...timelineItems]
+
+  const filteredPosts = allPosts.filter(post => {
+    if (activeFilter === 'following') {
+      return following.has(post.author.id)
+    }
+    return true
+  })
+
+  const timelinePosts: any[] = []
 
   return (
     <div className="flex-1 bg-gray-50">
@@ -250,7 +354,7 @@ export default function Timeline({ onNavigate, currentUser }: TimelineProps) {
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.content.title}</h3>
                 <p className="text-gray-700">{item.content.description}</p>
-                
+
                 {/* Tags */}
                 {item.content.tags && (
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -278,12 +382,12 @@ export default function Timeline({ onNavigate, currentUser }: TimelineProps) {
                     <Heart className={`w-5 h-5 ${item.engagement.isLiked ? 'fill-current' : ''}`} />
                     <span>{item.engagement.likes}</span>
                   </button>
-                  
+
                   <button className="flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-600">
                     <MessageCircle className="w-5 h-5" />
                     <span>{item.engagement.comments}</span>
                   </button>
-                  
+
                   <button className="flex items-center space-x-2 text-sm text-gray-500 hover:text-green-600">
                     <Share className="w-5 h-5" />
                     <span>{item.engagement.shares}</span>
