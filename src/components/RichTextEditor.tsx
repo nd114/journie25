@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react'
 import { 
   Bold, 
@@ -21,7 +22,7 @@ import {
   Edit3,
   Type,
   Palette,
-  
+  X
 } from 'lucide-react'
 
 interface RichTextEditorProps {
@@ -31,14 +32,12 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
-  const [showToolbar, setShowToolbar] = useState(false)
+  const [showToolbar, setShowToolbar] = useState(true)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [history, setHistory] = useState<string[]>([content])
   const [historyIndex, setHistoryIndex] = useState(0)
   const [showColorPicker, setShowColorPicker] = useState(false)
-  const [selectedColor, setSelectedColor] = useState('#000000')
-  const [highlightColor, setHighlightColor] = useState('#ffff00')
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
 
   // History management
   const addToHistory = (newContent: string) => {
@@ -52,7 +51,11 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1
       setHistoryIndex(newIndex)
-      onChange(history[newIndex])
+      const newContent = history[newIndex]
+      onChange(newContent)
+      if (editorRef.current) {
+        editorRef.current.innerHTML = newContent
+      }
     }
   }
 
@@ -60,56 +63,54 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1
       setHistoryIndex(newIndex)
-      onChange(history[newIndex])
+      const newContent = history[newIndex]
+      onChange(newContent)
+      if (editorRef.current) {
+        editorRef.current.innerHTML = newContent
+      }
     }
   }
 
-  const insertText = (before: string, after: string = '') => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = content.substring(start, end)
-    
-    const newText = content.substring(0, start) + before + selectedText + after + content.substring(end)
-    onChange(newText)
-    addToHistory(newText)
-    
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus()
-      textarea.setSelectionRange(start + before.length, end + before.length)
-    }, 0)
+  const executeCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value)
+    const newContent = editorRef.current?.innerHTML || ''
+    onChange(newContent)
+    addToHistory(newContent)
+    editorRef.current?.focus()
   }
 
-  const formatBold = () => insertText('**', '**')
-  const formatItalic = () => insertText('*', '*')
-  const formatUnderline = () => insertText('<u>', '</u>')
-  const formatStrikethrough = () => insertText('~~', '~~')
-  const formatCode = () => insertText('`', '`')
-  const formatQuote = () => insertText('> ')
-  const formatList = () => insertText('- ')
-  const formatLink = () => insertText('[', '](url)')
-  const formatH1 = () => insertText('# ')
-  const formatH2 = () => insertText('## ')
-  const formatH3 = () => insertText('### ')
-  const formatTextColor = (color: string) => insertText(`<span style="color: ${color}">`, '</span>')
-  const formatHighlight = (color: string) => insertText(`<mark style="background-color: ${color}">`, '</mark>')
-  const formatAlignLeft = () => insertText('<div style="text-align: left;">', '</div>')
-  const formatAlignCenter = () => insertText('<div style="text-align: center;">', '</div>')
-  const formatAlignRight = () => insertText('<div style="text-align: right;">', '</div>')
+  const formatBold = () => executeCommand('bold')
+  const formatItalic = () => executeCommand('italic')
+  const formatUnderline = () => executeCommand('underline')
+  const formatStrikethrough = () => executeCommand('strikeThrough')
+  
+  const formatHeading = (level: number) => {
+    executeCommand('formatBlock', `h${level}`)
+  }
+  
+  const formatList = () => executeCommand('insertUnorderedList')
+  const formatOrderedList = () => executeCommand('insertOrderedList')
+  
+  const formatAlign = (alignment: string) => {
+    executeCommand(`justify${alignment}`)
+  }
 
-  const textColors = [
-    '#000000', '#333333', '#666666', '#999999',
-    '#ff0000', '#00ff00', '#0000ff', '#ffff00',
-    '#ff00ff', '#00ffff', '#ffa500', '#800080'
-  ]
+  const insertLink = () => {
+    const url = prompt('Enter URL:')
+    if (url) {
+      executeCommand('createLink', url)
+    }
+  }
 
-  const highlightColors = [
-    '#ffff00', '#00ff00', '#00ffff', '#ff00ff',
-    '#ffa500', '#ff69b4', '#98fb98', '#87ceeb'
-  ]
+  const formatTextColor = (color: string) => {
+    executeCommand('foreColor', color)
+    setShowColorPicker(false)
+  }
+
+  const formatBackgroundColor = (color: string) => {
+    executeCommand('backColor', color)
+    setShowColorPicker(false)
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.metaKey || e.ctrlKey) {
@@ -128,7 +129,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           break
         case 'k':
           e.preventDefault()
-          formatLink()
+          insertLink()
           break
         case 'z':
           e.preventDefault()
@@ -142,210 +143,195 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     }
   }
 
-  // Auto-resize textarea
+  const handleInput = () => {
+    const newContent = editorRef.current?.innerHTML || ''
+    onChange(newContent)
+  }
+
+  const textColors = [
+    '#000000', '#333333', '#666666', '#999999', '#CCCCCC',
+    '#FF0000', '#FF6B6B', '#FFA500', '#FFD93D', '#6BCF7F',
+    '#4ECDC4', '#45B7D1', '#6C5CE7', '#A29BFE', '#FD79A8'
+  ]
+
+  const backgroundColors = [
+    '#FFFFFF', '#F8F9FA', '#E9ECEF', '#DEE2E6', '#CED4DA',
+    '#FFEBEE', '#FFF3E0', '#FFFDE7', '#F1F8E9', '#E8F5E8',
+    '#E0F2F1', '#E1F5FE', '#E8EAF6', '#F3E5F5', '#FCE4EC'
+  ]
+
   useEffect(() => {
-    const textarea = textareaRef.current
-    if (textarea && !isPreviewMode) {
-      textarea.style.height = 'auto'
-      textarea.style.height = `${textarea.scrollHeight}px`
+    if (editorRef.current && !isPreviewMode) {
+      editorRef.current.innerHTML = content
     }
   }, [content, isPreviewMode])
 
-  // Render markdown preview with proper HTML formatting
-  const renderPreview = () => {
-    let html = content
-      // Headers
-      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-900 mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-gray-900 mt-6 mb-3">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-900 mt-8 mb-4">$1</h1>')
-      // Bold
-      .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-bold">$1</strong>')
-      // Italic
-      .replace(/\*(.*?)\*/gim, '<em class="italic">$1</em>')
-      // Underline
-      .replace(/<u>(.*?)<\/u>/gim, '<u class="underline">$1</u>')
-      // Strikethrough
-      .replace(/~~(.*?)~~/gim, '<del class="line-through">$1</del>')
-      // Code
-      .replace(/`(.*?)`/gim, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
-      // Links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">$1</a>')
-      // Quotes
-      .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-2">$1</blockquote>')
-      // Lists
-      .replace(/^- (.*$)/gim, '<li class="ml-4">• $1</li>')
-      // Preserve HTML tags for colors and alignment
-      // (HTML tags are already in the content, so we don't need to replace them)
-      // Line breaks
-      .replace(/\n/gim, '<br>')
-
-    return { __html: html }
-  }
-
   return (
-    <div className="relative border border-gray-200 rounded-lg overflow-hidden">
+    <div className="relative border border-gray-200 rounded-lg overflow-hidden bg-white">
       {/* Toolbar */}
-      {(showToolbar || isPreviewMode) && (
-        <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center space-x-1">
+      {showToolbar && (
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center space-x-1 flex-wrap">
             {/* History Controls */}
-            <button
-              onClick={undo}
-              disabled={historyIndex === 0}
-              className="p-1 rounded hover:bg-gray-200 disabled:opacity-50"
-              title="Undo (Cmd+Z)"
-            >
-              <Undo className="w-4 h-4" />
-            </button>
-            <button
-              onClick={redo}
-              disabled={historyIndex === history.length - 1}
-              className="p-1 rounded hover:bg-gray-200 disabled:opacity-50"
-              title="Redo (Cmd+Shift+Z)"
-            >
-              <Redo className="w-4 h-4" />
-            </button>
+            <div className="flex items-center space-x-1 mr-2">
+              <button
+                onClick={undo}
+                disabled={historyIndex === 0}
+                className="p-2 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Undo (Cmd+Z)"
+              >
+                <Undo className="w-4 h-4" />
+              </button>
+              <button
+                onClick={redo}
+                disabled={historyIndex === history.length - 1}
+                className="p-2 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Redo (Cmd+Shift+Z)"
+              >
+                <Redo className="w-4 h-4" />
+              </button>
+            </div>
             
-            <div className="w-px h-4 bg-gray-300 mx-1" />
+            <div className="w-px h-6 bg-gray-300 mx-2" />
             
-            {/* Formatting Controls */}
-            <button
-              onClick={formatBold}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Bold (Cmd+B)"
-            >
-              <Bold className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatItalic}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Italic (Cmd+I)"
-            >
-              <Italic className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatUnderline}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Underline (Cmd+U)"
-            >
-              <Underline className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatStrikethrough}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Strikethrough"
-            >
-              <Strikethrough className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatCode}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Code"
-            >
-              <Code className="w-4 h-4" />
-            </button>
+            {/* Basic Formatting */}
+            <div className="flex items-center space-x-1 mr-2">
+              <button
+                onClick={formatBold}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Bold (Cmd+B)"
+              >
+                <Bold className="w-4 h-4" />
+              </button>
+              <button
+                onClick={formatItalic}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Italic (Cmd+I)"
+              >
+                <Italic className="w-4 h-4" />
+              </button>
+              <button
+                onClick={formatUnderline}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Underline (Cmd+U)"
+              >
+                <Underline className="w-4 h-4" />
+              </button>
+              <button
+                onClick={formatStrikethrough}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Strikethrough"
+              >
+                <Strikethrough className="w-4 h-4" />
+              </button>
+            </div>
             
-            <div className="w-px h-4 bg-gray-300 mx-1" />
+            <div className="w-px h-6 bg-gray-300 mx-2" />
             
             {/* Headers */}
-            <button
-              onClick={formatH1}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Heading 1"
-            >
-              <Heading1 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatH2}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Heading 2"
-            >
-              <Heading2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatH3}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Heading 3"
-            >
-              <Heading3 className="w-4 h-4" />
-            </button>
+            <div className="flex items-center space-x-1 mr-2">
+              <button
+                onClick={() => formatHeading(1)}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Heading 1"
+              >
+                <Heading1 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => formatHeading(2)}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Heading 2"
+              >
+                <Heading2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => formatHeading(3)}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Heading 3"
+              >
+                <Heading3 className="w-4 h-4" />
+              </button>
+            </div>
             
-            <div className="w-px h-4 bg-gray-300 mx-1" />
+            <div className="w-px h-6 bg-gray-300 mx-2" />
             
-            {/* Lists and Quotes */}
-            <button
-              onClick={formatQuote}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Quote"
-            >
-              <Quote className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatList}
-              className="p-1 rounded hover:bg-gray-200"
-              title="List"
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatLink}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Link (Cmd+K)"
-            >
-              <Link className="w-4 h-4" />
-            </button>
+            {/* Lists and Links */}
+            <div className="flex items-center space-x-1 mr-2">
+              <button
+                onClick={formatList}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Bullet List"
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                onClick={insertLink}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Insert Link (Cmd+K)"
+              >
+                <Link className="w-4 h-4" />
+              </button>
+            </div>
             
-            <div className="w-px h-4 bg-gray-300 mx-1" />
+            <div className="w-px h-6 bg-gray-300 mx-2" />
             
-            {/* Text Alignment */}
-            <button
-              onClick={formatAlignLeft}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Align Left"
-            >
-              <AlignLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatAlignCenter}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Align Center"
-            >
-              <AlignCenter className="w-4 h-4" />
-            </button>
-            <button
-              onClick={formatAlignRight}
-              className="p-1 rounded hover:bg-gray-200"
-              title="Align Right"
-            >
-              <AlignRight className="w-4 h-4" />
-            </button>
+            {/* Alignment */}
+            <div className="flex items-center space-x-1 mr-2">
+              <button
+                onClick={() => formatAlign('Left')}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Align Left"
+              >
+                <AlignLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => formatAlign('Center')}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Align Center"
+              >
+                <AlignCenter className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => formatAlign('Right')}
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Align Right"
+              >
+                <AlignRight className="w-4 h-4" />
+              </button>
+            </div>
             
-            <div className="w-px h-4 bg-gray-300 mx-1" />
+            <div className="w-px h-6 bg-gray-300 mx-2" />
             
-            {/* Color and Highlighting */}
+            {/* Colors */}
             <div className="relative">
               <button
                 onClick={() => setShowColorPicker(!showColorPicker)}
-                className="p-1 rounded hover:bg-gray-200"
-                title="Text Color & Highlight"
+                className="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                title="Text Color & Background"
               >
                 <Palette className="w-4 h-4" />
               </button>
               
               {showColorPicker && (
-                <div className="absolute top-8 left-0 bg-white border border-gray-300 rounded-lg shadow-lg p-3 z-10">
-                  <div className="mb-3">
-                    <label className="block text-xs font-medium text-gray-700 mb-2">Text Color</label>
-                    <div className="grid grid-cols-4 gap-1">
+                <div className="absolute top-12 left-0 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-20 min-w-[280px]">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium text-gray-900">Colors</h4>
+                    <button
+                      onClick={() => setShowColorPicker(false)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Text Color</label>
+                    <div className="grid grid-cols-5 gap-2">
                       {textColors.map((color) => (
                         <button
                           key={color}
-                          onClick={() => {
-                            setSelectedColor(color)
-                            formatTextColor(color)
-                            setShowColorPicker(false)
-                          }}
-                          className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                          onClick={() => formatTextColor(color)}
+                          className="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500 transition-colors"
                           style={{ backgroundColor: color }}
                           title={`Text color: ${color}`}
                         />
@@ -354,19 +340,15 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-2">Highlight</label>
-                    <div className="grid grid-cols-4 gap-1">
-                      {highlightColors.map((color) => (
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {backgroundColors.map((color) => (
                         <button
                           key={color}
-                          onClick={() => {
-                            setHighlightColor(color)
-                            formatHighlight(color)
-                            setShowColorPicker(false)
-                          }}
-                          className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                          onClick={() => formatBackgroundColor(color)}
+                          className="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500 transition-colors"
                           style={{ backgroundColor: color }}
-                          title={`Highlight: ${color}`}
+                          title={`Background: ${color}`}
                         />
                       ))}
                     </div>
@@ -377,10 +359,9 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           </div>
 
           <div className="flex items-center space-x-2">
-            {/* View Toggle */}
             <button
               onClick={() => setIsPreviewMode(!isPreviewMode)}
-              className={`p-1 rounded ${isPreviewMode ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'}`}
+              className={`p-2 rounded ${isPreviewMode ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'}`}
               title={isPreviewMode ? 'Edit Mode' : 'Preview Mode'}
             >
               {isPreviewMode ? <Edit3 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -389,35 +370,34 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
         </div>
       )}
       
-      {/* Editor/Preview Content */}
+      {/* Editor Content */}
       <div className="relative">
         {isPreviewMode ? (
           <div 
-            className="p-4 prose prose-sm max-w-none min-h-[200px] leading-relaxed"
-            dangerouslySetInnerHTML={renderPreview()}
+            className="p-6 prose prose-lg max-w-none min-h-[300px] leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: content }}
           />
         ) : (
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => {
-              onChange(e.target.value)
-              if (e.target.value !== history[historyIndex]) {
-                // Only add to history on significant changes
-                const timer = setTimeout(() => {
-                  addToHistory(e.target.value)
-                }, 1000)
-                return () => clearTimeout(timer)
-              }
-            }}
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
             onKeyDown={handleKeyDown}
-            onFocus={() => setShowToolbar(true)}
-            onBlur={() => setTimeout(() => setShowToolbar(false), 200)}
-            placeholder={placeholder}
-            className="w-full text-base text-gray-700 placeholder-gray-400 border-none outline-none bg-transparent resize-none leading-relaxed min-h-[200px] p-4"
-            style={{ height: 'auto' }}
+            className="w-full text-base text-gray-700 border-none outline-none bg-transparent resize-none leading-relaxed min-h-[300px] p-6 focus:ring-0"
+            style={{ minHeight: '300px' }}
+            data-placeholder={placeholder}
+            suppressContentEditableWarning={true}
           />
         )}
+        
+        {/* Placeholder styling */}
+        <style jsx>{`
+          [contenteditable]:empty:before {
+            content: attr(data-placeholder);
+            color: #9CA3AF;
+            pointer-events: none;
+          }
+        `}</style>
       </div>
     </div>
   )
