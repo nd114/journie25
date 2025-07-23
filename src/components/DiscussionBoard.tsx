@@ -36,14 +36,26 @@ interface DiscussionPost {
 
 interface DiscussionBoardProps {
   onNavigate: (view: string, id?: string) => void
+  currentUser?: {
+    id: string
+    name: string
+    avatar?: string
+  }
 }
 
-export default function DiscussionBoard({ onNavigate }: DiscussionBoardProps) {
+export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionBoardProps) {
   const [posts, setPosts] = useState<DiscussionPost[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'trending'>('recent')
   const [showNewPost, setShowNewPost] = useState(false)
+  const [newPostTitle, setNewPostTitle] = useState('')
+  const [newPostContent, setNewPostContent] = useState('')
+  const [newPostCategory, setNewPostCategory] = useState('general')
+  const [newPostTags, setNewPostTags] = useState('')
+  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({})
+  const [comments, setComments] = useState<{ [key: string]: any[] }>({})
+  const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
 
   const categories = [
     { id: 'all', name: 'All Discussions', icon: MessageSquare },
@@ -146,6 +158,67 @@ export default function DiscussionBoard({ onNavigate }: DiscussionBoardProps) {
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
     return date.toLocaleDateString()
+  }
+
+  const createNewPost = () => {
+    if (!newPostTitle.trim() || !newPostContent.trim() || !currentUser) return
+
+    const newPost: DiscussionPost = {
+      id: Date.now().toString(),
+      title: newPostTitle,
+      content: newPostContent,
+      author: currentUser,
+      category: newPostCategory,
+      tags: newPostTags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      likes: 0,
+      replies: 0,
+      isPinned: false,
+      isLiked: false
+    }
+
+    setPosts(prev => [newPost, ...prev])
+    setNewPostTitle('')
+    setNewPostContent('')
+    setNewPostTags('')
+    setShowNewPost(false)
+  }
+
+  const toggleComments = (postId: string) => {
+    setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }))
+    
+    // Initialize comments for this post if not already done
+    if (!comments[postId]) {
+      setComments(prev => ({ ...prev, [postId]: [] }))
+    }
+  }
+
+  const addComment = (postId: string) => {
+    const commentText = newComment[postId]
+    if (!commentText?.trim() || !currentUser) return
+
+    const comment = {
+      id: Date.now().toString(),
+      content: commentText,
+      author: currentUser,
+      createdAt: new Date(),
+      likes: 0,
+      isLiked: false
+    }
+
+    setComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), comment]
+    }))
+
+    setPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { ...post, replies: post.replies + 1 }
+        : post
+    ))
+
+    setNewComment(prev => ({ ...prev, [postId]: '' }))
   }
 
   return (
@@ -269,34 +342,137 @@ export default function DiscussionBoard({ onNavigate }: DiscussionBoardProps) {
                           <span>{post.likes}</span>
                         </button>
                         
-                        <div className="flex items-center space-x-1 text-sm text-gray-500">
+                        <button
+                          onClick={() => toggleComments(post.id)}
+                          className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-600"
+                        >
                           <MessageCircle className="w-4 h-4" />
                           <span>{post.replies} replies</span>
-                        </div>
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Comments Section */}
+                {showComments[post.id] && (
+                  <div className="mt-4 border-t pt-4">
+                    <div className="space-y-3">
+                      {comments[post.id]?.map((comment) => (
+                        <div key={comment.id} className="flex space-x-3">
+                          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-gray-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium text-sm">{comment.author.name}</span>
+                              <span className="text-xs text-gray-500">{getTimeAgo(comment.createdAt)}</span>
+                            </div>
+                            <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add Comment */}
+                    {currentUser && (
+                      <div className="mt-4 flex space-x-3">
+                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-gray-600" />
+                        </div>
+                        <div className="flex-1 flex space-x-2">
+                          <input
+                            type="text"
+                            value={newComment[post.id] || ''}
+                            onChange={(e) => setNewComment(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            placeholder="Add a comment..."
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onKeyPress={(e) => e.key === 'Enter' && addComment(post.id)}
+                          />
+                          <button
+                            onClick={() => addComment(post.id)}
+                            disabled={!newComment[post.id]?.trim()}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* New Post Modal would go here */}
+      {/* New Post Modal */}
       {showNewPost && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Start a New Discussion</h2>
-            {/* New post form would be implemented here */}
-            <div className="flex justify-end space-x-3">
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={newPostTitle}
+                  onChange={(e) => setNewPostTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter discussion title..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select
+                  value={newPostCategory}
+                  onChange={(e) => setNewPostCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {categories.filter(cat => cat.id !== 'all').map(category => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                <textarea
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  rows={6}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="What would you like to discuss?"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  value={newPostTags}
+                  onChange={(e) => setNewPostTags(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="research, methodology, collaboration..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setShowNewPost(false)}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800"
               >
                 Cancel
               </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <button 
+                onClick={createNewPost}
+                disabled={!newPostTitle.trim() || !newPostContent.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Post Discussion
               </button>
             </div>

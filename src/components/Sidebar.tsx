@@ -97,15 +97,26 @@ export default function Sidebar({
       <div className="p-2 border-b border-gray-200">
         <nav className="space-y-1">
           <button
-            onClick={() => onNavigate('dashboard')}
+            onClick={() => onNavigate('timeline')}
             className={`w-full flex items-center space-x-2 px-3 py-2 text-left rounded-lg transition-colors ${
-              currentView === 'dashboard' 
+              currentView === 'timeline' 
                 ? 'bg-blue-100 text-blue-700 font-medium' 
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
             <Home className="w-4 h-4" />
-            <span>Dashboard</span>
+            <span>Timeline</span>
+          </button>
+          <button
+            onClick={() => onNavigate('work')}
+            className={`w-full flex items-center space-x-2 px-3 py-2 text-left rounded-lg transition-colors ${
+              currentView === 'work' 
+                ? 'bg-blue-100 text-blue-700 font-medium' 
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Work</span>
           </button>
           <button
             onClick={() => onNavigate('notes')}

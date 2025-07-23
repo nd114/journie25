@@ -31,6 +31,7 @@ import { savePages, loadPages } from './utils/storage'
 import { AuthContext, useAuthState } from './hooks/useAuth'
 import AuthForm from './components/AuthForm'
 import DiscussionBoard from './components/DiscussionBoard'
+import Timeline from './components/Timeline'
 
 export default function App() {
   const { theme } = useTheme()
@@ -41,7 +42,7 @@ export default function App() {
   const [citations, setCitations] = useState<Citation[]>([])
   const [folders, setFolders] = useState<Folder[]>([])
   const [trashItems, setTrashItems] = useState<any[]>([])
-  const [currentView, setCurrentView] = useState<string>('dashboard')
+  const [currentView, setCurrentView] = useState<string>('timeline')
   const [currentItemId, setCurrentItemId] = useState<string | undefined>()
   const [currentPageId, setCurrentPageId] = useState<string>(() => {
     const savedPages = loadPages()
@@ -317,7 +318,10 @@ export default function App() {
 
   const renderContent = () => {
     switch (currentView) {
-      case 'dashboard':
+      case 'timeline':
+        return <Timeline onNavigate={handleNavigate} currentUser={auth.user} />
+
+      case 'work':
         return (
           <Dashboard
             pages={pages}
@@ -348,7 +352,7 @@ export default function App() {
         )
 
       case 'discussions':
-        return <DiscussionBoard onNavigate={handleNavigate} />
+        return <DiscussionBoard onNavigate={handleNavigate} currentUser={auth.user} />
 
       case 'documents':
         return (
