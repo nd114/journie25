@@ -28,8 +28,8 @@ import {
   CitationStyle
 } from './types'
 import { savePages, loadPages } from './utils/storage'
-import { AuthContext, useAuthState } from './auth/auth'
-import AuthForm from './auth/AuthForm'
+import { AuthContext, useAuthState } from './hooks/useAuth'
+import AuthForm from './components/AuthForm'
 import DiscussionBoard from './components/DiscussionBoard'
 
 export default function App() {
