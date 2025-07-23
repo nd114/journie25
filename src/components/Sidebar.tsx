@@ -1,16 +1,25 @@
 import React, { useState } from 'react'
 import { 
+  Home, 
   FileText, 
-  Plus, 
+  Folder, 
+  Upload, 
+  BookOpen, 
+  Quote, 
   Search, 
-  Star, 
-  Trash2, 
-  FolderOpen,
-  Home,
-  Quote,
-  BookOpen,
-  Settings,
-  Hash 
+  Tag, 
+  Settings, 
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Star,
+  Sun,
+  Moon,
+  MessageSquare,
+  Users,
+  LogOut,
+  User
 } from 'lucide-react'
 import { Page } from '../types'
 
@@ -22,6 +31,8 @@ interface SidebarProps {
   onCreatePage: () => void
   onDeletePage: (id: string) => void
   onToggleStar: (id: string) => void
+  user: { id: string; email: string; name: string } | null
+  onSignOut: () => Promise<void>
 }
 
 export default function Sidebar({
@@ -31,7 +42,9 @@ export default function Sidebar({
   onNavigate,
   onCreatePage,
   onDeletePage,
-  onToggleStar
+  onToggleStar,
+  user,
+  onSignOut
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -51,6 +64,32 @@ export default function Sidebar({
       <div className="p-4 border-b border-gray-200">
         <h1 className="text-lg font-semibold text-gray-900">Journie</h1>
       </div>
+
+       {/* User Profile */}
+       {user && (
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user.name}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user.email}
+              </p>
+            </div>
+            <button
+              onClick={onSignOut}
+              className="p-1 text-gray-400 hover:text-gray-600"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <div className="p-2 border-b border-gray-200">
@@ -120,6 +159,18 @@ export default function Sidebar({
           >
             <Hash className="w-4 h-4" />
             <span>Tags</span>
+          </button>
+           {/* Discussion Board */}
+           <button
+            onClick={() => onNavigate('discussions')}
+            className={`w-full flex items-center space-x-2 px-3 py-2 text-left rounded-lg transition-colors ${
+              currentView === 'discussions'
+                ? 'bg-blue-100 text-blue-700 font-medium'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>Discussions</span>
           </button>
           <button
             onClick={() => onNavigate('trash')}

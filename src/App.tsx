@@ -28,54 +28,19 @@ import {
   CitationStyle
 } from './types'
 import { savePages, loadPages } from './utils/storage'
+import { AuthContext, useAuthState } from './auth/auth'
+import AuthForm from './auth/AuthForm'
+import DiscussionBoard from './components/DiscussionBoard'
 
-function App() {
-  const { theme, resolvedTheme, changeTheme } = useTheme()
-  
-  // Core data states
-  const [pages, setPages] = useState<Page[]>(() => {
-    const savedPages = loadPages()
-    if (savedPages && savedPages.length > 0) {
-      return savedPages
-    }
-    return [
-      {
-        id: '1',
-        title: 'Welcome to NotionApp',
-        content: 'Start writing your thoughts here...',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isStarred: false,
-        tags: [],
-        customFields: {},
-        version: 1,
-        versions: []
-      }
-    ]
-  })
-  
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      name: 'Sample Research Project',
-      description: 'A sample project to demonstrate the research platform capabilities',
-      stage: ProjectStage.RESEARCH,
-      template: ProjectTemplate.GENERAL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: ProjectStatus.IN_PROGRESS,
-      customFields: {},
-      folders: [],
-      tags: ['sample', 'demo']
-    }
-  ])
-  
+export default function App() {
+  const { theme } = useTheme()
+  const auth = useAuthState()
+  const [pages, setPages] = useState<Page[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
   const [citations, setCitations] = useState<Citation[]>([])
   const [folders, setFolders] = useState<Folder[]>([])
   const [trashItems, setTrashItems] = useState<any[]>([])
-  
-  // UI states
   const [currentView, setCurrentView] = useState<string>('dashboard')
   const [currentItemId, setCurrentItemId] = useState<string | undefined>()
   const [currentPageId, setCurrentPageId] = useState<string>(() => {
@@ -86,17 +51,17 @@ function App() {
   const currentPage = pages.find(page => page.id === currentPageId)
   const currentProject = projects.find(project => project.id === currentItemId)
   const currentDocument = documents.find(doc => doc.id === currentItemId)
-  
+
   // Navigation handler
   const handleNavigate = (view: string, id?: string) => {
     setCurrentView(view)
     setCurrentItemId(id)
-    
+
     if (view === 'note' && id) {
       setCurrentPageId(id)
     }
   }
-  
+
   // Page management
   const createNewPage = () => {
     const newPage: Page = {
@@ -142,7 +107,7 @@ function App() {
           originalData: pageToDelete
         }])
       }
-      
+
       const newPages = pages.filter(page => page.id !== id)
       setPages(newPages)
       savePages(newPages)
@@ -167,7 +132,7 @@ function App() {
     }
     setProjects([...projects, newProject])
   }
-  
+
   const updateProject = (id: string, updates: Partial<Project>) => {
     setProjects(projects.map(project => 
       project.id === id 
@@ -175,10 +140,10 @@ function App() {
         : project
     ))
   }
-  
+
   const createFolder = (name: string, parentId?: string) => {
     if (!currentProject) return
-    
+
     const newFolder: Folder = {
       id: Date.now().toString(),
       name,
@@ -190,7 +155,7 @@ function App() {
     }
     setFolders([...folders, newFolder])
   }
-  
+
   // Document management
   const addDocument = (document: Omit<Document, 'id' | 'uploadedAt'>) => {
     const newDocument: Document = {
@@ -202,13 +167,13 @@ function App() {
     }
     setDocuments([...documents, newDocument])
   }
-  
+
   const updateDocument = (id: string, updates: Partial<Document>) => {
     setDocuments(documents.map(doc => 
       doc.id === id ? { ...doc, ...updates } : doc
     ))
   }
-  
+
   const deleteDocument = (id: string) => {
     const documentToDelete = documents.find(doc => doc.id === id)
     if (documentToDelete) {
@@ -221,10 +186,10 @@ function App() {
         originalData: documentToDelete
       }])
     }
-    
+
     setDocuments(documents.filter(doc => doc.id !== id))
   }
-  
+
   // Citation management
   const createCitation = (citation: Omit<Citation, 'id'>) => {
     const newCitation: Citation = {
@@ -233,23 +198,23 @@ function App() {
     }
     setCitations([...citations, newCitation])
   }
-  
+
   const updateCitation = (id: string, updates: Partial<Citation>) => {
     setCitations(citations.map(citation => 
       citation.id === id ? { ...citation, ...updates } : citation
     ))
   }
-  
+
   const deleteCitation = (id: string) => {
     setCitations(citations.filter(citation => citation.id !== id))
   }
-  
+
   const exportBibliography = (citations: Citation[], style: CitationStyle) => {
     // Create bibliography text
     const bibliography = citations.map(citation => {
       const authors = citation.authors.map(a => `${a.lastName}, ${a.firstName}`).join(', ')
       const year = citation.publicationDate?.getFullYear() || 'n.d.'
-      
+
       switch (style) {
         case CitationStyle.APA:
           return `${authors} (${year}). ${citation.title}. ${citation.publisher || citation.journal || ''}.`
@@ -261,7 +226,7 @@ function App() {
           return `${authors} (${year}). ${citation.title}.`
       }
     }).join('\n\n')
-    
+
     // Download as text file
     const blob = new Blob([bibliography], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -273,7 +238,7 @@ function App() {
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
-  
+
   // Web clipping
   const handleWebClip = (title: string, content: string, url: string) => {
     const newPage: Page = {
@@ -336,21 +301,66 @@ function App() {
     setTrashItems([])
   }
 
-  // Render current view
-  const renderCurrentView = () => {
+  // Show authentication form if not logged in
+  if (auth.loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!auth.user) {
+    return (
+      <AuthContext.Provider value={auth}>
+        <AuthForm 
+          onSignIn={auth.signIn}
+          onSignUp={auth.signUp}
+          loading={auth.loading}
+          error={auth.error}
+        />
+      </AuthContext.Provider>
+    )
+  }
+
+  const renderContent = () => {
     switch (currentView) {
       case 'dashboard':
         return (
           <Dashboard
+            pages={pages}
             projects={projects}
             documents={documents}
             citations={citations}
-            pages={pages}
             onNavigate={handleNavigate}
-            createNewPage={createNewPage}
+            onCreatePage={(title) => {
+              const newPage: Page = {
+                id: Date.now().toString(),
+                title,
+                content: '',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                isStarred: false,
+                tags: [],
+                customFields: {},
+                version: 1,
+                versions: []
+              }
+              const newPages = [...pages, newPage]
+              setPages(newPages)
+              savePages(newPages)
+              setCurrentPageId(newPage.id)
+              setCurrentView('note')
+            }}
           />
         )
-      
+
+      case 'discussions':
+        return <DiscussionBoard onNavigate={handleNavigate} />
+
       case 'documents':
         return (
           <DocumentsView
@@ -361,7 +371,7 @@ function App() {
             onDeleteDocument={deleteDocument}
           />
         )
-      
+
       case 'notes':
         return (
           <NotesView
@@ -372,7 +382,7 @@ function App() {
             onToggleStar={toggleStar}
           />
         )
-      
+
       case 'projects':
         return (
           <ProjectsView
@@ -385,7 +395,7 @@ function App() {
             }}
           />
         )
-      
+
       case 'project-create':
         return (
           <ProjectCreate
@@ -393,7 +403,7 @@ function App() {
             onCreateProject={createProject}
           />
         )
-      
+
       case 'document-upload':
         return (
           <DocumentUpload
@@ -401,7 +411,7 @@ function App() {
             onAddDocument={addDocument}
           />
         )
-      
+
       case 'project':
         if (!currentProject) return <div>Project not found</div>
         return (
@@ -433,7 +443,7 @@ function App() {
             onNavigateToPage={(pageId) => handleNavigate('note', pageId)}
           />
         )
-      
+
       case 'document':
         if (!currentDocument) return <div>Document not found</div>
         return (
@@ -450,7 +460,7 @@ function App() {
             onUpdateDocument={(updates) => updateDocument(currentDocument.id, updates)}
           />
         )
-      
+
       case 'citations':
         return (
           <CitationManager
@@ -461,7 +471,7 @@ function App() {
             onExportBibliography={exportBibliography}
           />
         )
-      
+
       case 'tags':
         return (
           <TagsView
@@ -472,7 +482,7 @@ function App() {
             onUpdateTags={handleUpdateTags}
           />
         )
-      
+
       case 'settings':
         return (
           <SettingsView
@@ -481,7 +491,7 @@ function App() {
             currentTheme={theme}
           />
         )
-      
+
       case 'trash':
         return (
           <TrashView
@@ -491,7 +501,7 @@ function App() {
             onEmptyTrash={handleEmptyTrash}
           />
         )
-      
+
       case 'note':
         if (!currentPage) return <div>Page not found</div>
         return (
@@ -505,7 +515,7 @@ function App() {
             onShowFullBrowser={() => {}}
           />
         )
-      
+
       default:
         return (
           <Dashboard
@@ -520,20 +530,24 @@ function App() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex">
-      <Sidebar
-        pages={pages}
-        currentPageId={currentPageId}
-        currentView={currentView}
-        onNavigate={handleNavigate}
-        onCreatePage={createNewPage}
-        onDeletePage={deletePage}
-        onToggleStar={toggleStar}
-      />
-      <div className="flex-1 flex flex-col">
-        {renderCurrentView()}
+    <AuthContext.Provider value={auth}>
+      <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
+        <div className="flex bg-gray-50 dark:bg-gray-900 min-h-screen">
+          <Sidebar 
+            currentView={currentView}
+            onNavigate={handleNavigate}
+            pages={pages}
+            projects={projects}
+            onUpdateTags={handleUpdateTags}
+            user={auth.user}
+            onSignOut={auth.signOut}
+          />
+          <div className="flex-1">
+            {renderContent()}
+          </div>
+        </div>
       </div>
-    </div>
+    </AuthContext.Provider>
   )
 }
 
