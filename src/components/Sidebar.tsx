@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { 
   Home, 
   FileText, 
-  Folder, 
+  Folder,
+  FolderOpen, 
   Upload, 
   BookOpen, 
   Quote, 
@@ -19,7 +20,8 @@ import {
   MessageSquare,
   Users,
   LogOut,
-  User
+  User,
+  Hash
 } from 'lucide-react'
 import { Page } from '../types'
 
