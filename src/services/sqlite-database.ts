@@ -35,7 +35,7 @@ class MockDatabase {
   }
 }
 
-class SQLiteDatabase {
+export class SQLiteDatabase {
   private db: MockDatabase
 
   constructor() {
@@ -191,4 +191,4 @@ class SQLiteDatabase {
   }
 }
 
-export default SQLiteDatabase
+//export default SQLiteDatabase

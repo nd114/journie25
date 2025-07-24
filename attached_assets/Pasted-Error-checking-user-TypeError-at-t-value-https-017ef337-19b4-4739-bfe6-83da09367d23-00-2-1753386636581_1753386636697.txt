@@ -1,0 +1,14 @@
+Error checking user: 
+TypeError {}
+
+at t.value (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Error checking user: 
+TypeError {}
+message: "database.getCurrentUser is not a function"
+stack: "TypeError: database.getCurrentUser is not a function↵ at checkUser (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/hooks/useAuth.ts:20:42)↵ at https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/hooks/useAuth.ts:16:5↵ at commitHookEffectListMount (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:16934:34)↵ at invokePassiveEffectMountInDEV (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:18350:19)↵ at invokeEffectsInDev (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:19727:19)↵ at commitDoubleInvokeEffectsInDEV (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:19712:15)↵ at flushPassiveEffectsImpl (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:19529:13)↵ at flushPassiveEffects (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:19473:22)↵ at https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:19354:17↵ at workLoop (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:195:42)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
