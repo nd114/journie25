@@ -1,171 +1,193 @@
-import React, { useState, useEffect } from 'react'
-import { 
-  MessageSquare, 
-  Plus, 
-  Search, 
-  Heart, 
-  MessageCircle, 
-  Clock, 
+import React, { useState, useEffect } from "react";
+import {
+  MessageSquare,
+  Plus,
+  Search,
+  Heart,
+  MessageCircle,
+  Clock,
   User,
   Pin,
   Tag,
   Filter,
   TrendingUp,
-  Users
-} from 'lucide-react'
+  Users,
+} from "lucide-react";
 
 interface DiscussionPost {
-  id: string
-  title: string
-  content: string
+  id: string;
+  title: string;
+  content: string;
   author: {
-    id: string
-    name: string
-    avatar?: string
-  }
-  category: string
-  tags: string[]
-  createdAt: Date
-  updatedAt: Date
-  likes: number
-  replies: number
-  isPinned: boolean
-  isLiked: boolean
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  category: string;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  likes: number;
+  replies: number;
+  isPinned: boolean;
+  isLiked: boolean;
 }
 
 interface DiscussionBoardProps {
-  onNavigate: (view: string, id?: string) => void
+  onNavigate: (view: string, id?: string) => void;
   currentUser?: {
-    id: string
-    name: string
-    avatar?: string
-  }
+    id: string;
+    name: string;
+    avatar?: string;
+  };
 }
 
-export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionBoardProps) {
-  const [posts, setPosts] = useState<DiscussionPost[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'trending'>('recent')
-  const [showNewPost, setShowNewPost] = useState(false)
-  const [newPostTitle, setNewPostTitle] = useState('')
-  const [newPostContent, setNewPostContent] = useState('')
-  const [newPostCategory, setNewPostCategory] = useState('general')
-  const [newPostTags, setNewPostTags] = useState('')
-  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({})
-  const [comments, setComments] = useState<{ [key: string]: any[] }>({})
-  const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
-  const [newDiscussion, setNewDiscussion] = useState({ title: '', content: '', category: 'general' })
-  const [showNewDiscussionModal, setShowNewDiscussionModal] = useState(false)
-  const [replyingTo, setReplyingTo] = useState<string | null>(null)
-  const [replyContent, setReplyContent] = useState('')
-  const [replies, setReplies] = useState<{[key: string]: any[]}>>({})
+export default function DiscussionBoard({
+  onNavigate,
+  currentUser,
+}: DiscussionBoardProps) {
+  const [posts, setPosts] = useState<DiscussionPost[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState<"recent" | "popular" | "trending">(
+    "recent",
+  );
+  const [showNewPost, setShowNewPost] = useState(false);
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostContent, setNewPostContent] = useState("");
+  const [newPostCategory, setNewPostCategory] = useState("general");
+  const [newPostTags, setNewPostTags] = useState("");
+  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>(
+    {},
+  );
+  const [comments, setComments] = useState<{ [key: string]: any[] }>({});
+  const [newComment, setNewComment] = useState<{ [key: string]: string }>({});
+  const [newDiscussion, setNewDiscussion] = useState({
+    title: "",
+    content: "",
+    category: "general",
+  });
+  const [showNewDiscussionModal, setShowNewDiscussionModal] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [replies, setReplies] = useState<{ [key: string]: any[] }>({});
 
   const categories = [
-    { id: 'all', name: 'All Discussions', icon: MessageSquare },
-    { id: 'research-methods', name: 'Research Methods', icon: TrendingUp },
-    { id: 'literature-review', name: 'Literature Review', icon: MessageSquare },
-    { id: 'data-analysis', name: 'Data Analysis', icon: TrendingUp },
-    { id: 'collaboration', name: 'Collaboration', icon: Users },
-    { id: 'tools-resources', name: 'Tools & Resources', icon: MessageSquare },
-    { id: 'general', name: 'General Discussion', icon: MessageCircle }
-  ]
+    { id: "all", name: "All Discussions", icon: MessageSquare },
+    { id: "research-methods", name: "Research Methods", icon: TrendingUp },
+    { id: "literature-review", name: "Literature Review", icon: MessageSquare },
+    { id: "data-analysis", name: "Data Analysis", icon: TrendingUp },
+    { id: "collaboration", name: "Collaboration", icon: Users },
+    { id: "tools-resources", name: "Tools & Resources", icon: MessageSquare },
+    { id: "general", name: "General Discussion", icon: MessageCircle },
+  ];
 
   // Mock data
   useEffect(() => {
     const mockPosts: DiscussionPost[] = [
       {
-        id: '1',
-        title: 'Best practices for systematic literature reviews',
-        content: 'I\'m starting a systematic literature review for my research on climate change adaptation. What are the most effective strategies for organizing and analyzing a large corpus of papers?',
-        author: { id: '1', name: 'Dr. Sarah Chen' },
-        category: 'literature-review',
-        tags: ['systematic-review', 'methodology', 'climate-change'],
+        id: "1",
+        title: "Best practices for systematic literature reviews",
+        content:
+          "I'm starting a systematic literature review for my research on climate change adaptation. What are the most effective strategies for organizing and analyzing a large corpus of papers?",
+        author: { id: "1", name: "Dr. Sarah Chen" },
+        category: "literature-review",
+        tags: ["systematic-review", "methodology", "climate-change"],
         createdAt: new Date(2024, 0, 15),
         updatedAt: new Date(2024, 0, 15),
         likes: 24,
         replies: 8,
         isPinned: true,
-        isLiked: false
+        isLiked: false,
       },
       {
-        id: '2',
-        title: 'Collaborative research tools recommendations',
-        content: 'Our research team is distributed across different universities. What tools do you recommend for collaborative research, especially for document sharing and version control?',
-        author: { id: '2', name: 'Prof. Michael Rodriguez' },
-        category: 'collaboration',
-        tags: ['collaboration', 'tools', 'remote-work'],
+        id: "2",
+        title: "Collaborative research tools recommendations",
+        content:
+          "Our research team is distributed across different universities. What tools do you recommend for collaborative research, especially for document sharing and version control?",
+        author: { id: "2", name: "Prof. Michael Rodriguez" },
+        category: "collaboration",
+        tags: ["collaboration", "tools", "remote-work"],
         createdAt: new Date(2024, 0, 14),
         updatedAt: new Date(2024, 0, 14),
         likes: 18,
         replies: 12,
         isPinned: false,
-        isLiked: true
+        isLiked: true,
       },
       {
-        id: '3',
-        title: 'Statistical analysis software comparison',
-        content: 'I\'m comparing R, Python, and SPSS for my quantitative research. What are the pros and cons of each for different types of statistical analysis?',
-        author: { id: '3', name: 'Alex Thompson' },
-        category: 'data-analysis',
-        tags: ['statistics', 'software', 'quantitative-research'],
+        id: "3",
+        title: "Statistical analysis software comparison",
+        content:
+          "I'm comparing R, Python, and SPSS for my quantitative research. What are the pros and cons of each for different types of statistical analysis?",
+        author: { id: "3", name: "Alex Thompson" },
+        category: "data-analysis",
+        tags: ["statistics", "software", "quantitative-research"],
         createdAt: new Date(2024, 0, 13),
         updatedAt: new Date(2024, 0, 13),
         likes: 31,
         replies: 15,
         isPinned: false,
-        isLiked: false
-      }
-    ]
-    setPosts(mockPosts)
-  }, [])
+        isLiked: false,
+      },
+    ];
+    setPosts(mockPosts);
+  }, []);
 
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch =
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
 
-    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory
+    const matchesCategory =
+      selectedCategory === "all" || post.category === selectedCategory;
 
-    return matchesSearch && matchesCategory
-  })
+    return matchesSearch && matchesCategory;
+  });
 
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     switch (sortBy) {
-      case 'popular':
-        return b.likes - a.likes
-      case 'trending':
-        return (b.likes + b.replies) - (a.likes + a.replies)
-      case 'recent':
+      case "popular":
+        return b.likes - a.likes;
+      case "trending":
+        return b.likes + b.replies - (a.likes + a.replies);
+      case "recent":
       default:
-        return b.updatedAt.getTime() - a.updatedAt.getTime()
+        return b.updatedAt.getTime() - a.updatedAt.getTime();
     }
-  })
+  });
 
   const handleLike = (postId: string) => {
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            isLiked: !post.isLiked,
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1
-          }
-        : post
-    ))
-  }
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+            }
+          : post,
+      ),
+    );
+  };
 
   const getTimeAgo = (date: Date) => {
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
 
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
-    return date.toLocaleDateString()
-  }
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    return date.toLocaleDateString();
+  };
 
   const createNewPost = () => {
-    if (!newPostTitle.trim() || !newPostContent.trim() || !currentUser) return
+    if (!newPostTitle.trim() || !newPostContent.trim() || !currentUser) return;
 
     const newPost: DiscussionPost = {
       id: Date.now().toString(),
@@ -173,34 +195,37 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
       content: newPostContent,
       author: currentUser,
       category: newPostCategory,
-      tags: newPostTags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      tags: newPostTags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag),
       createdAt: new Date(),
       updatedAt: new Date(),
       likes: 0,
       replies: 0,
       isPinned: false,
-      isLiked: false
-    }
+      isLiked: false,
+    };
 
-    setPosts(prev => [newPost, ...prev])
-    setNewPostTitle('')
-    setNewPostContent('')
-    setNewPostTags('')
-    setShowNewPost(false)
-  }
+    setPosts((prev) => [newPost, ...prev]);
+    setNewPostTitle("");
+    setNewPostContent("");
+    setNewPostTags("");
+    setShowNewPost(false);
+  };
 
   const toggleComments = (postId: string) => {
-    setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }))
+    setShowComments((prev) => ({ ...prev, [postId]: !prev[postId] }));
 
     // Initialize comments for this post if not already done
     if (!comments[postId]) {
-      setComments(prev => ({ ...prev, [postId]: [] }))
+      setComments((prev) => ({ ...prev, [postId]: [] }));
     }
-  }
+  };
 
   const addComment = (postId: string) => {
-    const commentText = newComment[postId]
-    if (!commentText?.trim() || !currentUser) return
+    const commentText = newComment[postId];
+    if (!commentText?.trim() || !currentUser) return;
 
     const comment = {
       id: Date.now().toString(),
@@ -208,22 +233,22 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
       author: currentUser,
       createdAt: new Date(),
       likes: 0,
-      isLiked: false
-    }
+      isLiked: false,
+    };
 
-    setComments(prev => ({
+    setComments((prev) => ({
       ...prev,
-      [postId]: [...(prev[postId] || []), comment]
-    }))
+      [postId]: [...(prev[postId] || []), comment],
+    }));
 
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { ...post, replies: post.replies + 1 }
-        : post
-    ))
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId ? { ...post, replies: post.replies + 1 } : post,
+      ),
+    );
 
-    setNewComment(prev => ({ ...prev, [postId]: '' }))
-  }
+    setNewComment((prev) => ({ ...prev, [postId]: "" }));
+  };
 
   const createDiscussion = () => {
     if (newDiscussion.title.trim() && newDiscussion.content.trim()) {
@@ -231,7 +256,10 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
         id: Date.now().toString(),
         title: newDiscussion.title,
         content: newDiscussion.content,
-        author: { id: currentUser?.id || '1', name: currentUser?.name || 'Current User' },
+        author: {
+          id: currentUser?.id || "1",
+          name: currentUser?.name || "Current User",
+        },
         category: newDiscussion.category,
         tags: [],
         createdAt: new Date(),
@@ -239,53 +267,58 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
         likes: 0,
         replies: 0,
         isPinned: false,
-        isLiked: false
-      }
-      setPosts([newPost, ...posts])
-      setNewDiscussion({ title: '', content: '', category: 'general' })
-      setShowNewDiscussionModal(false)
+        isLiked: false,
+      };
+      setPosts([newPost, ...posts]);
+      setNewDiscussion({ title: "", content: "", category: "general" });
+      setShowNewDiscussionModal(false);
     }
-  }
+  };
 
   const submitReply = (postId: string) => {
     if (replyContent.trim()) {
       const newReply = {
         id: Date.now().toString(),
         content: replyContent,
-        author: { id: currentUser?.id || '1', name: currentUser?.name || 'Current User' },
+        author: {
+          id: currentUser?.id || "1",
+          name: currentUser?.name || "Current User",
+        },
         createdAt: new Date(),
         likes: 0,
-        isLiked: false
-      }
+        isLiked: false,
+      };
 
-      setReplies(prev => ({
+      setReplies((prev) => ({
         ...prev,
-        [postId]: [...(prev[postId] || []), newReply]
-      }))
+        [postId]: [...(prev[postId] || []), newReply],
+      }));
 
       // Update reply count
-      setPosts(prev => prev.map(post => 
-        post.id === postId 
-          ? { ...post, replies: post.replies + 1 }
-          : post
-      ))
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId ? { ...post, replies: post.replies + 1 } : post,
+        ),
+      );
 
-      setReplyContent('')
-      setReplyingTo(null)
+      setReplyContent("");
+      setReplyingTo(null);
     }
-  }
+  };
 
   const toggleLike = (postId: string) => {
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            isLiked: !post.isLiked,
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1
-          }
-        : post
-    ))
-  }
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+            }
+          : post,
+      ),
+    );
+  };
 
   return (
     <div className="flex-1 bg-gray-50">
@@ -293,8 +326,12 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Research Community</h1>
-            <p className="text-gray-600 mt-1">Connect, discuss, and collaborate with fellow researchers</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Research Community
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Connect, discuss, and collaborate with fellow researchers
+            </p>
           </div>
           <button
             onClick={() => setShowNewPost(true)}
@@ -336,21 +373,21 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
           <h3 className="font-semibold text-gray-900 mb-3">Categories</h3>
           <div className="space-y-1">
             {categories.map((category) => {
-              const Icon = category.icon
+              const Icon = category.icon;
               return (
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedCategory === category.id
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="text-sm">{category.name}</span>
                 </button>
-              )
+              );
             })}
           </div>
         </div>
@@ -359,7 +396,10 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
         <div className="flex-1 p-6">
           <div className="space-y-4">
             {sortedPosts.map((post) => (
-              <div key={post.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <div
+                key={post.id}
+                className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
@@ -371,7 +411,9 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                       </h3>
                     </div>
 
-                    <p className="text-gray-600 mb-3 line-clamp-2">{post.content}</p>
+                    <p className="text-gray-600 mb-3 line-clamp-2">
+                      {post.content}
+                    </p>
 
                     <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                       <div className="flex items-center space-x-1">
@@ -401,10 +443,14 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                         <button
                           onClick={() => handleLike(post.id)}
                           className={`flex items-center space-x-1 text-sm transition-colors ${
-                            post.isLiked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'
+                            post.isLiked
+                              ? "text-red-600"
+                              : "text-gray-500 hover:text-red-600"
                           }`}
                         >
-                          <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                          <Heart
+                            className={`w-4 h-4 ${post.isLiked ? "fill-current" : ""}`}
+                          />
                           <span>{post.likes}</span>
                         </button>
 
@@ -431,10 +477,16 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
-                              <span className="font-medium text-sm">{comment.author.name}</span>
-                              <span className="text-xs text-gray-500">{getTimeAgo(comment.createdAt)}</span>
+                              <span className="font-medium text-sm">
+                                {comment.author.name}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {getTimeAgo(comment.createdAt)}
+                              </span>
                             </div>
-                            <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                            <p className="text-sm text-gray-700 mt-1">
+                              {comment.content}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -449,11 +501,18 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
                         <div className="flex-1 flex space-x-2">
                           <input
                             type="text"
-                            value={newComment[post.id] || ''}
-                            onChange={(e) => setNewComment(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            value={newComment[post.id] || ""}
+                            onChange={(e) =>
+                              setNewComment((prev) => ({
+                                ...prev,
+                                [post.id]: e.target.value,
+                              }))
+                            }
                             placeholder="Add a comment..."
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            onKeyPress={(e) => e.key === 'Enter' && addComment(post.id)}
+                            onKeyPress={(e) =>
+                              e.key === "Enter" && addComment(post.id)
+                            }
                           />
                           <button
                             onClick={() => addComment(post.id)}
@@ -481,7 +540,9 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title
+                </label>
                 <input
                   type="text"
                   value={newPostTitle}
@@ -492,20 +553,28 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
                 <select
                   value={newPostCategory}
                   onChange={(e) => setNewPostCategory(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {categories.filter(cat => cat.id !== 'all').map(category => (
-                    <option key={category.id} value={category.id}>{category.name}</option>
-                  ))}
+                  {categories
+                    .filter((cat) => cat.id !== "all")
+                    .map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Content
+                </label>
                 <textarea
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
@@ -516,7 +585,9 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma-separated)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tags (comma-separated)
+                </label>
                 <input
                   type="text"
                   value={newPostTags}
@@ -534,7 +605,7 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={createNewPost}
                 disabled={!newPostTitle.trim() || !newPostContent.trim()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -546,5 +617,5 @@ export default function DiscussionBoard({ onNavigate, currentUser }: DiscussionB
         </div>
       )}
     </div>
-  )
+  );
 }
