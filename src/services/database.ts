@@ -430,11 +430,18 @@ class SupabaseDatabase implements DatabaseService {
   }
 }
 
+import { SQLiteDatabase } from './sqlite-database'
+
 // Export the current implementation
-export const database: DatabaseService = new LocalStorageDatabase()
+export const database: DatabaseService = new SQLiteDatabase()
 
 // Function to switch to Supabase when ready
 export const switchToSupabase = () => {
   // TODO: Implement when Supabase is connected
   // return new SupabaseDatabase()
+}
+
+// Function to switch back to localStorage if needed
+export const switchToLocalStorage = () => {
+  return new LocalStorageDatabase()
 }
