@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { useTheme } from './hooks/useTheme'
 import NotesView from './components/NotesView'
@@ -14,6 +15,8 @@ import DocumentViewer from './components/DocumentViewer'
 import CitationManager from './components/CitationManager'
 import SplitView from './components/SplitView'
 import Sidebar from './components/Sidebar'
+import LandingPage from './components/LandingPage'
+import ErrorBoundary from './components/ErrorBoundary'
 import { 
   Page, 
   Project, 
@@ -48,6 +51,7 @@ export default function App() {
     const savedPages = loadPages()
     return savedPages && savedPages.length > 0 ? savedPages[0].id : '1'
   })
+  const [showLanding, setShowLanding] = useState(true)
 
   const currentPage = pages.find(page => page.id === currentPageId)
   const currentProject = projects.find(project => project.id === currentItemId)
@@ -99,7 +103,6 @@ export default function App() {
     if (pages.length > 1) {
       const pageToDelete = pages.find(page => page.id === id)
       if (pageToDelete) {
-        // Move to trash
         setTrashItems(prev => [...prev, {
           id: pageToDelete.id,
           title: pageToDelete.title,
@@ -178,7 +181,6 @@ export default function App() {
   const deleteDocument = (id: string) => {
     const documentToDelete = documents.find(doc => doc.id === id)
     if (documentToDelete) {
-      // Move to trash
       setTrashItems(prev => [...prev, {
         id: documentToDelete.id,
         title: documentToDelete.title,
@@ -211,7 +213,6 @@ export default function App() {
   }
 
   const exportBibliography = (citations: Citation[], style: CitationStyle) => {
-    // Create bibliography text
     const bibliography = citations.map(citation => {
       const authors = citation.authors.map(a => `${a.lastName}, ${a.firstName}`).join(', ')
       const year = citation.publicationDate?.getFullYear() || 'n.d.'
@@ -228,7 +229,6 @@ export default function App() {
       }
     }).join('\n\n')
 
-    // Download as text file
     const blob = new Blob([bibliography], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -302,16 +302,37 @@ export default function App() {
     setTrashItems([])
   }
 
-    // If not authenticated, show auth form
+  // If showing landing page and not authenticated
+  if (showLanding && !auth.user) {
+    return (
+      <AuthContext.Provider value={auth}>
+        <LandingPage 
+          onGetStarted={() => setShowLanding(false)}
+          onSignIn={() => setShowLanding(false)}
+        />
+      </AuthContext.Provider>
+    )
+  }
+
+  // If not authenticated, show auth form
   if (!auth.user) {
     return (
       <AuthContext.Provider value={auth}>
-        <AuthForm 
-          onSignIn={auth.signIn}
-          onSignUp={auth.signUp}
-          loading={auth.loading}
-          error={auth.error}
-        />
+        <div className="min-h-screen bg-gray-50">
+          <AuthForm 
+            onSignIn={async (email, password) => {
+              await auth.signIn(email, password)
+              if (auth.user) setShowLanding(false)
+            }}
+            onSignUp={async (email, password, name) => {
+              await auth.signUp(email, password, name)
+              if (auth.user) setShowLanding(false)
+            }}
+            loading={auth.loading}
+            error={auth.error}
+            onBackToLanding={() => setShowLanding(true)}
+          />
+        </div>
       </AuthContext.Provider>
     )
   }
@@ -443,11 +464,9 @@ export default function App() {
           <DocumentViewer
             document={currentDocument}
             onAddHighlight={(highlight) => {
-              // Add highlight to document
               console.log('Adding highlight:', highlight)
             }}
             onAddAnnotation={(annotation) => {
-              // Add annotation to document
               console.log('Adding annotation:', annotation)
             }}
             onUpdateDocument={(updates) => updateDocument(currentDocument.id, updates)}
@@ -524,24 +543,26 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={auth}>
-      <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
-        <div className="flex bg-gray-50 dark:bg-gray-900 min-h-screen">
-          <Sidebar 
-            pages={pages}
-            currentPageId={currentPageId}
-            currentView={currentView}
-            onNavigate={handleNavigate}
-            onCreatePage={createNewPage}
-            onDeletePage={deletePage}
-            onToggleStar={toggleStar}
-            user={auth.user}
-            onSignOut={auth.signOut}
-          />
-          <div className="flex-1">
-            {renderContent()}
+      <ErrorBoundary>
+        <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
+          <div className="flex bg-gray-50 dark:bg-gray-900 min-h-screen">
+            <Sidebar 
+              pages={pages}
+              currentPageId={currentPageId}
+              currentView={currentView}
+              onNavigate={handleNavigate}
+              onCreatePage={createNewPage}
+              onDeletePage={deletePage}
+              onToggleStar={toggleStar}
+              user={auth.user}
+              onSignOut={auth.signOut}
+            />
+            <div className="flex-1">
+              {renderContent()}
+            </div>
           </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </AuthContext.Provider>
   )
 }

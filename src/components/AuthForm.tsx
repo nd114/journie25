@@ -1,15 +1,16 @@
 
 import React, { useState } from 'react'
-import { User, Lock, Mail, Eye, EyeOff } from 'lucide-react'
+import { User, Lock, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 
 interface AuthFormProps {
   onSignIn: (email: string, password: string) => Promise<void>
   onSignUp: (email: string, password: string, name: string) => Promise<void>
   loading: boolean
   error?: string
+  onBackToLanding?: () => void
 }
 
-export default function AuthForm({ onSignIn, onSignUp, loading, error }: AuthFormProps) {
+export default function AuthForm({ onSignIn, onSignUp, loading, error, onBackToLanding }: AuthFormProps) {
   const [isSignUp, setIsSignUp] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -29,6 +30,15 @@ export default function AuthForm({ onSignIn, onSignUp, loading, error }: AuthFor
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      {onBackToLanding && (
+        <button
+          onClick={onBackToLanding}
+          className="absolute top-6 left-6 flex items-center text-blue-600 hover:text-blue-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </button>
+      )}
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
