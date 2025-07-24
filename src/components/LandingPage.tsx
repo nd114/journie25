@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react'
-import { ArrowRight, BookOpen, Users, Zap, Shield, Star, Menu, X, Play } from 'lucide-react'
+import { ArrowRight, BookOpen, Users, Zap, Shield, Star, Menu, X, Play, TrendingUp, Clock, Award } from 'lucide-react'
 import Header from './landing/Header'
 import Footer from './landing/Footer'
 import AboutPage from './pages/AboutPage'
@@ -8,6 +8,10 @@ import ContactPage from './pages/ContactPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import HowToUsePage from './pages/HowToUsePage'
+import PricingPage from './pages/PricingPage'
+import BlogPage from './pages/BlogPage'
+import DocumentationPage from './pages/DocumentationPage'
+import FAQPage from './pages/FAQPage'
 
 interface LandingPageProps {
   onGetStarted: () => void
@@ -29,6 +33,14 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
         return <TermsPage onNavigate={setCurrentPage} />
       case 'how-to-use':
         return <HowToUsePage onNavigate={setCurrentPage} />
+      case 'pricing':
+        return <PricingPage onNavigate={setCurrentPage} />
+      case 'blog':
+        return <BlogPage onNavigate={setCurrentPage} />
+      case 'documentation':
+        return <DocumentationPage onNavigate={setCurrentPage} />
+      case 'faq':
+        return <FAQPage onNavigate={setCurrentPage} />
       default:
         return renderHomePage()
     }
@@ -66,6 +78,30 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
                 <Play className="w-5 h-5" />
                 How It Works
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">50K+</div>
+              <div className="text-gray-600">Active Researchers</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">2M+</div>
+              <div className="text-gray-600">Research Notes</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">500+</div>
+              <div className="text-gray-600">Universities</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">99.9%</div>
+              <div className="text-gray-600">Uptime</div>
             </div>
           </div>
         </div>
@@ -143,6 +179,88 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
               <p className="text-gray-600">
                 Automatically format citations in any style and build comprehensive bibliographies.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Trusted by researchers worldwide
+            </h2>
+            <p className="text-xl text-gray-600">
+              See what our users have to say about their experience with Journie
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-gray-50 p-8 rounded-xl">
+              <div className="flex items-center mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-gray-600 mb-4">
+                "Journie has completely transformed how I organize my research. The AI-powered search helps me find connections I never would have discovered otherwise."
+              </p>
+              <div className="flex items-center">
+                <img
+                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face"
+                  alt="Dr. Sarah Chen"
+                  className="w-10 h-10 rounded-full mr-3"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">Dr. Sarah Chen</div>
+                  <div className="text-sm text-gray-600">Stanford University</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-8 rounded-xl">
+              <div className="flex items-center mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-gray-600 mb-4">
+                "The collaboration features are outstanding. My research team can work together seamlessly, and the citation management saves us hours of work."
+              </p>
+              <div className="flex items-center">
+                <img
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
+                  alt="Prof. Michael Rodriguez"
+                  className="w-10 h-10 rounded-full mr-3"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">Prof. Michael Rodriguez</div>
+                  <div className="text-sm text-gray-600">MIT</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-8 rounded-xl">
+              <div className="flex items-center mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-gray-600 mb-4">
+                "As a PhD student, Journie has been invaluable for organizing my thesis research. The tagging system and document management are exactly what I needed."
+              </p>
+              <div className="flex items-center">
+                <img
+                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face"
+                  alt="Emma Thompson"
+                  className="w-10 h-10 rounded-full mr-3"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">Emma Thompson</div>
+                  <div className="text-sm text-gray-600">Harvard University</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

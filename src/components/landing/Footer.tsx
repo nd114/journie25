@@ -13,14 +13,14 @@ export default function Footer({ onNavigate }: FooterProps) {
     product: [
       { name: 'Features', href: 'home' },
       { name: 'How to Use', href: 'how-to-use' },
-      { name: 'Pricing', href: 'home' },
-      { name: 'Updates', href: 'home' },
+      { name: 'Pricing', href: 'pricing' },
+      { name: 'Updates', href: 'blog' },
     ],
     company: [
       { name: 'About Us', href: 'about' },
       { name: 'Contact', href: 'contact' },
       { name: 'Careers', href: 'contact' },
-      { name: 'Blog', href: 'home' },
+      { name: 'Blog', href: 'blog' },
     ],
     legal: [
       { name: 'Privacy Policy', href: 'privacy' },
@@ -29,10 +29,10 @@ export default function Footer({ onNavigate }: FooterProps) {
       { name: 'Security', href: 'privacy' },
     ],
     support: [
-      { name: 'Help Center', href: 'how-to-use' },
+      { name: 'Help Center', href: 'faq' },
       { name: 'Community', href: 'contact' },
-      { name: 'Documentation', href: 'how-to-use' },
-      { name: 'API', href: 'contact' },
+      { name: 'Documentation', href: 'documentation' },
+      { name: 'API', href: 'documentation' },
     ],
   }
 

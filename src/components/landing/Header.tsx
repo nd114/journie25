@@ -15,7 +15,10 @@ export default function Header({ onNavigate, onGetStarted, onSignIn, currentPage
   const navigation = [
     { name: 'Home', href: 'home' },
     { name: 'About', href: 'about' },
+    { name: 'Pricing', href: 'pricing' },
     { name: 'How to Use', href: 'how-to-use' },
+    { name: 'Blog', href: 'blog' },
+    { name: 'Docs', href: 'documentation' },
     { name: 'Contact', href: 'contact' },
   ]
 

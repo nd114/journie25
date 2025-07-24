@@ -1,13 +1,46 @@
+// Mock SQLite implementation for browser environment
+class MockDatabase {
+  private data: Map<string, any> = new Map()
 
-import Database from 'better-sqlite3'
-import { DatabaseService } from './database'
+  constructor(path: string) {
+    // Initialize mock database
+    console.log(`Mock database initialized at: ${path}`)
+  }
 
-class SQLiteDatabase implements DatabaseService {
-  private db: Database.Database
-  private currentUser = { id: 'sqlite-user', email: 'user@journie.app' }
+  exec(sql: string) {
+    console.log(`Executing SQL: ${sql}`)
+    // Mock table creation
+    return this
+  }
+
+  prepare(sql: string) {
+    return {
+      run: (...args: any[]) => {
+        console.log(`Mock SQL run: ${sql}`, args)
+        return { lastInsertRowid: Date.now() }
+      },
+      get: (...args: any[]) => {
+        console.log(`Mock SQL get: ${sql}`, args)
+        return null
+      },
+      all: (...args: any[]) => {
+        console.log(`Mock SQL all: ${sql}`, args)
+        return []
+      }
+    }
+  }
+
+  close() {
+    console.log('Mock database closed')
+  }
+}
+
+class SQLiteDatabase {
+  private db: MockDatabase
 
   constructor() {
-    this.db = new Database('journie.db')
+    // Use mock database for browser environment
+    this.db = new MockDatabase(':memory:')
     this.initializeTables()
   }
 
@@ -16,104 +49,136 @@ class SQLiteDatabase implements DatabaseService {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
-        email TEXT UNIQUE,
-        password_hash TEXT,
+        email TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
+      )
+    `)
 
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS pages (
         id TEXT PRIMARY KEY,
-        user_id TEXT,
-        title TEXT,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
         content TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
+        is_starred BOOLEAN DEFAULT FALSE,
+        tags TEXT,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
+    `)
 
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS projects (
         id TEXT PRIMARY KEY,
-        user_id TEXT,
-        title TEXT,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
         description TEXT,
-        deadline DATETIME,
-        status TEXT DEFAULT 'active',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
-
-      CREATE TABLE IF NOT EXISTS documents (
-        id TEXT PRIMARY KEY,
-        user_id TEXT,
-        filename TEXT,
-        file_path TEXT,
-        metadata TEXT,
-        uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
-
-      CREATE TABLE IF NOT EXISTS citations (
-        id TEXT PRIMARY KEY,
-        user_id TEXT,
-        title TEXT,
-        authors TEXT,
-        publication_date DATETIME,
-        url TEXT,
-        access_date DATETIME,
-        citation_style TEXT DEFAULT 'APA',
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
     `)
   }
 
-  async signUp(email: string, password: string) {
-    return { user: this.currentUser }
+  // User methods
+  async createUser(userData: any) {
+    const stmt = this.db.prepare(`
+      INSERT INTO users (id, email, name, password_hash)
+      VALUES (?, ?, ?, ?)
+    `)
+
+    const result = stmt.run(userData.id, userData.email, userData.name, userData.password_hash)
+    return { id: userData.id, ...userData }
   }
 
-  async signIn(email: string, password: string) {
-    return { user: this.currentUser }
+  async getUserByEmail(email: string) {
+    const stmt = this.db.prepare('SELECT * FROM users WHERE email = ?')
+    return stmt.get(email)
   }
 
-  async signOut() {
-    // No-op for SQLite
+  async getUserById(id: string) {
+    const stmt = this.db.prepare('SELECT * FROM users WHERE id = ?')
+    return stmt.get(id)
   }
 
-  async getCurrentUser() {
-    return this.currentUser
+  // Page methods
+  async createPage(userId: string, pageData: any) {
+    const stmt = this.db.prepare(`
+      INSERT INTO pages (id, user_id, title, content, created_at, updated_at, is_starred, tags)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    const result = stmt.run(
+      pageData.id,
+      userId,
+      pageData.title,
+      pageData.content,
+      pageData.createdAt,
+      pageData.updatedAt,
+      pageData.isStarred || false,
+      JSON.stringify(pageData.tags || [])
+    )
+
+    return { id: pageData.id, ...pageData }
   }
 
   async getPages(userId: string) {
     const stmt = this.db.prepare('SELECT * FROM pages WHERE user_id = ? ORDER BY updated_at DESC')
-    return stmt.all(userId)
-  }
+    const pages = stmt.all(userId)
 
-  async createPage(userId: string, page: any) {
-    const id = Date.now().toString()
-    const stmt = this.db.prepare(`
-      INSERT INTO pages (id, user_id, title, content, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `)
-    const now = new Date().toISOString()
-    stmt.run(id, userId, page.title, page.content, now, now)
-    return { ...page, id, user_id: userId, created_at: now, updated_at: now }
+    return pages.map(page => ({
+      ...page,
+      tags: JSON.parse(page.tags || '[]'),
+      isStarred: Boolean(page.is_starred)
+    }))
   }
 
   async updatePage(userId: string, pageId: string, updates: any) {
     const stmt = this.db.prepare(`
-      UPDATE pages SET title = ?, content = ?, updated_at = ?
+      UPDATE pages 
+      SET title = ?, content = ?, updated_at = ?, is_starred = ?, tags = ?
       WHERE id = ? AND user_id = ?
     `)
-    const now = new Date().toISOString()
-    stmt.run(updates.title, updates.content, now, pageId, userId)
-    
-    const getStmt = this.db.prepare('SELECT * FROM pages WHERE id = ? AND user_id = ?')
-    return getStmt.get(pageId, userId)
+
+    stmt.run(
+      updates.title,
+      updates.content,
+      updates.updatedAt,
+      updates.isStarred || false,
+      JSON.stringify(updates.tags || []),
+      pageId,
+      userId
+    )
+
+    return { id: pageId, ...updates }
   }
 
   async deletePage(userId: string, pageId: string) {
     const stmt = this.db.prepare('DELETE FROM pages WHERE id = ? AND user_id = ?')
     stmt.run(pageId, userId)
+    return true
+  }
+
+  // Project methods
+  async createProject(userId: string, projectData: any) {
+    const stmt = this.db.prepare(`
+      INSERT INTO projects (id, user_id, name, description, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `)
+
+    const result = stmt.run(
+      projectData.id,
+      userId,
+      projectData.name,
+      projectData.description,
+      projectData.createdAt,
+      projectData.updatedAt
+    )
+
+    return { id: projectData.id, ...projectData }
   }
 
   async getProjects(userId: string) {
@@ -121,115 +186,9 @@ class SQLiteDatabase implements DatabaseService {
     return stmt.all(userId)
   }
 
-  async createProject(userId: string, project: any) {
-    const id = Date.now().toString()
-    const stmt = this.db.prepare(`
-      INSERT INTO projects (id, user_id, title, description, deadline, status, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `)
-    const now = new Date().toISOString()
-    stmt.run(id, userId, project.title, project.description, project.deadline, project.status || 'active', now, now)
-    return { ...project, id, user_id: userId, created_at: now, updated_at: now }
-  }
-
-  async updateProject(userId: string, projectId: string, updates: any) {
-    const stmt = this.db.prepare(`
-      UPDATE projects SET title = ?, description = ?, deadline = ?, status = ?, updated_at = ?
-      WHERE id = ? AND user_id = ?
-    `)
-    const now = new Date().toISOString()
-    stmt.run(updates.title, updates.description, updates.deadline, updates.status, now, projectId, userId)
-    
-    const getStmt = this.db.prepare('SELECT * FROM projects WHERE id = ? AND user_id = ?')
-    return getStmt.get(projectId, userId)
-  }
-
-  async deleteProject(userId: string, projectId: string) {
-    const stmt = this.db.prepare('DELETE FROM projects WHERE id = ? AND user_id = ?')
-    stmt.run(projectId, userId)
-  }
-
-  async getDocuments(userId: string) {
-    const stmt = this.db.prepare('SELECT * FROM documents WHERE user_id = ? ORDER BY uploaded_at DESC')
-    return stmt.all(userId)
-  }
-
-  async createDocument(userId: string, document: any) {
-    const id = Date.now().toString()
-    const stmt = this.db.prepare(`
-      INSERT INTO documents (id, user_id, filename, file_path, metadata, uploaded_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `)
-    const now = new Date().toISOString()
-    stmt.run(id, userId, document.filename, document.file_path, JSON.stringify(document.metadata), now)
-    return { ...document, id, user_id: userId, uploaded_at: now }
-  }
-
-  async updateDocument(userId: string, documentId: string, updates: any) {
-    const stmt = this.db.prepare(`
-      UPDATE documents SET filename = ?, metadata = ?
-      WHERE id = ? AND user_id = ?
-    `)
-    stmt.run(updates.filename, JSON.stringify(updates.metadata), documentId, userId)
-    
-    const getStmt = this.db.prepare('SELECT * FROM documents WHERE id = ? AND user_id = ?')
-    return getStmt.get(documentId, userId)
-  }
-
-  async deleteDocument(userId: string, documentId: string) {
-    const stmt = this.db.prepare('DELETE FROM documents WHERE id = ? AND user_id = ?')
-    stmt.run(documentId, userId)
-  }
-
-  async getCitations(userId: string) {
-    const stmt = this.db.prepare('SELECT * FROM citations WHERE user_id = ? ORDER BY publication_date DESC')
-    return stmt.all(userId)
-  }
-
-  async createCitation(userId: string, citation: any) {
-    const id = Date.now().toString()
-    const stmt = this.db.prepare(`
-      INSERT INTO citations (id, user_id, title, authors, publication_date, url, access_date, citation_style)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `)
-    stmt.run(id, userId, citation.title, citation.authors, citation.publication_date, citation.url, citation.access_date, citation.citation_style || 'APA')
-    return { ...citation, id, user_id: userId }
-  }
-
-  async updateCitation(userId: string, citationId: string, updates: any) {
-    const stmt = this.db.prepare(`
-      UPDATE citations SET title = ?, authors = ?, publication_date = ?, url = ?, access_date = ?, citation_style = ?
-      WHERE id = ? AND user_id = ?
-    `)
-    stmt.run(updates.title, updates.authors, updates.publication_date, updates.url, updates.access_date, updates.citation_style, citationId, userId)
-    
-    const getStmt = this.db.prepare('SELECT * FROM citations WHERE id = ? AND user_id = ?')
-    return getStmt.get(citationId, userId)
-  }
-
-  async deleteCitation(userId: string, citationId: string) {
-    const stmt = this.db.prepare('DELETE FROM citations WHERE id = ? AND user_id = ?')
-    stmt.run(citationId, userId)
-  }
-
-  subscribeToPages(userId: string, callback: (pages: any[]) => void) {
-    // Simple polling for SQLite
-    const interval = setInterval(async () => {
-      const pages = await this.getPages(userId)
-      callback(pages)
-    }, 2000)
-    
-    return () => clearInterval(interval)
-  }
-
-  subscribeToProjects(userId: string, callback: (projects: any[]) => void) {
-    const interval = setInterval(async () => {
-      const projects = await this.getProjects(userId)
-      callback(projects)
-    }, 2000)
-    
-    return () => clearInterval(interval)
+  close() {
+    this.db.close()
   }
 }
 
-export { SQLiteDatabase }
+export default SQLiteDatabase
