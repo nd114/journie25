@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { ArrowLeft, Users, Target, Award, Zap } from 'lucide-react'
 
@@ -8,20 +7,20 @@ interface AboutPageProps {
 
 export default function AboutPage({ onNavigate }: AboutPageProps) {
   return (
+    <div className="min-h-screen bg-gray-50 pt-16">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-4xl font-bold text-gray-900 text-center">About Journie</h1>
+        </div>
+      </div>
+
     <div className="min-h-screen bg-white pt-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Back Button */}
-        <button
-          onClick={() => onNavigate('home')}
-          className="flex items-center text-blue-600 hover:text-blue-700 mb-8"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </button>
+       
 
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">About Journie</h1>
+          
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We're building the future of research collaboration and knowledge management, 
             empowering researchers to discover, organize, and share insights more effectively.

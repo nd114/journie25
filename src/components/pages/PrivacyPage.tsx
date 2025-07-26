@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { ArrowLeft, Shield, Eye, Lock, Database } from 'lucide-react'
 
@@ -7,8 +6,12 @@ interface PrivacyPageProps {
 }
 
 export default function PrivacyPage({ onNavigate }: PrivacyPageProps) {
+  React.useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   return (
-    <div className="min-h-screen bg-white pt-20">
+    <div className="min-h-screen bg-gray-50 pt-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back Button */}
         <button
@@ -43,7 +46,7 @@ export default function PrivacyPage({ onNavigate }: PrivacyPageProps) {
 
           <section className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Information We Collect</h2>
-            
+
             <div className="bg-gray-50 rounded-lg p-6 mb-6">
               <div className="flex items-center mb-3">
                 <Eye className="w-5 h-5 text-blue-600 mr-2" />

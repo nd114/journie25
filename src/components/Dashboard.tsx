@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   BookOpen, 
   FolderOpen, 
@@ -12,9 +12,12 @@ import {
   Archive,
   Settings,
   Download,
-  Upload
+  Upload,
+  Grid
 } from 'lucide-react'
 import { Project, Document, Citation, Page } from '../types'
+import PersonalizedDashboard from './enhanced/PersonalizedDashboard'
+import SmartRecommendations from './enhanced/SmartRecommendations'
 
 interface DashboardProps {
   projects: Project[]
@@ -24,6 +27,7 @@ interface DashboardProps {
   onNavigate: (view: string, id?: string) => void
   createNewPage: () => void
   initialActiveModule?: string
+  user: any // TODO: Define user type
 }
 
 export default function Dashboard({ 
@@ -33,7 +37,8 @@ export default function Dashboard({
   pages, 
   onNavigate,
   createNewPage,
-  initialActiveModule = 'today'
+  initialActiveModule = 'home',
+  user
 }: DashboardProps) {
   const [activeModule, setActiveModule] = useState<string>(initialActiveModule)
 
@@ -62,62 +67,29 @@ export default function Dashboard({
     { id: 'search', label: 'Search', icon: Search }
   ]
 
-  return (
-    <div className="flex-1 bg-gray-50">
-      {/* Dashboard Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Research Dashboard</h1>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => onNavigate('import')}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              <Upload className="w-4 h-4" />
-              <span>Import</span>
-            </button>
-            <button
-              onClick={() => onNavigate('export')}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export</span>
-            </button>
-            <button
-              onClick={() => onNavigate('settings')}
-              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+  const renderView = () => {
+    switch (activeModule) {
+      case 'home':
+        return (
+          <div className="p-6 space-y-6">
+            <PersonalizedDashboard user={user} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                {/* Recent activity would go here */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                  <p className="text-gray-600">Your recent research activity will appear here.</p>
+                </div>
+              </div>
+              <div>
+                <SmartRecommendations user={user} pages={pages} projects={projects} />
+              </div>
+            </div>
           </div>
-        </div>
-        
-        {/* Module Navigation */}
-        <div className="flex items-center space-x-1 mt-4">
-          {modules.map((module) => {
-            const Icon = module.icon
-            return (
-              <button
-                key={module.id}
-                onClick={() => setActiveModule(module.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  activeModule === module.id
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{module.label}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Dashboard Content */}
-      <div className="p-6">
-        {activeModule === 'today' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        )
+      case 'today':
+        return (
+           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {/* Recent Work */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
@@ -301,9 +273,10 @@ export default function Dashboard({
               </div>
             </div>
           </div>
-        )}
+        )
 
-        {activeModule === 'projects' && (
+      case 'projects':
+        return (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -364,9 +337,10 @@ export default function Dashboard({
               )}
             </div>
           </div>
-        )}
+        )
 
-        {activeModule === 'sources' && (
+      case 'sources':
+        return (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -420,12 +394,13 @@ export default function Dashboard({
                     </div>
                   ))}
                 </div>
-              )}
+              )
             </div>
           </div>
-        )}
+        )
 
-        {activeModule === 'citations' && (
+      case 'citations':
+        return (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -483,10 +458,74 @@ export default function Dashboard({
                     </div>
                   ))}
                 </div>
-              )}
+              )
             </div>
           </div>
-        )}
+        )
+        case 'search':
+          return (
+            <div>Search</div>
+          )
+      default:
+        return <div className="p-6">Select a module to get started</div>
+    }
+  }
+
+  return (
+    <div className="flex-1 bg-gray-50">
+      {/* Dashboard Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Research Dashboard</h1>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => onNavigate('import')}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Import</span>
+            </button>
+            <button
+              onClick={() => onNavigate('export')}
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export</span>
+            </button>
+            <button
+              onClick={() => onNavigate('settings')}
+              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Module Navigation */}
+        <div className="flex items-center space-x-1 mt-4">
+          {modules.map((module) => {
+            const Icon = module.icon
+            return (
+              <button
+                key={module.id}
+                onClick={() => setActiveModule(module.id)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  activeModule === module.id
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{module.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Dashboard Content */}
+      <div className="p-6">
+        {renderView()}
       </div>
     </div>
   )

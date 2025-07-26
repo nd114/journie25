@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTheme } from './hooks/useTheme'
 import NotesView from './components/NotesView'
 import ProjectsView from './components/ProjectsView'
@@ -17,6 +16,7 @@ import SplitView from './components/SplitView'
 import Sidebar from './components/Sidebar'
 import LandingPage from './components/LandingPage'
 import ErrorBoundary from './components/ErrorBoundary'
+import OnboardingFlow from './components/OnboardingFlow'
 import { 
   Page, 
   Project, 
@@ -45,13 +45,14 @@ export default function App() {
   const [citations, setCitations] = useState<Citation[]>([])
   const [folders, setFolders] = useState<Folder[]>([])
   const [trashItems, setTrashItems] = useState<any[]>([])
-  const [currentView, setCurrentView] = useState<string>('timeline')
+  const [currentView, setCurrentView] = useState<'landing' | 'auth' | 'dashboard' | 'onboarding'>('timeline')
   const [currentItemId, setCurrentItemId] = useState<string | undefined>()
   const [currentPageId, setCurrentPageId] = useState<string>(() => {
     const savedPages = loadPages()
     return savedPages && savedPages.length > 0 ? savedPages[0].id : '1'
   })
   const [showLanding, setShowLanding] = useState(true)
+  const [isNewUser, setIsNewUser] = useState(false)
 
   const currentPage = pages.find(page => page.id === currentPageId)
   const currentProject = projects.find(project => project.id === currentItemId)
@@ -302,6 +303,49 @@ export default function App() {
     setTrashItems([])
   }
 
+  const handleSignIn = async (email: string, password: string) => {
+    await auth.signIn(email, password)
+  }
+
+  const handleSignUp = async (email: string, password: string, name: string) => {
+    const result = await auth.signUp(email, password, name)
+    if (!auth.error) {
+      setIsNewUser(true)
+      setCurrentView('onboarding')
+    }
+  }
+
+  const handleOnboardingComplete = async (onboardingData: any) => {
+    // Save onboarding data to user profile
+    try {
+      const userProfile = {
+        ...auth.user,
+        profile: {
+          country: onboardingData.country,
+          role: onboardingData.role === 'Other' ? onboardingData.customRole : onboardingData.role,
+          interests: onboardingData.interests,
+          goals: onboardingData.goals,
+          onboardingCompleted: true
+        }
+      }
+
+      // Save to localStorage for demo
+      localStorage.setItem('user_profile', JSON.stringify(userProfile))
+
+      setCurrentView('timeline')
+      setIsNewUser(false)
+    } catch (error) {
+      console.error('Failed to save onboarding data:', error)
+    }
+  }
+
+  // Redirect logic
+  useEffect(() => {
+    if (auth.user && currentView === 'auth' && !isNewUser) {
+      setCurrentView('timeline')
+    }
+  }, [auth.user, currentView, isNewUser])
+
   // If showing landing page and not authenticated
   if (showLanding && !auth.user) {
     return (
@@ -525,6 +569,14 @@ export default function App() {
             onShowWebClipper={() => {}}
             onShowExportModal={() => {}}
             onShowFullBrowser={() => {}}
+          />
+        )
+
+      case 'onboarding':
+        return (
+          <OnboardingFlow
+            onComplete={handleOnboardingComplete}
+            onBack={() => setCurrentView('auth')}
           />
         )
 

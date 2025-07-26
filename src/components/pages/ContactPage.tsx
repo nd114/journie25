@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { ArrowLeft, Mail, MessageCircle, Phone, MapPin, Send } from 'lucide-react'
 
@@ -7,6 +6,10 @@ interface ContactPageProps {
 }
 
 export default function ContactPage({ onNavigate }: ContactPageProps) {
+  React.useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -59,7 +62,7 @@ export default function ContactPage({ onNavigate }: ContactPageProps) {
           {/* Contact Form */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h2>
-            
+
             {isSubmitted ? (
               <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
                 <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -157,7 +160,7 @@ export default function ContactPage({ onNavigate }: ContactPageProps) {
           {/* Contact Information */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Get in touch</h2>
-            
+
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="bg-blue-100 p-3 rounded-lg">

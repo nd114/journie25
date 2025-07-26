@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { ArrowLeft, Calendar, User, Tag, ArrowRight, Search } from 'lucide-react'
 
@@ -11,7 +10,7 @@ export default function BlogPage({ onNavigate }: BlogPageProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const categories = ['all', 'research-tips', 'product-updates', 'academic-insights', 'tutorials']
-  
+
   const posts = [
     {
       id: '1',
@@ -98,7 +97,7 @@ export default function BlogPage({ onNavigate }: BlogPageProps) {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </button>
-          
+
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Journie Blog</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -150,7 +149,7 @@ export default function BlogPage({ onNavigate }: BlogPageProps) {
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
               </div>
-              
+
               <div className="p-6">
                 <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                   <div className="flex items-center">
@@ -174,7 +173,7 @@ export default function BlogPage({ onNavigate }: BlogPageProps) {
                 <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                   {post.title}
                 </h2>
-                
+
                 <p className="text-gray-600 mb-4 line-clamp-3">
                   {post.excerpt}
                 </p>

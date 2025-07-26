@@ -5,6 +5,7 @@ export interface DatabaseService {
   signIn(email: string, password: string): Promise<{ user: any; error?: string }>
   signOut(): Promise<void>
   getCurrentUser(): Promise<any>
+  resetPassword(email: string): Promise<{ success: boolean; error?: string }>
 
   // Pages
   getPages(userId: string): Promise<any[]>
@@ -53,6 +54,12 @@ class LocalStorageDatabase implements DatabaseService {
 
   async getCurrentUser() {
     return this.currentUser
+  }
+
+  async resetPassword(email: string) {
+    // Mock implementation for local storage
+    console.log(`Password reset would be sent to ${email}`)
+    return { success: true }
   }
 
   async getPages(userId: string) {
@@ -225,6 +232,12 @@ class SupabaseDatabase implements DatabaseService {
     if (!this.supabase) throw new Error('Database not connected')
     const { data } = await this.supabase.auth.getUser()
     return data.user
+  }
+
+  async resetPassword(email: string) {
+    if (!this.supabase) throw new Error('Database not connected')
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email)
+    return { success: !error, error: error?.message }
   }
 
   async getPages(userId: string) {

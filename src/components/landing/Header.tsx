@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { Menu, X, BookOpen } from 'lucide-react'
 
@@ -39,20 +38,37 @@ export default function Header({ onNavigate, onGetStarted, onSignIn, currentPage
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            {navigation.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => onNavigate(item.href)}
-                className={`text-sm font-medium transition-colors ${
-                  currentPage === item.href
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
-                }`}
-              >
-                {item.name}
-              </button>
-            ))}
-          </nav>
+          <button
+            onClick={() => onNavigate('how-to-use')}
+            className={`hover:text-blue-600 transition-colors ${currentPage === 'how-to-use' ? 'text-blue-600 font-medium' : ''}`}
+          >
+            How to Use
+          </button>
+          <button
+            onClick={() => onNavigate('pricing')}
+            className={`hover:text-blue-600 transition-colors ${currentPage === 'pricing' ? 'text-blue-600 font-medium' : ''}`}
+          >
+            Pricing
+          </button>
+          <button
+            onClick={() => onNavigate('blog')}
+            className={`hover:text-blue-600 transition-colors ${currentPage === 'blog' ? 'text-blue-600 font-medium' : ''}`}
+          >
+            Blog
+          </button>
+          <button
+            onClick={() => onNavigate('coming-soon')}
+            className={`hover:text-blue-600 transition-colors ${currentPage === 'coming-soon' ? 'text-blue-600 font-medium' : ''}`}
+          >
+            Coming Soon
+          </button>
+          <button
+            onClick={() => onNavigate('about')}
+            className={`hover:text-blue-600 transition-colors ${currentPage === 'about' ? 'text-blue-600 font-medium' : ''}`}
+          >
+            About
+          </button>
+        </nav>
 
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">

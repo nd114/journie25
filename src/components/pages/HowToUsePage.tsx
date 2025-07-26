@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { ArrowLeft, Play, BookOpen, Users, Zap, Search, Quote, FileText, CheckCircle } from 'lucide-react'
 
@@ -148,7 +147,17 @@ export default function HowToUsePage({ onNavigate }: HowToUsePageProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-white pt-20">
+    <div className="min-h-screen bg-gray-50 pt-16">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">How to Use Journie</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Master your research workflow with our comprehensive guide to Journie's features and capabilities.
+            </p>
+          </div>
+        </div>
+      </div>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back Button */}
         <button
@@ -174,7 +183,7 @@ export default function HowToUsePage({ onNavigate }: HowToUsePageProps) {
         {/* Quick Start Guide */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Quick Start Guide</h2>
-          
+
           {/* Step Navigation */}
           <div className="flex flex-wrap justify-center gap-2 mb-8">
             {steps.map((step, index) => {

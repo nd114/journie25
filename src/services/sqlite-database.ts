@@ -1,3 +1,4 @@
+
 // Mock SQLite implementation for browser environment
 class MockDatabase {
   private data: Map<string, any> = new Map()
@@ -5,11 +6,33 @@ class MockDatabase {
   constructor(path: string) {
     // Initialize mock database
     console.log(`Mock database initialized at: ${path}`)
+    this.initializeStorage()
+  }
+
+  private initializeStorage() {
+    // Initialize localStorage with proper structure
+    if (!localStorage.getItem('sqlite_users')) {
+      localStorage.setItem('sqlite_users', JSON.stringify([]))
+    }
+    if (!localStorage.getItem('sqlite_pages')) {
+      localStorage.setItem('sqlite_pages', JSON.stringify([]))
+    }
+    if (!localStorage.getItem('sqlite_projects')) {
+      localStorage.setItem('sqlite_projects', JSON.stringify([]))
+    }
+    if (!localStorage.getItem('sqlite_documents')) {
+      localStorage.setItem('sqlite_documents', JSON.stringify([]))
+    }
+    if (!localStorage.getItem('sqlite_citations')) {
+      localStorage.setItem('sqlite_citations', JSON.stringify([]))
+    }
+    if (!localStorage.getItem('current_user')) {
+      localStorage.setItem('current_user', 'null')
+    }
   }
 
   exec(sql: string) {
     console.log(`Executing SQL: ${sql}`)
-    // Mock table creation
     return this
   }
 
@@ -39,13 +62,11 @@ export class SQLiteDatabase {
   private db: MockDatabase
 
   constructor() {
-    // Use mock database for browser environment
     this.db = new MockDatabase(':memory:')
     this.initializeTables()
   }
 
   private initializeTables() {
-    // Create tables
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -83,112 +104,241 @@ export class SQLiteDatabase {
     `)
   }
 
-  // User methods
-  async createUser(userData: any) {
-    const stmt = this.db.prepare(`
-      INSERT INTO users (id, email, name, password_hash)
-      VALUES (?, ?, ?, ?)
-    `)
+  // Authentication methods
+  async signUp(email: string, password: string): Promise<{ user: any; error?: string }> {
+    try {
+      const users = JSON.parse(localStorage.getItem('sqlite_users') || '[]')
+      
+      // Check if user already exists
+      const existingUser = users.find((u: any) => u.email === email)
+      if (existingUser) {
+        return { user: null, error: 'User already exists' }
+      }
 
-    const result = stmt.run(userData.id, userData.email, userData.name, userData.password_hash)
-    return { id: userData.id, ...userData }
+      // Create new user
+      const newUser = {
+        id: `user_${Date.now()}`,
+        email,
+        name: email.split('@')[0], // Default name from email
+        password_hash: btoa(password), // Simple encoding for demo
+        created_at: new Date().toISOString()
+      }
+
+      users.push(newUser)
+      localStorage.setItem('sqlite_users', JSON.stringify(users))
+      localStorage.setItem('current_user', JSON.stringify(newUser))
+
+      return { user: newUser }
+    } catch (error) {
+      return { user: null, error: 'Sign up failed' }
+    }
   }
 
-  async getUserByEmail(email: string) {
-    const stmt = this.db.prepare('SELECT * FROM users WHERE email = ?')
-    return stmt.get(email)
+  async signIn(email: string, password: string): Promise<{ user: any; error?: string }> {
+    try {
+      const users = JSON.parse(localStorage.getItem('sqlite_users') || '[]')
+      const user = users.find((u: any) => u.email === email && u.password_hash === btoa(password))
+      
+      if (!user) {
+        return { user: null, error: 'Invalid credentials' }
+      }
+
+      localStorage.setItem('current_user', JSON.stringify(user))
+      return { user }
+    } catch (error) {
+      return { user: null, error: 'Sign in failed' }
+    }
   }
 
-  async getUserById(id: string) {
-    const stmt = this.db.prepare('SELECT * FROM users WHERE id = ?')
-    return stmt.get(id)
+  async signOut(): Promise<void> {
+    localStorage.setItem('current_user', 'null')
+  }
+
+  async getCurrentUser(): Promise<any> {
+    const userStr = localStorage.getItem('current_user')
+    if (userStr === 'null' || !userStr) return null
+    return JSON.parse(userStr)
+  }
+
+  async resetPassword(email: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const users = JSON.parse(localStorage.getItem('sqlite_users') || '[]')
+      const user = users.find((u: any) => u.email === email)
+      
+      if (!user) {
+        return { success: false, error: 'User not found' }
+      }
+
+      // In a real app, you'd send an email here
+      console.log(`Password reset link would be sent to ${email}`)
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Password reset failed' }
+    }
   }
 
   // Page methods
-  async createPage(userId: string, pageData: any) {
-    const stmt = this.db.prepare(`
-      INSERT INTO pages (id, user_id, title, content, created_at, updated_at, is_starred, tags)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `)
-
-    const result = stmt.run(
-      pageData.id,
-      userId,
-      pageData.title,
-      pageData.content,
-      pageData.createdAt,
-      pageData.updatedAt,
-      pageData.isStarred || false,
-      JSON.stringify(pageData.tags || [])
-    )
-
-    return { id: pageData.id, ...pageData }
+  async getPages(userId: string): Promise<any[]> {
+    const pages = JSON.parse(localStorage.getItem('sqlite_pages') || '[]')
+    return pages
+      .filter((page: any) => page.user_id === userId)
+      .map((page: any) => ({
+        ...page,
+        tags: JSON.parse(page.tags || '[]'),
+        isStarred: Boolean(page.is_starred)
+      }))
   }
 
-  async getPages(userId: string) {
-    const stmt = this.db.prepare('SELECT * FROM pages WHERE user_id = ? ORDER BY updated_at DESC')
-    const pages = stmt.all(userId)
-
-    return pages.map(page => ({
-      ...page,
-      tags: JSON.parse(page.tags || '[]'),
-      isStarred: Boolean(page.is_starred)
-    }))
+  async createPage(userId: string, pageData: any): Promise<any> {
+    const pages = JSON.parse(localStorage.getItem('sqlite_pages') || '[]')
+    const newPage = {
+      ...pageData,
+      id: `page_${Date.now()}`,
+      user_id: userId,
+      tags: JSON.stringify(pageData.tags || []),
+      is_starred: pageData.isStarred || false
+    }
+    
+    pages.push(newPage)
+    localStorage.setItem('sqlite_pages', JSON.stringify(pages))
+    return newPage
   }
 
-  async updatePage(userId: string, pageId: string, updates: any) {
-    const stmt = this.db.prepare(`
-      UPDATE pages 
-      SET title = ?, content = ?, updated_at = ?, is_starred = ?, tags = ?
-      WHERE id = ? AND user_id = ?
-    `)
-
-    stmt.run(
-      updates.title,
-      updates.content,
-      updates.updatedAt,
-      updates.isStarred || false,
-      JSON.stringify(updates.tags || []),
-      pageId,
-      userId
-    )
-
-    return { id: pageId, ...updates }
+  async updatePage(userId: string, pageId: string, updates: any): Promise<any> {
+    const pages = JSON.parse(localStorage.getItem('sqlite_pages') || '[]')
+    const index = pages.findIndex((p: any) => p.id === pageId && p.user_id === userId)
+    
+    if (index !== -1) {
+      pages[index] = {
+        ...pages[index],
+        ...updates,
+        tags: JSON.stringify(updates.tags || []),
+        is_starred: updates.isStarred || false
+      }
+      localStorage.setItem('sqlite_pages', JSON.stringify(pages))
+      return pages[index]
+    }
+    throw new Error('Page not found')
   }
 
-  async deletePage(userId: string, pageId: string) {
-    const stmt = this.db.prepare('DELETE FROM pages WHERE id = ? AND user_id = ?')
-    stmt.run(pageId, userId)
-    return true
+  async deletePage(userId: string, pageId: string): Promise<void> {
+    const pages = JSON.parse(localStorage.getItem('sqlite_pages') || '[]')
+    const filtered = pages.filter((p: any) => !(p.id === pageId && p.user_id === userId))
+    localStorage.setItem('sqlite_pages', JSON.stringify(filtered))
   }
 
   // Project methods
-  async createProject(userId: string, projectData: any) {
-    const stmt = this.db.prepare(`
-      INSERT INTO projects (id, user_id, name, description, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `)
-
-    const result = stmt.run(
-      projectData.id,
-      userId,
-      projectData.name,
-      projectData.description,
-      projectData.createdAt,
-      projectData.updatedAt
-    )
-
-    return { id: projectData.id, ...projectData }
+  async getProjects(userId: string): Promise<any[]> {
+    const projects = JSON.parse(localStorage.getItem('sqlite_projects') || '[]')
+    return projects.filter((project: any) => project.user_id === userId)
   }
 
-  async getProjects(userId: string) {
-    const stmt = this.db.prepare('SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC')
-    return stmt.all(userId)
+  async createProject(userId: string, projectData: any): Promise<any> {
+    const projects = JSON.parse(localStorage.getItem('sqlite_projects') || '[]')
+    const newProject = {
+      ...projectData,
+      id: `project_${Date.now()}`,
+      user_id: userId
+    }
+    
+    projects.push(newProject)
+    localStorage.setItem('sqlite_projects', JSON.stringify(projects))
+    return newProject
+  }
+
+  async updateProject(userId: string, projectId: string, updates: any): Promise<any> {
+    const projects = JSON.parse(localStorage.getItem('sqlite_projects') || '[]')
+    const index = projects.findIndex((p: any) => p.id === projectId && p.user_id === userId)
+    
+    if (index !== -1) {
+      projects[index] = { ...projects[index], ...updates }
+      localStorage.setItem('sqlite_projects', JSON.stringify(projects))
+      return projects[index]
+    }
+    throw new Error('Project not found')
+  }
+
+  async deleteProject(userId: string, projectId: string): Promise<void> {
+    const projects = JSON.parse(localStorage.getItem('sqlite_projects') || '[]')
+    const filtered = projects.filter((p: any) => !(p.id === projectId && p.user_id === userId))
+    localStorage.setItem('sqlite_projects', JSON.stringify(filtered))
+  }
+
+  // Document methods
+  async getDocuments(userId: string): Promise<any[]> {
+    const documents = JSON.parse(localStorage.getItem('sqlite_documents') || '[]')
+    return documents.filter((doc: any) => doc.user_id === userId)
+  }
+
+  async createDocument(userId: string, documentData: any): Promise<any> {
+    const documents = JSON.parse(localStorage.getItem('sqlite_documents') || '[]')
+    const newDocument = {
+      ...documentData,
+      id: `doc_${Date.now()}`,
+      user_id: userId
+    }
+    
+    documents.push(newDocument)
+    localStorage.setItem('sqlite_documents', JSON.stringify(documents))
+    return newDocument
+  }
+
+  async updateDocument(userId: string, documentId: string, updates: any): Promise<any> {
+    const documents = JSON.parse(localStorage.getItem('sqlite_documents') || '[]')
+    const index = documents.findIndex((d: any) => d.id === documentId && d.user_id === userId)
+    
+    if (index !== -1) {
+      documents[index] = { ...documents[index], ...updates }
+      localStorage.setItem('sqlite_documents', JSON.stringify(documents))
+      return documents[index]
+    }
+    throw new Error('Document not found')
+  }
+
+  async deleteDocument(userId: string, documentId: string): Promise<void> {
+    const documents = JSON.parse(localStorage.getItem('sqlite_documents') || '[]')
+    const filtered = documents.filter((d: any) => !(d.id === documentId && d.user_id === userId))
+    localStorage.setItem('sqlite_documents', JSON.stringify(filtered))
+  }
+
+  // Citation methods
+  async getCitations(userId: string): Promise<any[]> {
+    const citations = JSON.parse(localStorage.getItem('sqlite_citations') || '[]')
+    return citations.filter((citation: any) => citation.user_id === userId)
+  }
+
+  async createCitation(userId: string, citationData: any): Promise<any> {
+    const citations = JSON.parse(localStorage.getItem('sqlite_citations') || '[]')
+    const newCitation = {
+      ...citationData,
+      id: `citation_${Date.now()}`,
+      user_id: userId
+    }
+    
+    citations.push(newCitation)
+    localStorage.setItem('sqlite_citations', JSON.stringify(citations))
+    return newCitation
+  }
+
+  async updateCitation(userId: string, citationId: string, updates: any): Promise<any> {
+    const citations = JSON.parse(localStorage.getItem('sqlite_citations') || '[]')
+    const index = citations.findIndex((c: any) => c.id === citationId && c.user_id === userId)
+    
+    if (index !== -1) {
+      citations[index] = { ...citations[index], ...updates }
+      localStorage.setItem('sqlite_citations', JSON.stringify(citations))
+      return citations[index]
+    }
+    throw new Error('Citation not found')
+  }
+
+  async deleteCitation(userId: string, citationId: string): Promise<void> {
+    const citations = JSON.parse(localStorage.getItem('sqlite_citations') || '[]')
+    const filtered = citations.filter((c: any) => !(c.id === citationId && c.user_id === userId))
+    localStorage.setItem('sqlite_citations', JSON.stringify(filtered))
   }
 
   close() {
     this.db.close()
   }
 }
-
-//export default SQLiteDatabase

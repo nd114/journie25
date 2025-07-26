@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { ArrowRight, BookOpen, Users, Zap, Shield, Star, Menu, X, Play, TrendingUp, Clock, Award } from 'lucide-react'
 import Header from './landing/Header'
@@ -23,26 +22,26 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'about':
-        return <AboutPage onNavigate={setCurrentPage} />
-      case 'contact':
-        return <ContactPage onNavigate={setCurrentPage} />
-      case 'privacy':
-        return <PrivacyPage onNavigate={setCurrentPage} />
-      case 'terms':
-        return <TermsPage onNavigate={setCurrentPage} />
-      case 'how-to-use':
-        return <HowToUsePage onNavigate={setCurrentPage} />
-      case 'pricing':
-        return <PricingPage onNavigate={setCurrentPage} />
-      case 'blog':
-        return <BlogPage onNavigate={setCurrentPage} />
-      case 'documentation':
-        return <DocumentationPage onNavigate={setCurrentPage} />
-      case 'faq':
-        return <FAQPage onNavigate={setCurrentPage} />
-      default:
-        return renderHomePage()
+      case 'about': return <AboutPage onNavigate={setCurrentPage} />
+      case 'contact': return <ContactPage onNavigate={setCurrentPage} />
+      case 'privacy': return <PrivacyPage onNavigate={setCurrentPage} />
+      case 'terms': return <TermsPage onNavigate={setCurrentPage} />
+      case 'how-to-use': return <HowToUsePage onNavigate={setCurrentPage} />
+      case 'pricing': return <PricingPage onNavigate={setCurrentPage} />
+      case 'blog': return <BlogPage onNavigate={setCurrentPage} />
+      case 'coming-soon': return <ComingSoonPage onNavigate={setCurrentPage} />
+      case 'faq': return <FAQPage onNavigate={setCurrentPage} />
+      default: 
+        if (currentPage.startsWith('blog-post-')) {
+          const BlogPostPage = React.lazy(() => import('./pages/BlogPostPage'))
+          const postId = currentPage.replace('blog-post-', '')
+          return (
+            <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+              <BlogPostPage onNavigate={setCurrentPage} postId={postId} />
+            </React.Suspense>
+          )
+        }
+        return renderHome()
     }
   }
 

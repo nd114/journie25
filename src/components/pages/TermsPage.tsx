@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { ArrowLeft, FileText, AlertTriangle, Users, CreditCard } from 'lucide-react'
 
@@ -7,6 +6,10 @@ interface TermsPageProps {
 }
 
 export default function TermsPage({ onNavigate }: TermsPageProps) {
+  React.useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   return (
     <div className="min-h-screen bg-white pt-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
