@@ -1,6 +1,6 @@
 import { users, papers, comments, reviews, citations, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview } from "../shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ilike, or } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User methods

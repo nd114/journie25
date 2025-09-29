@@ -1,0 +1,64 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { BookOpen, LogIn, LogOut, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+const Navbar: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  return (
+    <nav className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="flex items-center space-x-2">
+            <BookOpen className="w-8 h-8 text-indigo-600" />
+            <span className="text-xl font-bold text-gray-900">Research Platform</span>
+          </Link>
+
+          <div className="flex items-center space-x-6">
+            <Link to="/library" className="text-gray-700 hover:text-indigo-600 transition-colors">
+              Browse Papers
+            </Link>
+
+            {user ? (
+              <>
+                <Link to="/workspace" className="text-gray-700 hover:text-indigo-600 transition-colors">
+                  My Workspace
+                </Link>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
+                    <User className="w-5 h-5 text-gray-500" />
+                    <span className="text-sm text-gray-700">{user.name}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-700 hover:text-red-600 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In</span>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
