@@ -29,7 +29,7 @@ runButton = "Project"
 [[workflows.workflow]]
 name = "Run"
 author = 37399832
-mode = "sequential"
+mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
