@@ -6,14 +6,29 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "tsx watch server/index.ts",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
     "@supabase/supabase-js": "^2.52.1",
+    "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.15.4",
+    "@types/ws": "^8.18.1",
+    "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "drizzle-kit": "^0.31.5",
+    "drizzle-orm": "^0.44.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.263.1",
     "pg": "^8.16.3",
     "quill": "^2.0.3",
@@ -22,7 +37,9 @@
     "react-markdown": "^10.1.0",
     "react-quill": "^2.0.0",
     "rehype-raw": "^7.0.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "tsx": "^4.20.6",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
