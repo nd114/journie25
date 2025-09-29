@@ -241,16 +241,20 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
       return res.status(403).json({ error: "Not authorized to update this paper" });
     }
 
-    // Handle publishing logic: set isPublished and publishedAt when status changes to "published"
+    // Handle publishing logic: ignore isPublished/publishedAt from client, derive from status
     const updates = { ...req.body };
+    // Strip client-provided isPublished/publishedAt to prevent bypass
+    delete updates.isPublished;
+    delete updates.publishedAt;
+    
     const isNewlyPublished = updates.status === 'published' && !existingPaper.isPublished;
     
     if (isNewlyPublished) {
       updates.isPublished = true;
       updates.publishedAt = new Date();
       
-      // Increment version number
-      const newVersion = existingPaper.version + 1;
+      // Increment version number (defensive against undefined)
+      const newVersion = (existingPaper.version || 0) + 1;
       updates.version = newVersion;
       
       // Save version snapshot when publishing
@@ -299,7 +303,14 @@ app.delete("/api/papers/:id", authenticateToken, async (req: any, res) => {
 // Comment endpoints
 app.get("/api/papers/:id/comments", async (req, res) => {
   try {
-    const comments = await storage.getComments(parseInt(req.params.id));
+    const paperId = parseInt(req.params.id);
+    // Check if paper is published before showing comments
+    const paper = await storage.getPaper(paperId);
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+    
+    const comments = await storage.getComments(paperId);
     res.json(comments);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch comments" });
@@ -308,9 +319,16 @@ app.get("/api/papers/:id/comments", async (req, res) => {
 
 app.post("/api/papers/:id/comments", authenticateToken, async (req: any, res) => {
   try {
+    const paperId = parseInt(req.params.id);
+    // Check if paper is published before allowing comments
+    const paper = await storage.getPaper(paperId);
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+    
     const { content, parentId } = req.body;
     const comment = await storage.createComment({
-      paperId: parseInt(req.params.id),
+      paperId,
       userId: req.user.id,
       content,
       parentId: parentId || null,
@@ -324,7 +342,14 @@ app.post("/api/papers/:id/comments", authenticateToken, async (req: any, res) =>
 // Review endpoints
 app.get("/api/papers/:id/reviews", async (req, res) => {
   try {
-    const reviews = await storage.getReviews(parseInt(req.params.id));
+    const paperId = parseInt(req.params.id);
+    // Check if paper is published before showing reviews
+    const paper = await storage.getPaper(paperId);
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+    
+    const reviews = await storage.getReviews(paperId);
     res.json(reviews);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch reviews" });
@@ -333,9 +358,16 @@ app.get("/api/papers/:id/reviews", async (req, res) => {
 
 app.post("/api/papers/:id/reviews", authenticateToken, async (req: any, res) => {
   try {
+    const paperId = parseInt(req.params.id);
+    // Check if paper is published before allowing reviews
+    const paper = await storage.getPaper(paperId);
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+    
     const { content, rating, recommendation } = req.body;
     const review = await storage.createReview({
-      paperId: parseInt(req.params.id),
+      paperId,
       userId: req.user.id,
       content,
       rating,
@@ -351,7 +383,14 @@ app.post("/api/papers/:id/reviews", authenticateToken, async (req: any, res) => 
 // Version history endpoint
 app.get("/api/papers/:id/versions", async (req, res) => {
   try {
-    const versions = await storage.getPaperVersions(parseInt(req.params.id));
+    const paperId = parseInt(req.params.id);
+    // Check if paper is published before showing version history
+    const paper = await storage.getPaper(paperId);
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+    
+    const versions = await storage.getPaperVersions(paperId);
     res.json(versions);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch versions" });
