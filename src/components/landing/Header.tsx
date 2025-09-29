@@ -38,6 +38,12 @@ export default function Header({ onNavigate, onGetStarted, onSignIn, currentPage
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
+            <button
+              onClick={() => onNavigate('about')}
+              className={`hover:text-blue-600 transition-colors ${currentPage === 'about' ? 'text-blue-600 font-medium' : ''}`}
+            >
+              About
+            </button>
           <button
             onClick={() => onNavigate('how-to-use')}
             className={`hover:text-blue-600 transition-colors ${currentPage === 'how-to-use' ? 'text-blue-600 font-medium' : ''}`}
@@ -62,12 +68,7 @@ export default function Header({ onNavigate, onGetStarted, onSignIn, currentPage
           >
             Coming Soon
           </button>
-          <button
-            onClick={() => onNavigate('about')}
-            className={`hover:text-blue-600 transition-colors ${currentPage === 'about' ? 'text-blue-600 font-medium' : ''}`}
-          >
-            About
-          </button>
+          
         </nav>
 
           {/* Desktop CTA Buttons */}

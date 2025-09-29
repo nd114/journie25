@@ -146,5 +146,6 @@ export default function AboutPage({ onNavigate }: AboutPageProps) {
         </section>
       </div>
     </div>
-  )
+      </div>
+);
 }

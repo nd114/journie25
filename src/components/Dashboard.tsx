@@ -394,11 +394,11 @@ export default function Dashboard({
                     </div>
                   ))}
                 </div>
-              )
+              )}
             </div>
           </div>
         )
-
+              
       case 'citations':
         return (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -458,7 +458,7 @@ export default function Dashboard({
                     </div>
                   ))}
                 </div>
-              )
+              )}
             </div>
           </div>
         )

@@ -93,7 +93,7 @@ export default function ComingSoonPage({ onNavigate }: ComingSoonPageProps) {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </button>
-          <div className="text-center">
+          <div className="text-center pt-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Coming Soon</h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               We're constantly working to bring you the most advanced research tools. 

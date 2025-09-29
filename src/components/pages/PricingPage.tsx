@@ -1,8 +1,8 @@
-The code edits primarily focus on fixing the layout of the pricing page.
+/*The code edits primarily focus on fixing the layout of the pricing page.
 ```
 
-```replit_final_file
-import React from 'react'
+```replit_final_file*/
+//import React from 'react'
 import { Check, ArrowLeft, Star, Zap, Crown, Rocket } from 'lucide-react'
 
 interface PricingPageProps {

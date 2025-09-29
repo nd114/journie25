@@ -11,6 +11,8 @@ import PricingPage from './pages/PricingPage'
 import BlogPage from './pages/BlogPage'
 import DocumentationPage from './pages/DocumentationPage'
 import FAQPage from './pages/FAQPage'
+import ComingSoonPage from './pages/ComingSoonPage'; 
+
 
 interface LandingPageProps {
   onGetStarted: () => void
@@ -41,7 +43,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
             </React.Suspense>
           )
         }
-        return renderHome()
+        return renderHomePage()
     }
   }
 

@@ -1,0 +1,27 @@
+renderHome is not defined
+at renderPage (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/LandingPage.tsx?t=1753557556894:107:9)
+at LandingPage (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/LandingPage.tsx?t=1753557556894:752:5)
+at renderWithHooks (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:11566:26)
+at mountIndeterminateComponent (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:14944:21)
+at beginWork (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:15932:22)
+at HTMLUnknownElement.callCallback2 (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:3672:22)
+at Object.invokeGuardedCallbackDev (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:3697:24)
+at invokeGuardedCallback (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:3731:39)
+at beginWork$1 (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:19791:15)
+at performUnitOfWork (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/chunk-YPSROYJW.js?v=de69775a:19224:20)
+The above error occurred in the <LandingPage> component:
+
+    at LandingPage (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/LandingPage.tsx?t=1753557556894:30:39)
+    at App (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/App.tsx?t=1753557556894:47:34)
+    at ErrorBoundary (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/ErrorBoundary.tsx:6:1)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+Uncaught error: 
+ReferenceError {}
+ 
+Object {componentStack: "↵    at LandingPage…"}
+
+at t.value (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
