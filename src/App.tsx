@@ -7,6 +7,7 @@ import PaperDetail from './pages/PaperDetail';
 import AuthPage from './pages/AuthPage';
 import WorkspaceDashboard from './pages/WorkspaceDashboard';
 import PaperEditor from './pages/PaperEditor';
+import UserProfile from './pages/UserProfile';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -46,6 +47,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PaperEditor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <UserProfile />
           </ProtectedRoute>
         }
       />

@@ -139,6 +139,29 @@ class ApiClient {
   async getFields() {
     return this.request<any[]>('/fields');
   }
+
+  async getProfile() {
+    return this.request<any>('/auth/me');
+  }
+
+  async updateProfile(updates: {
+    name?: string;
+    orcid?: string | null;
+    affiliation?: string | null;
+    bio?: string | null;
+  }) {
+    return this.request<any>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request<any>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

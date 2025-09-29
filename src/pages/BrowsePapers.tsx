@@ -30,8 +30,8 @@ const BrowsePapers: React.FC = () => {
       field: selectedField,
     });
     if (response.data) {
-      const publishedPapers = response.data.filter((p: any) => p.status === 'published');
-      setPapers(publishedPapers);
+      // Backend now returns only published papers
+      setPapers(response.data);
     }
     setLoading(false);
   };

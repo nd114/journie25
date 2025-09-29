@@ -39,6 +39,11 @@ app.post("/api/auth/register", async (req, res) => {
   try {
     const { email, password, name } = req.body;
 
+    // Server-side password validation
+    if (!password || password.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters long" });
+    }
+
     const existingUser = await storage.getUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
@@ -95,19 +100,81 @@ app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.json({ id: user.id, email: user.email, name: user.name });
+    res.json({ 
+      id: user.id, 
+      email: user.email, 
+      name: user.name,
+      orcid: user.orcid,
+      affiliation: user.affiliation,
+      bio: user.bio
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
+
+app.put("/api/auth/profile", authenticateToken, async (req: any, res) => {
+  try {
+    const { name, orcid, affiliation, bio } = req.body;
+    const user = await storage.updateUser(req.user.id, {
+      name,
+      orcid,
+      affiliation,
+      bio
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ 
+      id: user.id, 
+      email: user.email, 
+      name: user.name,
+      orcid: user.orcid,
+      affiliation: user.affiliation,
+      bio: user.bio
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+app.post("/api/auth/change-password", authenticateToken, async (req: any, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    // Server-side password validation
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters long" });
+    }
+    
+    const user = await storage.getUser(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isValidPassword = await compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+
+    const hashedPassword = await hash(newPassword, 10);
+    await storage.updateUser(req.user.id, { password: hashedPassword });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to change password" });
   }
 });
 
 // Paper endpoints
 app.get("/api/papers", async (req, res) => {
   try {
-    const { search, isPublished } = req.query;
+    const { search, field } = req.query;
+    // Public endpoint - only return published papers by default
     const papers = await storage.getPapers({
       search: search as string,
-      isPublished: isPublished === "true",
+      isPublished: true,
+      field: field as string,
     });
     res.json(papers);
   } catch (error) {
@@ -121,6 +188,11 @@ app.get("/api/papers/:id", async (req, res) => {
     const { id } = req.params;
     const paper = await storage.getPaper(parseInt(id));
     if (!paper) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    // Only return published papers to public, or drafts to their creator
+    if (!paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
 
@@ -171,9 +243,26 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
 
     // Handle publishing logic: set isPublished and publishedAt when status changes to "published"
     const updates = { ...req.body };
-    if (updates.status === 'published' && !existingPaper.isPublished) {
+    const isNewlyPublished = updates.status === 'published' && !existingPaper.isPublished;
+    
+    if (isNewlyPublished) {
       updates.isPublished = true;
       updates.publishedAt = new Date();
+      
+      // Increment version number
+      const newVersion = existingPaper.version + 1;
+      updates.version = newVersion;
+      
+      // Save version snapshot when publishing
+      await storage.createPaperVersion({
+        paperId: paperId,
+        version: newVersion,
+        title: updates.title || existingPaper.title,
+        abstract: updates.abstract || existingPaper.abstract,
+        content: updates.content || existingPaper.content,
+        pdfUrl: updates.pdfUrl || existingPaper.pdfUrl,
+        createdBy: req.user.id,
+      });
     } else if (updates.status === 'draft') {
       updates.isPublished = false;
     }
@@ -181,6 +270,7 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
     const paper = await storage.updatePaper(paperId, updates);
     res.json(paper);
   } catch (error) {
+    console.error("Error updating paper:", error);
     res.status(500).json({ error: "Failed to update paper" });
   }
 });
@@ -255,6 +345,16 @@ app.post("/api/papers/:id/reviews", authenticateToken, async (req: any, res) => 
     res.json(review);
   } catch (error) {
     res.status(500).json({ error: "Failed to create review" });
+  }
+});
+
+// Version history endpoint
+app.get("/api/papers/:id/versions", async (req, res) => {
+  try {
+    const versions = await storage.getPaperVersions(parseInt(req.params.id));
+    res.json(versions);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch versions" });
   }
 });
 

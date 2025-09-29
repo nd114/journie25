@@ -1,6 +1,8 @@
-import { users, papers, comments, reviews, citations, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, and, ilike, or, sql } from "drizzle-orm";
+
+type InsertPaperVersion = typeof paperVersions.$inferInsert;
 
 export interface IStorage {
   // User methods
@@ -11,7 +13,7 @@ export interface IStorage {
 
   // Paper methods
   getPaper(id: number): Promise<Paper | undefined>;
-  getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string }): Promise<Paper[]>;
+  getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string, field?: string }): Promise<Paper[]>;
   createPaper(insertPaper: InsertPaper): Promise<Paper>;
   updatePaper(id: number, updates: Partial<Paper>): Promise<Paper | undefined>;
   deletePaper(id: number): Promise<void>;
@@ -24,6 +26,10 @@ export interface IStorage {
   // Review methods
   getReviews(paperId: number): Promise<Review[]>;
   createReview(insertReview: InsertReview): Promise<Review>;
+
+  // Paper version methods
+  createPaperVersion(insertPaperVersion: InsertPaperVersion): Promise<any>;
+  getPaperVersions(paperId: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -61,7 +67,7 @@ export class DatabaseStorage implements IStorage {
     return paper || undefined;
   }
 
-  async getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string }): Promise<Paper[]> {
+  async getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string, field?: string }): Promise<Paper[]> {
     let query = db.select().from(papers);
     
     const conditions: any[] = [];
@@ -77,6 +83,10 @@ export class DatabaseStorage implements IStorage {
           ilike(papers.abstract, `%${filters.search}%`)
         )
       );
+    }
+    
+    if (filters?.field) {
+      conditions.push(eq(papers.researchField, filters.field));
     }
     
     if (conditions.length > 0) {
@@ -135,6 +145,19 @@ export class DatabaseStorage implements IStorage {
       .values(insertReview)
       .returning();
     return review;
+  }
+
+  // Paper version methods
+  async createPaperVersion(insertPaperVersion: InsertPaperVersion): Promise<any> {
+    const [version] = await db
+      .insert(paperVersions)
+      .values(insertPaperVersion)
+      .returning();
+    return version;
+  }
+
+  async getPaperVersions(paperId: number): Promise<any[]> {
+    return db.select().from(paperVersions).where(eq(paperVersions.paperId, paperId)).orderBy(desc(paperVersions.version));
   }
 }
 

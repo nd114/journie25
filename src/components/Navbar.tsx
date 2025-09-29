@@ -32,10 +32,13 @@ const Navbar: React.FC = () => {
                   My Workspace
                 </Link>
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2">
-                    <User className="w-5 h-5 text-gray-500" />
-                    <span className="text-sm text-gray-700">{user.name}</span>
-                  </div>
+                  <Link 
+                    to="/profile"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 transition-colors"
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="text-sm">{user.name}</span>
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-700 hover:text-red-600 transition-colors"

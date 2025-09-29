@@ -88,10 +88,14 @@ const AuthPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={8}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Enter your password"
                 />
               </div>
+              {!isLogin && (
+                <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
+              )}
             </div>
 
             {error && (
