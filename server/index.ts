@@ -6,7 +6,7 @@ import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET environment variable is required");
@@ -109,12 +109,7 @@ app.get("/api/papers", async (req, res) => {
       search: search as string,
       isPublished: isPublished === "true",
     });
-    // Transform authorIds to authors array for all papers
-    const transformedResult = papers.map(paper => ({
-      ...paper,
-      authors: Array.isArray(paper.authorIds) ? paper.authorIds : []
-    }));
-    res.json(transformedResult);
+    res.json(papers);
   } catch (error) {
     console.error("Error fetching papers:", error);
     res.status(500).json({ error: "Failed to fetch papers" });
@@ -129,13 +124,7 @@ app.get("/api/papers/:id", async (req, res) => {
       return res.status(404).json({ error: "Paper not found" });
     }
 
-    // Transform authorIds to authors array
-    const transformedPaper = {
-      ...paper,
-      authors: Array.isArray(paper.authorIds) ? paper.authorIds : []
-    };
-
-    res.json(transformedPaper);
+    res.json(paper);
   } catch (error) {
     console.error('Error fetching paper:', error);
     res.status(500).json({ error: "Failed to fetch paper" });
@@ -144,14 +133,16 @@ app.get("/api/papers/:id", async (req, res) => {
 
 app.post("/api/papers", authenticateToken, async (req: any, res) => {
   try {
-    const { title, abstract, content, fieldIds, keywords } = req.body;
+    const { title, abstract, content, authors, researchField, keywords } = req.body;
 
     const paper = await storage.createPaper({
       title,
       abstract,
-      content,
+      content: content || '',
+      authors: authors || [],
       authorIds: [req.user.id],
-      fieldIds: fieldIds || [],
+      researchField: researchField || '',
+      fieldIds: [],
       keywords: keywords || [],
       createdBy: req.user.id,
       status: "draft",
@@ -178,7 +169,16 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
       return res.status(403).json({ error: "Not authorized to update this paper" });
     }
 
-    const paper = await storage.updatePaper(paperId, req.body);
+    // Handle publishing logic: set isPublished and publishedAt when status changes to "published"
+    const updates = { ...req.body };
+    if (updates.status === 'published' && !existingPaper.isPublished) {
+      updates.isPublished = true;
+      updates.publishedAt = new Date();
+    } else if (updates.status === 'draft') {
+      updates.isPublished = false;
+    }
+
+    const paper = await storage.updatePaper(paperId, updates);
     res.json(paper);
   } catch (error) {
     res.status(500).json({ error: "Failed to update paper" });
