@@ -38,7 +38,7 @@ const authenticateToken = (req: any, res: any, next: any) => {
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { email, password, name } = req.body;
-    
+
     const existingUser = await storage.getUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
@@ -52,7 +52,7 @@ app.post("/api/auth/register", async (req, res) => {
     });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
-    
+
     res.json({ 
       user: { id: user.id, email: user.email, name: user.name },
       token 
@@ -66,7 +66,7 @@ app.post("/api/auth/register", async (req, res) => {
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     const user = await storage.getUserByEmail(email);
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -78,7 +78,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
-    
+
     res.json({ 
       user: { id: user.id, email: user.email, name: user.name },
       token 
@@ -109,7 +109,12 @@ app.get("/api/papers", async (req, res) => {
       search: search as string,
       isPublished: isPublished === "true",
     });
-    res.json(papers);
+    // Transform authorIds to authors array for all papers
+    const transformedResult = papers.map(paper => ({
+      ...paper,
+      authors: Array.isArray(paper.authorIds) ? paper.authorIds : []
+    }));
+    res.json(transformedResult);
   } catch (error) {
     console.error("Error fetching papers:", error);
     res.status(500).json({ error: "Failed to fetch papers" });
@@ -118,12 +123,21 @@ app.get("/api/papers", async (req, res) => {
 
 app.get("/api/papers/:id", async (req, res) => {
   try {
-    const paper = await storage.getPaper(parseInt(req.params.id));
+    const { id } = req.params;
+    const paper = await storage.getPaper(parseInt(id));
     if (!paper) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    res.json(paper);
+
+    // Transform authorIds to authors array
+    const transformedPaper = {
+      ...paper,
+      authors: Array.isArray(paper.authorIds) ? paper.authorIds : []
+    };
+
+    res.json(transformedPaper);
   } catch (error) {
+    console.error('Error fetching paper:', error);
     res.status(500).json({ error: "Failed to fetch paper" });
   }
 });
@@ -131,7 +145,7 @@ app.get("/api/papers/:id", async (req, res) => {
 app.post("/api/papers", authenticateToken, async (req: any, res) => {
   try {
     const { title, abstract, content, fieldIds, keywords } = req.body;
-    
+
     const paper = await storage.createPaper({
       title,
       abstract,
@@ -142,7 +156,7 @@ app.post("/api/papers", authenticateToken, async (req: any, res) => {
       createdBy: req.user.id,
       status: "draft",
     });
-    
+
     res.json(paper);
   } catch (error) {
     console.error("Error creating paper:", error);
@@ -154,16 +168,16 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
   try {
     const paperId = parseInt(req.params.id);
     const existingPaper = await storage.getPaper(paperId);
-    
+
     if (!existingPaper) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     // Check authorization: user must be the creator
     if (existingPaper.createdBy !== req.user.id) {
       return res.status(403).json({ error: "Not authorized to update this paper" });
     }
-    
+
     const paper = await storage.updatePaper(paperId, req.body);
     res.json(paper);
   } catch (error) {
@@ -175,16 +189,16 @@ app.delete("/api/papers/:id", authenticateToken, async (req: any, res) => {
   try {
     const paperId = parseInt(req.params.id);
     const existingPaper = await storage.getPaper(paperId);
-    
+
     if (!existingPaper) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     // Check authorization: user must be the creator
     if (existingPaper.createdBy !== req.user.id) {
       return res.status(403).json({ error: "Not authorized to delete this paper" });
     }
-    
+
     await storage.deletePaper(paperId);
     res.json({ success: true });
   } catch (error) {

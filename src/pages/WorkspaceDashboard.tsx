@@ -9,7 +9,7 @@ interface Paper {
   id: number;
   title: string;
   abstract: string;
-  authors: string[];
+  authors?: string[];
   createdAt: string;
   status: string;
 }

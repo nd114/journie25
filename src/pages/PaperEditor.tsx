@@ -32,7 +32,7 @@ const PaperEditor: React.FC = () => {
       setTitle(paper.title);
       setAbstract(paper.abstract);
       setContent(paper.content);
-      setAuthors(paper.authors.length > 0 ? paper.authors : ['']);
+      setAuthors(paper.authors && paper.authors.length > 0 ? paper.authors : ['']);
       setResearchField(paper.researchField || '');
       setKeywords(paper.keywords?.length > 0 ? paper.keywords : ['']);
     }
