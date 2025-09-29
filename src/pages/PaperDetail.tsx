@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, User } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import CommentThread from '../components/CommentThread';
-import { apiClient } from '../services/apiClient';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Calendar, User } from "lucide-react";
+import Navbar from "../components/Navbar";
+import CommentThread from "../components/CommentThread";
+import { apiClient } from "../services/apiClient";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Paper {
   id: number;
   title: string;
   abstract: string;
   content: string;
-  authors: string[];
+  authors?: string[];
   createdAt: string;
 }
 
@@ -55,11 +55,15 @@ const PaperDetail: React.FC = () => {
 
   const handleAddComment = async (content: string, parentId?: number) => {
     if (!id || !user) {
-      navigate('/auth');
+      navigate("/auth");
       return;
     }
 
-    const response = await apiClient.createComment(parseInt(id), content, parentId);
+    const response = await apiClient.createComment(
+      parseInt(id),
+      content,
+      parentId,
+    );
     if (response.data) {
       loadComments();
     }
@@ -92,10 +96,10 @@ const PaperDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
-          onClick={() => navigate('/library')}
+          onClick={() => navigate("/library")}
           className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -103,12 +107,14 @@ const PaperDetail: React.FC = () => {
         </button>
 
         <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{paper.title}</h1>
-          
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {paper.title}
+          </h1>
+
           <div className="flex items-center space-x-6 text-sm text-gray-500 mb-6">
             <div className="flex items-center space-x-2">
               <User className="w-4 h-4" />
-              <span>{paper.authors.join(', ')}</span>
+              <span>{paper.authors?.join(", ") || "Unknown Author"}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4" />
@@ -117,12 +123,16 @@ const PaperDetail: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Abstract</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Abstract
+            </h2>
             <p className="text-gray-700 leading-relaxed">{paper.abstract}</p>
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Content</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Content
+            </h2>
             <div className="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
               {paper.content}
             </div>
