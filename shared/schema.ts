@@ -56,6 +56,7 @@ export const papers = pgTable("papers", {
   storyData: jsonb("story_data").default({}),
   viewCount: integer("view_count").notNull().default(0),
   engagementScore: integer("engagement_score").notNull().default(0),
+  reviewStatus: text("review_status").default("not_requested"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdBy: integer("created_by").notNull().references(() => users.id),
@@ -96,6 +97,29 @@ export const reviews = pgTable("reviews", {
   isPublic: boolean("is_public").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Peer Review Assignments
+export const peerReviewAssignments = pgTable("peer_review_assignments", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  reviewerId: integer("reviewer_id").notNull().references(() => users.id),
+  status: text("status").notNull().default("pending"),
+  deadline: timestamp("deadline"),
+  isBlind: boolean("is_blind").notNull().default(false),
+  assignedBy: integer("assigned_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Peer Review Submissions
+export const peerReviewSubmissions = pgTable("peer_review_submissions", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").notNull().references(() => peerReviewAssignments.id),
+  rating: integer("rating").notNull(),
+  recommendation: text("recommendation").notNull(),
+  comments: text("comments").notNull(),
+  submittedAt: timestamp("submitted_at").defaultNow().notNull(),
 });
 
 // Citations
@@ -310,6 +334,40 @@ export const researchTimelines = pgTable("research_timelines", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Analytics tables
+export const paperAnalytics = pgTable("paper_analytics", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id).unique(),
+  totalViews: integer("total_views").notNull().default(0),
+  uniqueVisitors: integer("unique_visitors").notNull().default(0),
+  citationCount: integer("citation_count").notNull().default(0),
+  downloadCount: integer("download_count").notNull().default(0),
+  engagementScore: decimal("engagement_score", { precision: 10, scale: 2 }).notNull().default("0.0"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userAnalytics = pgTable("user_analytics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id).unique(),
+  totalPapers: integer("total_papers").notNull().default(0),
+  totalCitations: integer("total_citations").notNull().default(0),
+  hIndex: integer("h_index").notNull().default(0),
+  totalViews: integer("total_views").notNull().default(0),
+  totalFollowers: integer("total_followers").notNull().default(0),
+  impactScore: decimal("impact_score", { precision: 10, scale: 2 }).notNull().default("0.0"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const analyticsEvents = pgTable("analytics_events", {
+  id: serial("id").primaryKey(),
+  eventType: text("event_type").notNull(),
+  entityId: integer("entity_id").notNull(),
+  entityType: text("entity_type").notNull(),
+  userId: integer("user_id").references(() => users.id),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   papers: many(papers),
@@ -359,6 +417,29 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   user: one(users, {
     fields: [reviews.userId],
     references: [users.id],
+  }),
+}));
+
+export const peerReviewAssignmentsRelations = relations(peerReviewAssignments, ({ one, many }) => ({
+  paper: one(papers, {
+    fields: [peerReviewAssignments.paperId],
+    references: [papers.id],
+  }),
+  reviewer: one(users, {
+    fields: [peerReviewAssignments.reviewerId],
+    references: [users.id],
+  }),
+  assignedByUser: one(users, {
+    fields: [peerReviewAssignments.assignedBy],
+    references: [users.id],
+  }),
+  submissions: many(peerReviewSubmissions),
+}));
+
+export const peerReviewSubmissionsRelations = relations(peerReviewSubmissions, ({ one }) => ({
+  assignment: one(peerReviewAssignments, {
+    fields: [peerReviewSubmissions.assignmentId],
+    references: [peerReviewAssignments.id],
   }),
 }));
 
@@ -455,6 +536,27 @@ export const userFollowsRelations = relations(userFollows, ({ one }) => ({
   }),
 }));
 
+export const paperAnalyticsRelations = relations(paperAnalytics, ({ one }) => ({
+  paper: one(papers, {
+    fields: [paperAnalytics.paperId],
+    references: [papers.id],
+  }),
+}));
+
+export const userAnalyticsRelations = relations(userAnalytics, ({ one }) => ({
+  user: one(users, {
+    fields: [userAnalytics.userId],
+    references: [users.id],
+  }),
+}));
+
+export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [analyticsEvents.userId],
+    references: [users.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -466,6 +568,10 @@ export type Comment = typeof comments.$inferSelect;
 export type InsertComment = typeof comments.$inferInsert;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = typeof reviews.$inferInsert;
+export type PeerReviewAssignment = typeof peerReviewAssignments.$inferSelect;
+export type InsertPeerReviewAssignment = typeof peerReviewAssignments.$inferInsert;
+export type PeerReviewSubmission = typeof peerReviewSubmissions.$inferSelect;
+export type InsertPeerReviewSubmission = typeof peerReviewSubmissions.$inferInsert;
 export type Citation = typeof citations.$inferSelect;
 export type InsertCitation = typeof citations.$inferInsert;
 
@@ -512,3 +618,11 @@ export type UserBookmark = typeof userBookmarks.$inferSelect;
 export type InsertUserBookmark = typeof userBookmarks.$inferInsert;
 export type UserFollow = typeof userFollows.$inferSelect;
 export type InsertUserFollow = typeof userFollows.$inferInsert;
+
+// Analytics types
+export type PaperAnalytics = typeof paperAnalytics.$inferSelect;
+export type InsertPaperAnalytics = typeof paperAnalytics.$inferInsert;
+export type UserAnalytics = typeof userAnalytics.$inferSelect;
+export type InsertUserAnalytics = typeof userAnalytics.$inferInsert;
+export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
+export type InsertAnalyticsEvent = typeof analyticsEvents.$inferInsert;

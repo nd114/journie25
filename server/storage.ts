@@ -1,4 +1,4 @@
-import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
 
@@ -99,6 +99,25 @@ export interface IStorage {
   removeBookmark(userId: number, paperId: number): Promise<void>;
   getUserBookmarks(userId: number): Promise<any[]>;
   getUserDashboardData(userId: number): Promise<any>;
+
+  // Peer review methods
+  createReviewAssignment(data: { paperId: number; reviewerId: number; deadline?: Date; isBlind: boolean; assignedBy: number }): Promise<any>;
+  getReviewAssignments(reviewerId: number): Promise<any[]>;
+  submitPeerReview(assignmentId: number, data: { rating: number; recommendation: string; comments: string }): Promise<any>;
+  getPeerReviews(paperId: number): Promise<any[]>;
+  updateReviewStatus(paperId: number, status: string): Promise<void>;
+
+  // Analytics methods
+  getPaperAnalytics(paperId: number): Promise<PaperAnalytics | undefined>;
+  getUserAnalytics(userId: number): Promise<UserAnalytics | undefined>;
+  updatePaperAnalytics(paperId: number, data: Partial<PaperAnalytics>): Promise<PaperAnalytics | undefined>;
+  updateUserAnalytics(userId: number, data: Partial<UserAnalytics>): Promise<UserAnalytics | undefined>;
+  trackAnalyticsEvent(eventType: string, entityId: number, entityType: string, userId: number | null, metadata?: any): Promise<AnalyticsEvent>;
+  calculateEngagementScore(paperId: number): Promise<number>;
+  calculateImpactScore(userId: number): Promise<number>;
+  calculateHIndex(userId: number): Promise<number>;
+  getDashboardAnalytics(): Promise<any>;
+  getTrendingAnalytics(limit?: number): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1280,6 +1299,419 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error fetching activity feed:', error);
       return [];
+    }
+  }
+
+  // Peer review methods
+  async createReviewAssignment(data: { paperId: number; reviewerId: number; deadline?: Date; isBlind: boolean; assignedBy: number }) {
+    try {
+      const [assignment] = await db
+        .insert(peerReviewAssignments)
+        .values({
+          paperId: data.paperId,
+          reviewerId: data.reviewerId,
+          deadline: data.deadline,
+          isBlind: data.isBlind,
+          assignedBy: data.assignedBy,
+          status: 'pending',
+        })
+        .returning();
+      return assignment;
+    } catch (error) {
+      console.error('Error creating review assignment:', error);
+      throw error;
+    }
+  }
+
+  async getReviewAssignments(reviewerId: number) {
+    try {
+      const assignments = await db.query.peerReviewAssignments.findMany({
+        where: eq(peerReviewAssignments.reviewerId, reviewerId),
+        with: {
+          paper: true,
+          submissions: true,
+        },
+        orderBy: [desc(peerReviewAssignments.createdAt)],
+      });
+      return assignments;
+    } catch (error) {
+      console.error('Error fetching review assignments:', error);
+      return [];
+    }
+  }
+
+  async submitPeerReview(assignmentId: number, data: { rating: number; recommendation: string; comments: string }) {
+    try {
+      const [submission] = await db
+        .insert(peerReviewSubmissions)
+        .values({
+          assignmentId,
+          rating: data.rating,
+          recommendation: data.recommendation,
+          comments: data.comments,
+        })
+        .returning();
+
+      await db
+        .update(peerReviewAssignments)
+        .set({ status: 'completed', updatedAt: new Date() })
+        .where(eq(peerReviewAssignments.id, assignmentId));
+
+      return submission;
+    } catch (error) {
+      console.error('Error submitting peer review:', error);
+      throw error;
+    }
+  }
+
+  async getPeerReviews(paperId: number) {
+    try {
+      const assignments = await db.query.peerReviewAssignments.findMany({
+        where: eq(peerReviewAssignments.paperId, paperId),
+        with: {
+          reviewer: true,
+          submissions: true,
+        },
+        orderBy: [desc(peerReviewAssignments.createdAt)],
+      });
+      return assignments;
+    } catch (error) {
+      console.error('Error fetching peer reviews:', error);
+      return [];
+    }
+  }
+
+  async updateReviewStatus(paperId: number, status: string) {
+    try {
+      await db
+        .update(papers)
+        .set({ reviewStatus: status, updatedAt: new Date() })
+        .where(eq(papers.id, paperId));
+    } catch (error) {
+      console.error('Error updating review status:', error);
+      throw error;
+    }
+  }
+
+  async getPaperAnalytics(paperId: number): Promise<PaperAnalytics | undefined> {
+    try {
+      const [analytics] = await db
+        .select()
+        .from(paperAnalytics)
+        .where(eq(paperAnalytics.paperId, paperId));
+      
+      if (!analytics) {
+        const [newAnalytics] = await db
+          .insert(paperAnalytics)
+          .values({ paperId, totalViews: 0, uniqueVisitors: 0, citationCount: 0, downloadCount: 0, engagementScore: "0.0" })
+          .returning();
+        return newAnalytics;
+      }
+      
+      return analytics;
+    } catch (error) {
+      console.error('Error fetching paper analytics:', error);
+      return undefined;
+    }
+  }
+
+  async getUserAnalytics(userId: number): Promise<UserAnalytics | undefined> {
+    try {
+      const [analytics] = await db
+        .select()
+        .from(userAnalytics)
+        .where(eq(userAnalytics.userId, userId));
+      
+      if (!analytics) {
+        const [newAnalytics] = await db
+          .insert(userAnalytics)
+          .values({ userId, totalPapers: 0, totalCitations: 0, hIndex: 0, totalViews: 0, totalFollowers: 0, impactScore: "0.0" })
+          .returning();
+        return newAnalytics;
+      }
+      
+      return analytics;
+    } catch (error) {
+      console.error('Error fetching user analytics:', error);
+      return undefined;
+    }
+  }
+
+  async updatePaperAnalytics(paperId: number, data: Partial<PaperAnalytics>): Promise<PaperAnalytics | undefined> {
+    try {
+      await this.getPaperAnalytics(paperId);
+      
+      const [updated] = await db
+        .update(paperAnalytics)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(paperAnalytics.paperId, paperId))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      console.error('Error updating paper analytics:', error);
+      return undefined;
+    }
+  }
+
+  async updateUserAnalytics(userId: number, data: Partial<UserAnalytics>): Promise<UserAnalytics | undefined> {
+    try {
+      await this.getUserAnalytics(userId);
+      
+      const [updated] = await db
+        .update(userAnalytics)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(userAnalytics.userId, userId))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      console.error('Error updating user analytics:', error);
+      return undefined;
+    }
+  }
+
+  async trackAnalyticsEvent(eventType: string, entityId: number, entityType: string, userId: number | null, metadata: any = {}): Promise<AnalyticsEvent> {
+    try {
+      const [event] = await db
+        .insert(analyticsEvents)
+        .values({
+          eventType,
+          entityId,
+          entityType,
+          userId,
+          metadata,
+        })
+        .returning();
+      
+      if (eventType === 'paper_view' && entityType === 'paper') {
+        await this.incrementPaperViews(entityId);
+        const currentAnalytics = await this.getPaperAnalytics(entityId);
+        const engagementScore = await this.calculateEngagementScore(entityId);
+        await this.updatePaperAnalytics(entityId, { 
+          totalViews: (currentAnalytics?.totalViews || 0) + 1,
+          engagementScore: engagementScore.toString()
+        });
+      } else if (eventType === 'paper_download' && entityType === 'paper') {
+        const currentAnalytics = await this.getPaperAnalytics(entityId);
+        await this.updatePaperAnalytics(entityId, { 
+          downloadCount: (currentAnalytics?.downloadCount || 0) + 1 
+        });
+      }
+      
+      return event;
+    } catch (error) {
+      console.error('Error tracking analytics event:', error);
+      throw error;
+    }
+  }
+
+  async calculateEngagementScore(paperId: number): Promise<number> {
+    try {
+      const analytics = await this.getPaperAnalytics(paperId);
+      if (!analytics) return 0;
+
+      const views = analytics.totalViews || 0;
+      const downloads = analytics.downloadCount || 0;
+      const citations = analytics.citationCount || 0;
+
+      const commentsCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(comments)
+        .where(eq(comments.paperId, paperId));
+      
+      const reviewsCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(reviews)
+        .where(eq(reviews.paperId, paperId));
+
+      const totalComments = Number(commentsCount[0]?.count || 0);
+      const totalReviews = Number(reviewsCount[0]?.count || 0);
+
+      const score = (views * 1) + (downloads * 5) + (citations * 10) + (totalComments * 3) + (totalReviews * 7);
+      
+      return Math.round(score * 100) / 100;
+    } catch (error) {
+      console.error('Error calculating engagement score:', error);
+      return 0;
+    }
+  }
+
+  async calculateImpactScore(userId: number): Promise<number> {
+    try {
+      const userPapers = await db
+        .select()
+        .from(papers)
+        .where(eq(papers.createdBy, userId));
+
+      let totalViews = 0;
+      let totalCitations = 0;
+
+      for (const paper of userPapers) {
+        const analytics = await this.getPaperAnalytics(paper.id);
+        if (analytics) {
+          totalViews += analytics.totalViews || 0;
+          totalCitations += analytics.citationCount || 0;
+        }
+      }
+
+      const hIndex = await this.calculateHIndex(userId);
+      const followersCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(userFollows)
+        .where(eq(userFollows.followingId, userId));
+      
+      const followers = Number(followersCount[0]?.count || 0);
+
+      const score = (totalViews * 0.1) + (totalCitations * 5) + (hIndex * 10) + (followers * 2) + (userPapers.length * 3);
+      
+      return Math.round(score * 100) / 100;
+    } catch (error) {
+      console.error('Error calculating impact score:', error);
+      return 0;
+    }
+  }
+
+  async calculateHIndex(userId: number): Promise<number> {
+    try {
+      const userPapers = await db
+        .select()
+        .from(papers)
+        .where(eq(papers.createdBy, userId));
+
+      const citationCounts: number[] = [];
+
+      for (const paper of userPapers) {
+        const analytics = await this.getPaperAnalytics(paper.id);
+        citationCounts.push(analytics?.citationCount || 0);
+      }
+
+      citationCounts.sort((a, b) => b - a);
+
+      let hIndex = 0;
+      for (let i = 0; i < citationCounts.length; i++) {
+        if (citationCounts[i] >= i + 1) {
+          hIndex = i + 1;
+        } else {
+          break;
+        }
+      }
+
+      return hIndex;
+    } catch (error) {
+      console.error('Error calculating h-index:', error);
+      return 0;
+    }
+  }
+
+  async getDashboardAnalytics(): Promise<any> {
+    try {
+      const totalUsers = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users);
+      
+      const totalPapers = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(papers)
+        .where(eq(papers.isPublished, true));
+      
+      const totalViews = await db
+        .select({ sum: sql<number>`COALESCE(sum(total_views), 0)` })
+        .from(paperAnalytics);
+      
+      const totalDownloads = await db
+        .select({ sum: sql<number>`COALESCE(sum(download_count), 0)` })
+        .from(paperAnalytics);
+
+      const recentPapers = await db
+        .select()
+        .from(papers)
+        .where(eq(papers.isPublished, true))
+        .orderBy(desc(papers.publishedAt))
+        .limit(10);
+
+      const topPapers = await db
+        .select({
+          paper: papers,
+          analytics: paperAnalytics,
+        })
+        .from(papers)
+        .leftJoin(paperAnalytics, eq(papers.id, paperAnalytics.paperId))
+        .where(eq(papers.isPublished, true))
+        .orderBy(desc(paperAnalytics.totalViews))
+        .limit(10);
+
+      return {
+        totalUsers: Number(totalUsers[0]?.count || 0),
+        totalPapers: Number(totalPapers[0]?.count || 0),
+        totalViews: Number(totalViews[0]?.sum || 0),
+        totalDownloads: Number(totalDownloads[0]?.sum || 0),
+        recentPapers,
+        topPapers: topPapers.map(tp => ({
+          ...tp.paper,
+          analytics: tp.analytics,
+        })),
+      };
+    } catch (error) {
+      console.error('Error fetching dashboard analytics:', error);
+      return {
+        totalUsers: 0,
+        totalPapers: 0,
+        totalViews: 0,
+        totalDownloads: 0,
+        recentPapers: [],
+        topPapers: [],
+      };
+    }
+  }
+
+  async getTrendingAnalytics(limit: number = 10): Promise<any> {
+    try {
+      const trendingPapers = await db
+        .select({
+          paper: papers,
+          analytics: paperAnalytics,
+        })
+        .from(papers)
+        .leftJoin(paperAnalytics, eq(papers.id, paperAnalytics.paperId))
+        .where(eq(papers.isPublished, true))
+        .orderBy(desc(paperAnalytics.engagementScore))
+        .limit(limit);
+
+      const topics = await db
+        .select()
+        .from(trendingTopics)
+        .orderBy(desc(trendingTopics.momentumScore))
+        .limit(limit);
+
+      const topAuthors = await db
+        .select({
+          user: users,
+          analytics: userAnalytics,
+        })
+        .from(users)
+        .leftJoin(userAnalytics, eq(users.id, userAnalytics.userId))
+        .orderBy(desc(userAnalytics.impactScore))
+        .limit(limit);
+
+      return {
+        trendingPapers: trendingPapers.map(tp => ({
+          ...tp.paper,
+          analytics: tp.analytics,
+        })),
+        trendingTopics: topics,
+        topAuthors: topAuthors.map(ta => ({
+          ...ta.user,
+          analytics: ta.analytics,
+        })),
+      };
+    } catch (error) {
+      console.error('Error fetching trending analytics:', error);
+      return {
+        trendingPapers: [],
+        trendingTopics: [],
+        topAuthors: [],
+      };
     }
   }
 }

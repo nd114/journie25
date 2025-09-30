@@ -473,6 +473,130 @@ app.get("/api/papers/:id/versions", async (req, res) => {
   }
 });
 
+// Citation generation endpoint
+app.get("/api/papers/:id/cite", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const format = (req.query.format as string) || 'apa';
+    
+    const paper = await storage.getPaper(paperId);
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    const { generateAPA, generateMLA, generateChicago, generateBibTeX, generateEndNote } = await import("./citations");
+    
+    const citationData = {
+      title: paper.title,
+      authors: Array.isArray(paper.authors) ? paper.authors : [],
+      year: paper.publishedAt ? new Date(paper.publishedAt).getFullYear() : undefined,
+      doi: paper.doi || undefined,
+      publishedAt: paper.publishedAt || undefined,
+    };
+
+    let citation;
+    switch (format.toLowerCase()) {
+      case 'mla':
+        citation = generateMLA(citationData);
+        break;
+      case 'chicago':
+        citation = generateChicago(citationData);
+        break;
+      case 'bibtex':
+        citation = generateBibTeX(citationData);
+        break;
+      case 'endnote':
+        citation = generateEndNote(citationData);
+        break;
+      default:
+        citation = generateAPA(citationData);
+    }
+
+    res.json({ format, citation });
+  } catch (error) {
+    console.error("Error generating citation:", error);
+    res.status(500).json({ error: "Failed to generate citation" });
+  }
+});
+
+// Compare paper versions
+app.get("/api/papers/:id/versions/compare", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const v1 = parseInt(req.query.v1 as string);
+    const v2 = parseInt(req.query.v2 as string);
+
+    const versions = await storage.getPaperVersions(paperId);
+    const version1 = versions.find(v => v.version === v1);
+    const version2 = versions.find(v => v.version === v2);
+
+    if (!version1 || !version2) {
+      return res.status(404).json({ error: "Version not found" });
+    }
+
+    res.json({
+      version1,
+      version2,
+      differences: {
+        title: version1.title !== version2.title,
+        abstract: version1.abstract !== version2.abstract,
+        content: version1.content !== version2.content,
+      }
+    });
+  } catch (error) {
+    console.error("Error comparing versions:", error);
+    res.status(500).json({ error: "Failed to compare versions" });
+  }
+});
+
+// Restore paper to specific version
+app.post("/api/papers/:id/versions/:versionId/restore", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const versionId = parseInt(req.params.versionId);
+
+    const paper = await storage.getPaper(paperId);
+    if (!paper) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    if (paper.createdBy !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const versions = await storage.getPaperVersions(paperId);
+    const versionToRestore = versions.find(v => v.id === versionId);
+
+    if (!versionToRestore) {
+      return res.status(404).json({ error: "Version not found" });
+    }
+
+    // Create a new version with current state before restoring
+    await storage.createPaperVersion({
+      paperId,
+      version: paper.version + 1,
+      title: paper.title,
+      abstract: paper.abstract,
+      content: paper.content || '',
+      pdfUrl: paper.pdfUrl || '',
+      createdBy: req.user.id,
+    });
+
+    // Restore to the selected version
+    const updated = await storage.updatePaper(paperId, {
+      title: versionToRestore.title,
+      abstract: versionToRestore.abstract,
+      content: versionToRestore.content,
+      version: paper.version + 2,
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error("Error restoring version:", error);
+    res.status(500).json({ error: "Failed to restore version" });
+  }
+});
+
 // Phase 2: Analytics and Research Stories endpoints
 
 // Track paper views
@@ -1007,6 +1131,243 @@ app.post("/api/user/claim-authorship", authenticateToken, async (req: any, res) 
   } catch (error) {
     console.error("Error claiming authorship:", error);
     res.status(500).json({ error: "Failed to claim authorship" });
+  }
+});
+
+// Peer review endpoints
+app.post("/api/papers/:id/request-review", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const paper = await storage.getPaper(paperId);
+
+    if (!paper) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    if (paper.createdBy !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized to request review for this paper" });
+    }
+
+    await storage.updateReviewStatus(paperId, "in_review");
+    res.json({ success: true, message: "Review requested successfully" });
+  } catch (error) {
+    console.error("Error requesting review:", error);
+    res.status(500).json({ error: "Failed to request review" });
+  }
+});
+
+app.post("/api/papers/:id/assign-reviewer", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const { reviewerId, deadline, isBlind } = req.body;
+
+    if (!reviewerId) {
+      return res.status(400).json({ error: "Reviewer ID is required" });
+    }
+
+    const paper = await storage.getPaper(paperId);
+    if (!paper) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    if (paper.createdBy !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized to assign reviewers for this paper" });
+    }
+
+    const assignment = await storage.createReviewAssignment({
+      paperId,
+      reviewerId,
+      deadline: deadline ? new Date(deadline) : undefined,
+      isBlind: isBlind || false,
+      assignedBy: req.user.id,
+    });
+
+    res.json(assignment);
+  } catch (error) {
+    console.error("Error assigning reviewer:", error);
+    res.status(500).json({ error: "Failed to assign reviewer" });
+  }
+});
+
+app.get("/api/reviews/assignments", authenticateToken, async (req: any, res) => {
+  try {
+    const assignments = await storage.getReviewAssignments(req.user.id);
+    res.json(assignments);
+  } catch (error) {
+    console.error("Error fetching review assignments:", error);
+    res.status(500).json({ error: "Failed to fetch review assignments" });
+  }
+});
+
+app.post("/api/reviews/:assignmentId/submit", authenticateToken, async (req: any, res) => {
+  try {
+    const assignmentId = parseInt(req.params.assignmentId);
+    const { rating, recommendation, comments } = req.body;
+
+    if (!rating || !recommendation || !comments) {
+      return res.status(400).json({ error: "Rating, recommendation, and comments are required" });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "Rating must be between 1 and 5" });
+    }
+
+    const validRecommendations = ["accept", "revise", "reject"];
+    if (!validRecommendations.includes(recommendation)) {
+      return res.status(400).json({ error: "Invalid recommendation. Must be accept, revise, or reject" });
+    }
+
+    const submission = await storage.submitPeerReview(assignmentId, {
+      rating,
+      recommendation,
+      comments,
+    });
+
+    res.json(submission);
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    res.status(500).json({ error: "Failed to submit review" });
+  }
+});
+
+app.get("/api/papers/:id/peer-reviews", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const paper = await storage.getPaper(paperId);
+
+    if (!paper) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    if (paper.createdBy !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized to view peer reviews for this paper" });
+    }
+
+    const peerReviews = await storage.getPeerReviews(paperId);
+    res.json(peerReviews);
+  } catch (error) {
+    console.error("Error fetching peer reviews:", error);
+    res.status(500).json({ error: "Failed to fetch peer reviews" });
+  }
+});
+
+app.put("/api/papers/:id/review-status", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
+    const validStatuses = ["not_requested", "pending", "in_review", "reviewed", "accepted", "rejected"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const paper = await storage.getPaper(paperId);
+    if (!paper) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    if (paper.createdBy !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized to update review status for this paper" });
+    }
+
+    await storage.updateReviewStatus(paperId, status);
+    res.json({ success: true, message: "Review status updated successfully" });
+  } catch (error) {
+    console.error("Error updating review status:", error);
+    res.status(500).json({ error: "Failed to update review status" });
+  }
+});
+
+// Analytics endpoints
+app.get("/api/analytics/paper/:id", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const paper = await storage.getPaper(paperId);
+    
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    const analytics = await storage.getPaperAnalytics(paperId);
+    res.json(analytics);
+  } catch (error) {
+    console.error("Error fetching paper analytics:", error);
+    res.status(500).json({ error: "Failed to fetch paper analytics" });
+  }
+});
+
+app.get("/api/analytics/user/:id", async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const user = await storage.getUser(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const analytics = await storage.getUserAnalytics(userId);
+    
+    const hIndex = await storage.calculateHIndex(userId);
+    const impactScore = await storage.calculateImpactScore(userId);
+    
+    await storage.updateUserAnalytics(userId, {
+      hIndex,
+      impactScore: impactScore.toString(),
+    });
+
+    const updatedAnalytics = await storage.getUserAnalytics(userId);
+    res.json(updatedAnalytics);
+  } catch (error) {
+    console.error("Error fetching user analytics:", error);
+    res.status(500).json({ error: "Failed to fetch user analytics" });
+  }
+});
+
+app.get("/api/analytics/dashboard", async (req, res) => {
+  try {
+    const dashboardData = await storage.getDashboardAnalytics();
+    res.json(dashboardData);
+  } catch (error) {
+    console.error("Error fetching dashboard analytics:", error);
+    res.status(500).json({ error: "Failed to fetch dashboard analytics" });
+  }
+});
+
+app.post("/api/analytics/track", async (req, res) => {
+  try {
+    const { eventType, entityId, entityType, userId, metadata } = req.body;
+
+    if (!eventType || !entityId || !entityType) {
+      return res.status(400).json({ error: "eventType, entityId, and entityType are required" });
+    }
+
+    const event = await storage.trackAnalyticsEvent(
+      eventType,
+      parseInt(entityId),
+      entityType,
+      userId ? parseInt(userId) : null,
+      metadata || {}
+    );
+
+    res.json(event);
+  } catch (error) {
+    console.error("Error tracking analytics event:", error);
+    res.status(500).json({ error: "Failed to track analytics event" });
+  }
+});
+
+app.get("/api/analytics/trends", async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const trendsData = await storage.getTrendingAnalytics(limit);
+    res.json(trendsData);
+  } catch (error) {
+    console.error("Error fetching trends analytics:", error);
+    res.status(500).json({ error: "Failed to fetch trends analytics" });
   }
 });
 
