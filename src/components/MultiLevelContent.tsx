@@ -135,6 +135,24 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({
         })}
       </div>
 
+      {/* Reading Progress */}
+      <div className="flex items-center justify-between mb-4 p-4 bg-blue-50 rounded-lg">
+        <div className="flex items-center space-x-2">
+          <BookOpen className="w-5 h-5 text-blue-600" />
+          <span className="text-sm font-medium text-blue-900">
+            Reading Progress: {currentLevel === 'general' ? '33%' : currentLevel === 'intermediate' ? '66%' : '100%'}
+          </span>
+        </div>
+        <div className="w-24 bg-blue-200 rounded-full h-2">
+          <div
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            style={{
+              width: currentLevel === 'general' ? '33%' : currentLevel === 'intermediate' ? '66%' : '100%'
+            }}
+          ></div>
+        </div>
+      </div>
+
       {/* Content Display */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">

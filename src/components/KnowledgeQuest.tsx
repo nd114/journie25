@@ -23,6 +23,7 @@ interface Quest {
   difficulty: "easy" | "medium" | "hard";
   completed: boolean;
   unlocked: boolean;
+  xp: number; // Added xp field
 }
 
 interface Achievement {
@@ -37,10 +38,12 @@ interface Achievement {
 export const KnowledgeQuest: React.FC = () => {
   const [userLevel, setUserLevel] = useState(5);
   const [userXP, setUserXP] = useState(750);
-  const [nextLevelXP] = useState(1000);
-  const [activeTab, setActiveTab] = useState<"quests" | "achievements">(
-    "quests",
-  );
+  const [completedQuests, setCompletedQuests] = useState<string[]>([]);
+  const [newAchievement, setNewAchievement] = useState<string | null>(null);
+  const [nextLevelXP, setNextLevelXP] = useState(1000); // Initialize with a default
+
+  // XP thresholds for leveling up
+  const getXPForLevel = (level: number) => level * 200;
 
   useEffect(() => {
     // Load user progress data
@@ -51,6 +54,8 @@ export const KnowledgeQuest: React.FC = () => {
           const data = await response.json();
           setUserLevel(data.level || 5);
           setUserXP(data.xp || 750);
+          setCompletedQuests(data.completedQuests || []);
+          setNextLevelXP(getXPForLevel(data.level || 5));
         }
       } catch (error) {
         console.error("Failed to load user progress:", error);
@@ -58,6 +63,23 @@ export const KnowledgeQuest: React.FC = () => {
     };
     loadUserProgress();
   }, []);
+
+  useEffect(() => {
+    // Check if user should level up
+    const requiredXP = getXPForLevel(userLevel);
+    setNextLevelXP(requiredXP);
+    if (userXP >= requiredXP) {
+      setUserLevel(userLevel + 1);
+      setNewAchievement(`🎉 Level Up! You've reached Level ${userLevel + 1}!`);
+      setTimeout(() => setNewAchievement(null), 3000);
+    }
+  }, [userXP, userLevel]);
+
+  const gainXP = (amount: number, activity: string) => {
+    setUserXP(prev => prev + amount);
+    setNewAchievement(`+${amount} XP from ${activity}!`);
+    setTimeout(() => setNewAchievement(null), 2000);
+  };
 
   const quests: Quest[] = [
     {
@@ -71,6 +93,7 @@ export const KnowledgeQuest: React.FC = () => {
       difficulty: "easy",
       completed: false,
       unlocked: true,
+      xp: 100,
     },
     {
       id: "field-hopper",
@@ -83,6 +106,7 @@ export const KnowledgeQuest: React.FC = () => {
       difficulty: "medium",
       completed: false,
       unlocked: true,
+      xp: 150,
     },
     {
       id: "discussion-starter",
@@ -95,6 +119,7 @@ export const KnowledgeQuest: React.FC = () => {
       difficulty: "medium",
       completed: false,
       unlocked: true,
+      xp: 200,
     },
     {
       id: "trending-hunter",
@@ -107,6 +132,7 @@ export const KnowledgeQuest: React.FC = () => {
       difficulty: "hard",
       completed: false,
       unlocked: false,
+      xp: 300,
     },
   ];
 
@@ -188,50 +214,59 @@ export const KnowledgeQuest: React.FC = () => {
     }
   };
 
-  const completeQuest = (questId: string, reward: number) => {
-    setUserXP((prev) => {
-      const newXP = prev + reward;
-      if (newXP >= nextLevelXP) {
-        setUserLevel((prevLevel) => prevLevel + 1);
-        return newXP - nextLevelXP;
-      }
-      return newXP;
-    });
+  const completeQuest = (questId: string, xpReward: number) => {
+    if (!completedQuests.includes(questId)) {
+      setCompletedQuests([...completedQuests, questId]);
+      gainXP(xpReward, questId); // Use gainXP for XP and notifications
+    }
   };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6">
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {userLevel}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                Knowledge Quest
-              </h2>
-              <p className="text-gray-600">
-                Level {userLevel} Research Explorer
-              </p>
-            </div>
+      {/* User Profile Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            {userLevel}
           </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-500">XP Progress</div>
-            <div className="font-bold text-gray-900">
-              {userXP}/{nextLevelXP}
-            </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              Knowledge Quest
+            </h2>
+            <p className="text-gray-600">
+              Level {userLevel} Research Explorer
+            </p>
           </div>
         </div>
-
-        {/* XP Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-300"
-            style={{ width: `${(userXP / nextLevelXP) * 100}%` }}
-          />
+        <div className="text-right">
+          <div className="flex items-center space-x-2">
+            <Award className="w-4 h-4 text-yellow-500" />
+            <span className="text-sm text-gray-500">Level {userLevel}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Zap className="w-3 h-3 text-blue-500" />
+            <span className="text-xs text-gray-400">{userXP} XP</span>
+          </div>
         </div>
       </div>
+
+      {/* XP Progress Bar */}
+      <div className="w-full bg-gray-200 rounded-full h-3 mb-6">
+        <div
+          className="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-300"
+          style={{ width: `${(userXP / nextLevelXP) * 100}%` }}
+        />
+      </div>
+
+      {/* Achievement Notification */}
+      {newAchievement && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center space-x-2 text-yellow-800">
+            <Award className="w-4 h-4" />
+            <span className="text-sm font-medium">{newAchievement}</span>
+          </div>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
@@ -260,6 +295,7 @@ export const KnowledgeQuest: React.FC = () => {
           {quests.map((quest) => {
             const CategoryIcon = getCategoryIcon(quest.category);
             const progressPercent = (quest.progress / quest.maxProgress) * 100;
+            const isQuestCompleted = completedQuests.includes(quest.id);
 
             return (
               <div
@@ -322,6 +358,20 @@ export const KnowledgeQuest: React.FC = () => {
                         className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progressPercent}%` }}
                       />
+                    </div>
+                    <div className="flex items-center justify-end space-x-2">
+                      {isQuestCompleted ? (
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <button
+                          onClick={() => {
+                            completeQuest(quest.id, quest.xp);
+                          }}
+                          className="px-3 py-1 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors text-sm font-medium"
+                        >
+                          Complete
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
