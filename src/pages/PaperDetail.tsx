@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import CommentThread from "../components/CommentThread";
+import { MultiLevelContent } from "../components/MultiLevelContent";
+import { KnowledgeQuest } from "../components/KnowledgeQuest";
+import { VisualAbstractBuilder } from "../components/VisualAbstractBuilder";
 import { apiClient } from "../services/apiClient";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -227,6 +230,24 @@ const PaperDetail: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Multi-Level Content */}
+        <MultiLevelContent paper={paper} />
+
+        {/* Visual Abstract Builder for authors */}
+        {user && (
+          <VisualAbstractBuilder 
+            paperId={paper.id}
+            initialData={{
+              title: paper.title,
+              abstract: paper.abstract,
+              keyFindings: getKeyInsights(paper.abstract)
+            }}
+          />
+        )}
+
+        {/* Knowledge Quest */}
+        {user && <KnowledgeQuest />}
 
         {/* Full Content */}
         <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6">

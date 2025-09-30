@@ -517,6 +517,86 @@ app.get("/api/trending-topics", async (req, res) => {
   }
 });
 
+// Phase 3: Gamification and Creator Tools endpoints
+
+// Get user progress and quests
+app.get("/api/user/progress", authenticateToken, async (req: any, res) => {
+  try {
+    const progress = await storage.getUserProgress(req.user.id);
+    res.json(progress);
+  } catch (error) {
+    console.error("Error fetching user progress:", error);
+    res.status(500).json({ error: "Failed to fetch user progress" });
+  }
+});
+
+// Update quest progress
+app.post("/api/user/quest-progress", authenticateToken, async (req: any, res) => {
+  try {
+    const { questId, action } = req.body;
+    const progress = await storage.updateQuestProgress(req.user.id, questId, action);
+    res.json(progress);
+  } catch (error) {
+    console.error("Error updating quest progress:", error);
+    res.status(500).json({ error: "Failed to update quest progress" });
+  }
+});
+
+// Get user achievements
+app.get("/api/user/achievements", authenticateToken, async (req: any, res) => {
+  try {
+    const achievements = await storage.getUserAchievements(req.user.id);
+    res.json(achievements);
+  } catch (error) {
+    console.error("Error fetching achievements:", error);
+    res.status(500).json({ error: "Failed to fetch achievements" });
+  }
+});
+
+// Save visual abstract
+app.post("/api/papers/:id/visual-abstract", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const { elements, canvasStyle } = req.body;
+    
+    const visualAbstract = await storage.saveVisualAbstract({
+      paperId,
+      userId: req.user.id,
+      elements,
+      canvasStyle,
+    });
+    
+    res.json(visualAbstract);
+  } catch (error) {
+    console.error("Error saving visual abstract:", error);
+    res.status(500).json({ error: "Failed to save visual abstract" });
+  }
+});
+
+// Get visual abstract
+app.get("/api/papers/:id/visual-abstract", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const visualAbstract = await storage.getVisualAbstract(paperId);
+    res.json(visualAbstract);
+  } catch (error) {
+    console.error("Error fetching visual abstract:", error);
+    res.status(500).json({ error: "Failed to fetch visual abstract" });
+  }
+});
+
+// Generate multi-level content
+app.post("/api/papers/:id/generate-levels", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const levels = await storage.generateMultiLevelContent(paperId);
+    res.json(levels);
+  } catch (error) {
+    console.error("Error generating multi-level content:", error);
+    res.status(500).json({ error: "Failed to generate multi-level content" });
+  }
+});
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });

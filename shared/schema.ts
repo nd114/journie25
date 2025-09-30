@@ -155,6 +155,105 @@ export const userInteractions = pgTable("user_interactions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Phase 3: Gamification tables
+
+// User progress and levels
+export const userProgress = pgTable("user_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  level: integer("level").notNull().default(1),
+  experience: integer("experience").notNull().default(0),
+  totalPapersRead: integer("total_papers_read").notNull().default(0),
+  totalCommentsCreated: integer("total_comments_created").notNull().default(0),
+  totalFieldsExplored: integer("total_fields_explored").notNull().default(0),
+  streakDays: integer("streak_days").notNull().default(0),
+  lastActiveDate: timestamp("last_active_date").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Quests
+export const quests = pgTable("quests", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // reading, discussing, discovering, sharing
+  difficulty: text("difficulty").notNull(), // easy, medium, hard
+  maxProgress: integer("max_progress").notNull(),
+  rewardXP: integer("reward_xp").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User quest progress
+export const userQuestProgress = pgTable("user_quest_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  questId: integer("quest_id").notNull().references(() => quests.id),
+  progress: integer("progress").notNull().default(0),
+  completed: boolean("completed").notNull().default(false),
+  completedAt: timestamp("completed_at"),
+  startedAt: timestamp("started_at").defaultNow().notNull(),
+});
+
+// Achievements
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  rarity: text("rarity").notNull(), // common, rare, epic, legendary
+  condition: jsonb("condition").notNull(), // criteria for earning
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User achievements
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  achievementId: integer("achievement_id").notNull().references(() => achievements.id),
+  earnedAt: timestamp("earned_at").defaultNow().notNull(),
+});
+
+// Phase 3: Creator tools tables
+
+// Visual abstracts
+export const visualAbstracts = pgTable("visual_abstracts", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  elements: jsonb("elements").notNull().default([]),
+  canvasStyle: jsonb("canvas_style").notNull().default({}),
+  isPublished: boolean("is_published").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Multi-level content
+export const multiLevelContent = pgTable("multi_level_content", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  level: text("level").notNull(), // general, intermediate, expert
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  examples: jsonb("examples").default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Research timelines
+export const researchTimelines = pgTable("research_timelines", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  paperIds: jsonb("paper_ids").notNull().default([]),
+  milestones: jsonb("milestones").default([]),
+  isPublic: boolean("is_public").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   papers: many(papers),
@@ -267,3 +366,21 @@ export type TrendingTopic = typeof trendingTopics.$inferSelect;
 export type InsertTrendingTopic = typeof trendingTopics.$inferInsert;
 export type UserInteraction = typeof userInteractions.$inferSelect;
 export type InsertUserInteraction = typeof userInteractions.$inferInsert;
+
+// Phase 3 types
+export type UserProgress = typeof userProgress.$inferSelect;
+export type InsertUserProgress = typeof userProgress.$inferInsert;
+export type Quest = typeof quests.$inferSelect;
+export type InsertQuest = typeof quests.$inferInsert;
+export type UserQuestProgress = typeof userQuestProgress.$inferSelect;
+export type InsertUserQuestProgress = typeof userQuestProgress.$inferInsert;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertAchievement = typeof achievements.$inferInsert;
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = typeof userAchievements.$inferInsert;
+export type VisualAbstract = typeof visualAbstracts.$inferSelect;
+export type InsertVisualAbstract = typeof visualAbstracts.$inferInsert;
+export type MultiLevelContent = typeof multiLevelContent.$inferSelect;
+export type InsertMultiLevelContent = typeof multiLevelContent.$inferInsert;
+export type ResearchTimeline = typeof researchTimelines.$inferSelect;
+export type InsertResearchTimeline = typeof researchTimelines.$inferInsert;

@@ -1,0 +1,328 @@
+
+import React, { useState } from "react";
+import { 
+  Image, 
+  Type, 
+  Palette, 
+  Layout, 
+  Download, 
+  Eye, 
+  Undo, 
+  Redo,
+  Plus,
+  Trash2,
+  Move
+} from "lucide-react";
+
+interface VisualElement {
+  id: string;
+  type: 'text' | 'image' | 'shape' | 'icon';
+  content: string;
+  position: { x: number; y: number };
+  style: {
+    fontSize?: number;
+    color?: string;
+    backgroundColor?: string;
+    borderRadius?: number;
+    width?: number;
+    height?: number;
+  };
+}
+
+interface VisualAbstractBuilderProps {
+  paperId?: number;
+  initialData?: {
+    title: string;
+    abstract: string;
+    keyFindings: string[];
+  };
+}
+
+export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
+  paperId,
+  initialData
+}) => {
+  const [elements, setElements] = useState<VisualElement[]>([]);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [canvasStyle, setCanvasStyle] = useState({
+    backgroundColor: '#ffffff',
+    template: 'modern'
+  });
+
+  const templates = [
+    { id: 'modern', name: 'Modern', preview: '🎨' },
+    { id: 'academic', name: 'Academic', preview: '📚' },
+    { id: 'minimalist', name: 'Minimalist', preview: '⚪' },
+    { id: 'colorful', name: 'Colorful', preview: '🌈' }
+  ];
+
+  const addElement = (type: VisualElement['type']) => {
+    const newElement: VisualElement = {
+      id: `element-${Date.now()}`,
+      type,
+      content: type === 'text' ? 'Your text here' : '',
+      position: { x: 100, y: 100 },
+      style: {
+        fontSize: 16,
+        color: '#000000',
+        backgroundColor: type === 'shape' ? '#3b82f6' : 'transparent',
+        width: type === 'shape' ? 100 : undefined,
+        height: type === 'shape' ? 50 : undefined,
+        borderRadius: type === 'shape' ? 8 : 0
+      }
+    };
+    setElements([...elements, newElement]);
+    setSelectedElement(newElement.id);
+  };
+
+  const updateElement = (id: string, updates: Partial<VisualElement>) => {
+    setElements(elements.map(el => 
+      el.id === id ? { ...el, ...updates } : el
+    ));
+  };
+
+  const deleteElement = (id: string) => {
+    setElements(elements.filter(el => el.id !== id));
+    if (selectedElement === id) {
+      setSelectedElement(null);
+    }
+  };
+
+  const generateFromAbstract = () => {
+    if (!initialData) return;
+
+    const titleElement: VisualElement = {
+      id: 'title-auto',
+      type: 'text',
+      content: initialData.title,
+      position: { x: 50, y: 30 },
+      style: {
+        fontSize: 24,
+        color: '#1f2937',
+        backgroundColor: 'transparent'
+      }
+    };
+
+    const keyFindingElements: VisualElement[] = initialData.keyFindings.map((finding, index) => ({
+      id: `finding-${index}`,
+      type: 'text',
+      content: `💡 ${finding}`,
+      position: { x: 50, y: 120 + (index * 80) },
+      style: {
+        fontSize: 14,
+        color: '#374151',
+        backgroundColor: '#fef3c7',
+        borderRadius: 8
+      }
+    }));
+
+    setElements([titleElement, ...keyFindingElements]);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-2">
+          <Image className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-xl font-bold text-gray-900">Visual Abstract Builder</h2>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setPreviewMode(!previewMode)}
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+              previewMode 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+            <span>{previewMode ? 'Edit' : 'Preview'}</span>
+          </button>
+          <button className="flex items-center space-x-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <Download className="w-4 h-4" />
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-4 gap-6">
+        {/* Toolbar */}
+        {!previewMode && (
+          <div className="lg:col-span-1 space-y-4">
+            {/* Templates */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-3">Templates</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => setCanvasStyle({ ...canvasStyle, template: template.id })}
+                    className={`p-3 rounded-lg border text-center transition-all ${
+                      canvasStyle.template === template.id
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{template.preview}</div>
+                    <div className="text-xs font-medium">{template.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Elements */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-3">Add Elements</h3>
+              <div className="space-y-2">
+                {[
+                  { type: 'text' as const, label: 'Text', icon: Type },
+                  { type: 'image' as const, label: 'Image', icon: Image },
+                  { type: 'shape' as const, label: 'Shape', icon: Layout }
+                ].map(({ type, label, icon: Icon }) => (
+                  <button
+                    key={type}
+                    onClick={() => addElement(type)}
+                    className="w-full flex items-center space-x-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-all"
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Auto-generate */}
+            {initialData && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-3">Quick Start</h3>
+                <button
+                  onClick={generateFromAbstract}
+                  className="w-full flex items-center space-x-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Generate from Abstract</span>
+                </button>
+              </div>
+            )}
+
+            {/* Element Properties */}
+            {selectedElement && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-3">Properties</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Font Size
+                    </label>
+                    <input
+                      type="range"
+                      min="12"
+                      max="48"
+                      className="w-full"
+                      onChange={(e) => {
+                        const element = elements.find(el => el.id === selectedElement);
+                        if (element) {
+                          updateElement(selectedElement, {
+                            style: { ...element.style, fontSize: parseInt(e.target.value) }
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Color
+                    </label>
+                    <input
+                      type="color"
+                      className="w-full h-8 rounded border border-gray-300"
+                      onChange={(e) => {
+                        const element = elements.find(el => el.id === selectedElement);
+                        if (element) {
+                          updateElement(selectedElement, {
+                            style: { ...element.style, color: e.target.value }
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => deleteElement(selectedElement)}
+                    className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Canvas */}
+        <div className={previewMode ? 'lg:col-span-4' : 'lg:col-span-3'}>
+          <div 
+            className="relative border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
+            style={{ 
+              backgroundColor: canvasStyle.backgroundColor,
+              minHeight: '500px',
+              aspectRatio: '16/9'
+            }}
+          >
+            {elements.map((element) => (
+              <div
+                key={element.id}
+                className={`absolute cursor-pointer border-2 transition-all ${
+                  selectedElement === element.id && !previewMode
+                    ? 'border-indigo-500 border-solid'
+                    : 'border-transparent'
+                }`}
+                style={{
+                  left: element.position.x,
+                  top: element.position.y,
+                  ...element.style
+                }}
+                onClick={() => !previewMode && setSelectedElement(element.id)}
+              >
+                {element.type === 'text' && (
+                  <div
+                    style={{
+                      fontSize: element.style.fontSize,
+                      color: element.style.color,
+                      backgroundColor: element.style.backgroundColor,
+                      padding: element.style.backgroundColor !== 'transparent' ? '8px' : '0',
+                      borderRadius: element.style.borderRadius
+                    }}
+                  >
+                    {element.content}
+                  </div>
+                )}
+                {element.type === 'shape' && (
+                  <div
+                    style={{
+                      width: element.style.width,
+                      height: element.style.height,
+                      backgroundColor: element.style.backgroundColor,
+                      borderRadius: element.style.borderRadius
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+
+            {elements.length === 0 && !previewMode && (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                <div className="text-center">
+                  <Layout className="w-12 h-12 mx-auto mb-4" />
+                  <p className="text-lg font-medium">Start building your visual abstract</p>
+                  <p className="text-sm">Add elements from the toolbar or auto-generate from your paper</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
