@@ -518,10 +518,25 @@ app.get("/api/trending-topics", async (req, res) => {
 });
 
 // Communities endpoints
-app.get("/api/communities", async (req, res) => {
+app.get("/api/communities", async (req: any, res) => {
   try {
     const { category } = req.query;
-    const communities = await storage.getCommunities(category as string);
+    
+    // Get user ID if authenticated
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    let userId = null;
+    
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        userId = decoded.id;
+      } catch (err) {
+        // Continue without user context
+      }
+    }
+    
+    const communities = await storage.getCommunities(category as string, userId);
     res.json(communities);
   } catch (error) {
     console.error("Error fetching communities:", error);
@@ -548,6 +563,26 @@ app.post("/api/communities/:id/leave", authenticateToken, async (req: any, res) 
   } catch (error) {
     console.error("Error leaving community:", error);
     res.status(500).json({ error: "Failed to leave community" });
+  }
+});
+
+app.post("/api/communities", authenticateToken, async (req: any, res) => {
+  try {
+    const { name, description, category } = req.body;
+    const community = await storage.createCommunity({
+      name,
+      description,
+      category,
+      memberCount: 1
+    });
+    
+    // Auto-join the creator
+    await storage.joinCommunity(req.user.id, community.id);
+    
+    res.json({ ...community, isJoined: true });
+  } catch (error) {
+    console.error("Error creating community:", error);
+    res.status(500).json({ error: "Failed to create community" });
   }
 });
 
@@ -738,5 +773,5 @@ app.get("/api/health", (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });

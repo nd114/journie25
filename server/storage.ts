@@ -549,45 +549,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Communities implementation
-  async getCommunities(category?: string) {
+  async getCommunities(category?: string, userId?: number) {
     try {
-      // Mock communities data - in real app, this would come from database
-      const allCommunities = [
-        {
-          id: 1,
-          name: 'AI & Machine Learning',
-          description: 'Discuss latest developments in artificial intelligence and machine learning research.',
-          memberCount: 1240,
-          category: 'Technology',
-          isJoined: false
-        },
-        {
-          id: 2,
-          name: 'Climate Science',
-          description: 'Community for researchers working on climate change and environmental science.',
-          memberCount: 890,
-          category: 'Environment',
-          isJoined: false
-        },
-        {
-          id: 3,
-          name: 'Quantum Computing',
-          description: 'Explore quantum computing research, algorithms, and applications.',
-          memberCount: 567,
-          category: 'Technology',
-          isJoined: false
-        },
-        {
-          id: 4,
-          name: 'Medical Research',
-          description: 'Share and discuss medical research findings and methodologies.',
-          memberCount: 2100,
-          category: 'Medicine',
-          isJoined: false
-        }
-      ];
+      const result = await db.query.communities.findMany({
+        where: category ? eq(communities.category, category) : undefined,
+        orderBy: [desc(communities.memberCount)]
+      });
 
-      return category ? allCommunities.filter(c => c.category === category) : allCommunities;
+      // Check membership status for authenticated users
+      let communitiesWithMembership = result;
+      if (userId) {
+        const memberships = await db.query.communityMembers.findMany({
+          where: eq(communityMembers.userId, userId)
+        });
+        const membershipMap = new Set(memberships.map(m => m.communityId));
+        
+        communitiesWithMembership = result.map(c => ({
+          ...c,
+          isJoined: membershipMap.has(c.id)
+        }));
+      } else {
+        communitiesWithMembership = result.map(c => ({
+          ...c,
+          isJoined: false
+        }));
+      }
+
+      return communitiesWithMembership;
     } catch (error) {
       console.error('Error fetching communities:', error);
       return [];
@@ -595,44 +583,123 @@ export class DatabaseStorage implements IStorage {
   }
 
   async joinCommunity(userId: number, communityId: number) {
-    // Mock implementation - would insert into community_members table
-    console.log(`User ${userId} joined community ${communityId}`);
+    try {
+      // Check if already a member
+      const existing = await db.query.communityMembers.findFirst({
+        where: and(
+          eq(communityMembers.userId, userId),
+          eq(communityMembers.communityId, communityId)
+        )
+      });
+
+      if (existing) {
+        throw new Error('Already a member of this community');
+      }
+
+      // Add membership
+      await db.insert(communityMembers).values({
+        userId,
+        communityId,
+        role: 'member'
+      });
+
+      // Update member count
+      await db.update(communities)
+        .set({ 
+          memberCount: sql`${communities.memberCount} + 1` 
+        })
+        .where(eq(communities.id, communityId));
+    } catch (error) {
+      console.error('Error joining community:', error);
+      throw error;
+    }
   }
 
   async leaveCommunity(userId: number, communityId: number) {
-    // Mock implementation - would delete from community_members table
-    console.log(`User ${userId} left community ${communityId}`);
+    try {
+      // Remove membership
+      const deleted = await db.delete(communityMembers)
+        .where(and(
+          eq(communityMembers.userId, userId),
+          eq(communityMembers.communityId, communityId)
+        ))
+        .returning();
+
+      if (deleted.length === 0) {
+        throw new Error('Not a member of this community');
+      }
+
+      // Update member count
+      await db.update(communities)
+        .set({ 
+          memberCount: sql`${communities.memberCount} - 1` 
+        })
+        .where(eq(communities.id, communityId));
+    } catch (error) {
+      console.error('Error leaving community:', error);
+      throw error;
+    }
+  }
+
+  async createCommunity(data: {
+    name: string;
+    description: string;
+    category: string;
+    memberCount?: number;
+  }) {
+    try {
+      const [community] = await db.insert(communities).values({
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        memberCount: data.memberCount || 0
+      }).returning();
+      
+      return community;
+    } catch (error) {
+      console.error('Error creating community:', error);
+      throw error;
+    }
   }
 
   // Learning paths implementation
-  async getLearningPaths() {
+  async getLearningPaths(userId?: number) {
     try {
-      return [
-        {
-          id: 1,
-          title: 'Introduction to Research Methods',
-          description: 'Learn the fundamentals of scientific research methodology.',
-          difficulty: 'Beginner',
-          estimatedHours: 20,
-          steps: [
-            { id: 'step1', title: 'Understanding Research Questions', completed: false },
-            { id: 'step2', title: 'Literature Review Techniques', completed: false },
-            { id: 'step3', title: 'Data Collection Methods', completed: false }
-          ]
-        },
-        {
-          id: 2,
-          title: 'Advanced Statistical Analysis',
-          description: 'Master statistical techniques for research data analysis.',
-          difficulty: 'Advanced',
-          estimatedHours: 40,
-          steps: [
-            { id: 'step1', title: 'Descriptive Statistics', completed: false },
-            { id: 'step2', title: 'Inferential Statistics', completed: false },
-            { id: 'step3', title: 'Advanced Modeling', completed: false }
-          ]
-        }
-      ];
+      const paths = await db.query.learningPaths.findMany({
+        orderBy: [asc(learningPaths.difficulty)]
+      });
+
+      // Get user progress if authenticated
+      if (userId) {
+        const progresses = await db.query.userLearningProgress.findMany({
+          where: eq(userLearningProgress.userId, userId)
+        });
+        
+        const progressMap = new Map(progresses.map(p => [p.pathId, p]));
+        
+        return paths.map(path => {
+          const userProgress = progressMap.get(path.id);
+          const completedSteps = userProgress?.completedSteps as string[] || [];
+          
+          return {
+            ...path,
+            userProgress: userProgress?.overallProgress || 0,
+            steps: (path.steps as any[]).map(step => ({
+              ...step,
+              completed: completedSteps.includes(step.id)
+            }))
+          };
+        });
+      }
+
+      return paths.map(path => ({
+        ...path,
+        userProgress: 0,
+        steps: (path.steps as any[]).map(step => ({
+          ...step,
+          completed: false
+        }))
+      }));
     } catch (error) {
       console.error('Error fetching learning paths:', error);
       return [];
@@ -652,12 +719,58 @@ export class DatabaseStorage implements IStorage {
   }
 
   async completeLearningStep(userId: number, pathId: number, stepId: string) {
-    // Mock implementation - would update user_learning_progress table
-    return {
-      stepId,
-      completedAt: new Date(),
-      xpGained: 15
-    };
+    try {
+      // Get or create user progress
+      let progress = await db.query.userLearningProgress.findFirst({
+        where: and(
+          eq(userLearningProgress.userId, userId),
+          eq(userLearningProgress.pathId, pathId)
+        )
+      });
+
+      if (!progress) {
+        const newProgress = await db.insert(userLearningProgress).values({
+          userId,
+          pathId,
+          completedSteps: [stepId],
+          overallProgress: 10
+        }).returning();
+        progress = newProgress[0];
+      } else {
+        const completedSteps = progress.completedSteps as string[] || [];
+        if (!completedSteps.includes(stepId)) {
+          completedSteps.push(stepId);
+          
+          // Get path to calculate progress
+          const path = await db.query.learningPaths.findFirst({
+            where: eq(learningPaths.id, pathId)
+          });
+          
+          const totalSteps = (path?.steps as any[])?.length || 1;
+          const newProgress = Math.round((completedSteps.length / totalSteps) * 100);
+          
+          await db.update(userLearningProgress)
+            .set({
+              completedSteps,
+              overallProgress: newProgress,
+              lastAccessedAt: new Date()
+            })
+            .where(eq(userLearningProgress.id, progress.id));
+        }
+      }
+
+      // Award XP for completion
+      await this.updateQuestProgress(userId, 'learning', 'complete_step');
+
+      return {
+        stepId,
+        completedAt: new Date(),
+        xpGained: 15
+      };
+    } catch (error) {
+      console.error('Error completing learning step:', error);
+      throw error;
+    }
   }
 
   // Research tools implementation

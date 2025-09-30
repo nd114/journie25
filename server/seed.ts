@@ -1,14 +1,13 @@
-
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { neon } from '@neondatabase/serverless';
-import { users, papers, journals, quests, achievements } from '../shared/schema';
+import { users, papers, journals, quests, achievements, communities, learningPaths } from '../shared/schema';
 
 const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql);
 
 async function seed() {
   console.log('Starting database seeding...');
-  
+
   try {
     // Create sample journal
     const sampleJournal = await db.insert(journals).values({
@@ -120,10 +119,83 @@ async function seed() {
 
     await db.insert(achievements).values(sampleAchievements);
 
-    console.log('Seeding completed successfully!');
+    // Seed communities
+    const communityData = [
+      {
+        name: 'AI & Machine Learning',
+        description: 'Discuss latest developments in artificial intelligence and machine learning research.',
+        category: 'Technology',
+        memberCount: 1240
+      },
+      {
+        name: 'Climate Science',
+        description: 'Community for researchers working on climate change and environmental science.',
+        category: 'Environment',
+        memberCount: 890
+      },
+      {
+        name: 'Quantum Computing',
+        description: 'Explore quantum computing research, algorithms, and applications.',
+        category: 'Technology',
+        memberCount: 567
+      },
+      {
+        name: 'Medical Research',
+        description: 'Share and discuss medical research findings and methodologies.',
+        category: 'Medicine',
+        memberCount: 2100
+      }
+    ];
+
+    for (const community of communityData) {
+      try {
+        await db.insert(communities).values(community);
+        console.log(`Created community: ${community.name}`);
+      } catch (error) {
+        console.log(`Community ${community.name} already exists`);
+      }
+    }
+
+    // Seed learning paths
+    const learningPathData = [
+      {
+        title: 'Introduction to Research Methods',
+        description: 'Learn the fundamentals of scientific research methodology.',
+        difficulty: 'Beginner',
+        estimatedHours: 20,
+        steps: [
+          { id: 'step1', title: 'Understanding Research Questions', description: 'Learn how to formulate effective research questions' },
+          { id: 'step2', title: 'Literature Review Techniques', description: 'Master the art of comprehensive literature reviews' },
+          { id: 'step3', title: 'Data Collection Methods', description: 'Explore various data collection approaches' }
+        ]
+      },
+      {
+        title: 'Advanced Statistical Analysis',
+        description: 'Master statistical techniques for research data analysis.',
+        difficulty: 'Advanced',
+        estimatedHours: 40,
+        steps: [
+          { id: 'step1', title: 'Descriptive Statistics', description: 'Understanding data distribution and summary statistics' },
+          { id: 'step2', title: 'Inferential Statistics', description: 'Hypothesis testing and confidence intervals' },
+          { id: 'step3', title: 'Advanced Modeling', description: 'Regression analysis and machine learning basics' }
+        ]
+      }
+    ];
+
+    for (const path of learningPathData) {
+      try {
+        await db.insert(learningPaths).values(path);
+        console.log(`Created learning path: ${path.title}`);
+      } catch (error) {
+        console.log(`Learning path ${path.title} already exists`);
+      }
+    }
+
+    console.log("Seeding completed successfully!");
   } catch (error) {
-    console.error('Seeding failed:', error);
-    process.exit(1);
+    console.error("Seeding failed:", error);
+  } finally {
+    process.exit(0);
   }
 }
 
