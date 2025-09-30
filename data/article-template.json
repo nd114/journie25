@@ -1,0 +1,29 @@
+
+{
+  "articles": [
+    {
+      "title": "Your Research Paper Title Here",
+      "abstract": "Complete abstract of the research paper...",
+      "content": "Full content/body of the paper (optional, can be just the abstract)",
+      "authors": ["Dr. Author One", "Prof. Author Two", "Dr. Author Three"],
+      "journal": "Journal Name",
+      "doi": "10.1000/journal.1234.5678",
+      "publishedDate": "2024-01-15",
+      "keywords": ["keyword1", "keyword2", "keyword3"],
+      "researchField": "Computer Science",
+      "citations": [
+        "Reference 1: Author, A. (2023). Title. Journal, 1(1), 1-10.",
+        "Reference 2: Author, B. (2023). Title. Journal, 2(2), 11-20."
+      ],
+      "pdfUrl": "https://example.com/paper.pdf",
+      "volume": "14",
+      "issue": "2",
+      "pages": "123-145",
+      "issn": "1234-5678",
+      "publisher": "Publisher Name",
+      "language": "English",
+      "subjects": ["Subject 1", "Subject 2", "Subject 3"],
+      "categories": ["Category A", "Category B"]
+    }
+  ]
+}
