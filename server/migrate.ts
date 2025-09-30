@@ -10,15 +10,15 @@ async function migrate() {
   
   try {
     // Add missing columns to papers table
-    await sql(`
+    await sql`
       ALTER TABLE papers 
       ADD COLUMN IF NOT EXISTS story_data JSONB DEFAULT '{}',
       ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS engagement_score DECIMAL(5,2) DEFAULT 0.0
-    `);
+    `;
     
     // Create paper_insights table if it doesn't exist
-    await sql(`
+    await sql`
       CREATE TABLE IF NOT EXISTS paper_insights (
         id SERIAL PRIMARY KEY,
         paper_id INTEGER REFERENCES papers(id) ON DELETE CASCADE,
@@ -26,10 +26,10 @@ async function migrate() {
         content TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `;
     
     // Create trending_topics table if it doesn't exist
-    await sql(`
+    await sql`
       CREATE TABLE IF NOT EXISTS trending_topics (
         id SERIAL PRIMARY KEY,
         topic VARCHAR(255) NOT NULL,
@@ -39,7 +39,7 @@ async function migrate() {
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `;
     
     console.log('Migration completed successfully!');
   } catch (error) {
