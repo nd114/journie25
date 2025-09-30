@@ -1,0 +1,69 @@
+~/workspace$ cd server && npx tsx import-articles.ts pubmed "quantum computing algorithms" 25
+
+🔍 Fetching PubMed articles for: "quantum computing algorithms"
+📊 Max results: 25
+Searching PubMed for: quantum computing algorithms
+✅ Found 25 articles
+📥 Fetching article details...
+✅ Successfully fetched 24 articles with abstracts
+Formatted 24 PubMed articles saved to pubmed-articles-1759262557701.json
+💾 Articles saved to: pubmed-articles-1759262557701.json
+
+🎉 Ready to import! Run: npm run import-articles json data/pubmed-articles-1759262557701.json
+
+📤 Now importing into database...
+Found 24 articles to import
+Importing: A comparative analysis and noise robustness evaluation in quantum neural networks.
+✅ Successfully imported: A comparative analysis and noise robustness evaluation in quantum neural networks.
+Importing: Density Matrix Embedding Theory-Based Multiconfigurational Quantum Chemistry Approach to Lanthanide Single-Ion Magnets.
+✅ Successfully imported: Density Matrix Embedding Theory-Based Multiconfigurational Quantum Chemistry Approach to Lanthanide Single-Ion Magnets.
+Importing: The Electronic Structure of the Hydrogen Molecule: A Tutorial Exercise in Classical and Quantum Computation.
+✅ Successfully imported: The Electronic Structure of the Hydrogen Molecule: A Tutorial Exercise in Classical and Quantum Computation.
+Importing: A Grid-Based Gauge-Invariant Non-Perturbative Solution of the Schrödinger Equation for Diatomic Molecules in Strong Magnetic Fields.
+✅ Successfully imported: A Grid-Based Gauge-Invariant Non-Perturbative Solution of the Schrödinger Equation for Diatomic Molecules in Strong Magnetic Fields.
+Importing: QSEER-Quantum-Enhanced Secure and Energy-Efficient Routing Protocol for Wireless Sensor Networks (WSNs).
+✅ Successfully imported: QSEER-Quantum-Enhanced Secure and Energy-Efficient Routing Protocol for Wireless Sensor Networks (WSNs).
+Importing: Implementation and Performance Evaluation of Quantum-Inspired Clustering Scheme for Energy-Efficient WSNs.
+✅ Successfully imported: Implementation and Performance Evaluation of Quantum-Inspired Clustering Scheme for Energy-Efficient WSNs.
+Importing: Determining the Upper-Bound on the Code Distance of Quantum Stabilizer Codes Through the Monte Carlo Method Based on Fully Decoupled Belief Propagation.
+✅ Successfully imported: Determining the Upper-Bound on the Code Distance of Quantum Stabilizer Codes Through the Monte Carlo Method Based on Fully Decoupled Belief Propagation.
+Importing: Quantum Information Supports Delayed Decisions.
+✅ Successfully imported: Quantum Information Supports Delayed Decisions.
+Importing: Post-Quantum Security of COPA.
+✅ Successfully imported: Post-Quantum Security of COPA.
+Importing: Four-limb CFST latticed columns seismic performance: experimental and ANN predictions.
+✅ Successfully imported: Four-limb CFST latticed columns seismic performance: experimental and ANN predictions.
+Importing: A quantum approximate optimization method for finding Hadamard matrices.
+✅ Successfully imported: A quantum approximate optimization method for finding Hadamard matrices.
+Importing: Secure and fault tolerant cloud based framework for medical image storage and retrieval in a distributed environment.
+✅ Successfully imported: Secure and fault tolerant cloud based framework for medical image storage and retrieval in a distributed environment.
+Importing: Physics-informed deep learning for plasmonic sensing of nanoscale protein dynamics in solution.
+✅ Successfully imported: Physics-informed deep learning for plasmonic sensing of nanoscale protein dynamics in solution.
+Importing: An Enhanced Knowledge Salp Swarm Algorithm for Solving the Numerical Optimization and Seed Classification Tasks.
+✅ Successfully imported: An Enhanced Knowledge Salp Swarm Algorithm for Solving the Numerical Optimization and Seed Classification Tasks.
+Importing: Research on Quantum Circuit Learning Models for Molecular Dynamics Simulation.
+✅ Successfully imported: Research on Quantum Circuit Learning Models for Molecular Dynamics Simulation.
+Importing: Bridging Quantum Mechanics and Biology at the Million-Atom Scale.
+✅ Successfully imported: Bridging Quantum Mechanics and Biology at the Million-Atom Scale.
+Importing: Quantum-Assisted Variational Monte Carlo.
+✅ Successfully imported: Quantum-Assisted Variational Monte Carlo.
+Importing: Efficiently finding activity cliffs.
+✅ Successfully imported: Efficiently finding activity cliffs.
+Importing: Analog quantum simulation of coupled electron-nuclear dynamics in molecules.
+✅ Successfully imported: Analog quantum simulation of coupled electron-nuclear dynamics in molecules.
+Importing: Variational quantum recommendation system with embedded latent vectors.
+✅ Successfully imported: Variational quantum recommendation system with embedded latent vectors.
+Importing: Machine-learned density functional based quantum chemical computations for ethane: performance of DeepMind 21 on potential energy surface and molecular properties.
+✅ Successfully imported: Machine-learned density functional based quantum chemical computations for ethane: performance of DeepMind 21 on potential energy surface and molecular properties.
+Importing: Quantum Speedups for Multiproposal MCMC.
+✅ Successfully imported: Quantum Speedups for Multiproposal MCMC.
+Importing: Low-overhead transversal fault tolerance for universal quantum computation.
+✅ Successfully imported: Low-overhead transversal fault tolerance for universal quantum computation.
+Importing: A novel framework for secure cryptocurrency transactions using quantum crypto guard.
+✅ Successfully imported: A novel framework for secure cryptocurrency transactions using quantum crypto guard.
+🎉 PubMed articles successfully imported!
+~/workspace/server$ cd server && npx tsx import-articles.ts pubmed "natural cures and health" 25
+bash: cd: server: No such file or directory
+~/workspace/server$ cd server && npx tsx import-articles.ts pubmed "health" 25
+bash: cd: server: No such file or directory
+~/workspace/server$ cd server && npx tsx import-articles.ts pubmed "deep learning" 25

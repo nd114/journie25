@@ -1,0 +1,840 @@
+{
+  "articles": [
+    {
+      "title": "A comparative analysis and noise robustness evaluation in quantum neural networks.",
+      "abstract": "In current noisy intermediate-scale quantum (NISQ) devices, hybrid quantum neural networks (HQNNs) offer a promising solution, combining the strengths of classical machine learning with quantum computing capabilities. However, the performance of these networks can be significantly affected by the quantum noise inherent in NISQ devices. In this paper, we conduct an extensive comparative analysis of various HQNN algorithms, namely Quantum Convolution Neural Network (QCNN), Quanvolutional Neural Network (QuanNN), and Quantum Transfer Learning (QTL), for image classification tasks. We evaluate the performance of each algorithm across quantum circuits with different entangling structures, variations in layer count, and optimal placement in the architecture. Subsequently, we select the highest-performing architectures and assess their robustness against noise influence by introducing quantum gate noise through Phase Flip, Bit Flip, Phase Damping, Amplitude Damping, and the Depolarization Channel. Our results reveal that the top-performing models exhibit varying resilience to different noise channels. However, in most scenarios, the QuanNN demonstrates greater robustness across various quantum noise channels, consistently outperforming other models. This highlights the importance of tailoring model selection to specific noise environments in NISQ devices.",
+      "authors": [
+        "Ahmed T",
+        "Kashif M",
+        "Marchisio A",
+        "Shafique M"
+      ],
+      "journal": "Sci Rep",
+      "publishedDate": "2025 Sep 29",
+      "keywords": [
+        "quantum",
+        "noise",
+        "nisq",
+        "devices",
+        "neural",
+        "networks",
+        "learning",
+        "however"
+      ],
+      "researchField": "Computer Science",
+      "subjects": [
+        "quantum",
+        "noise",
+        "nisq",
+        "devices",
+        "neural",
+        "networks",
+        "learning",
+        "however"
+      ],
+      "externalId": "41022971",
+      "source": "PubMed"
+    },
+    {
+      "title": "Density Matrix Embedding Theory-Based Multiconfigurational Quantum Chemistry Approach to Lanthanide Single-Ion Magnets.",
+      "abstract": "Accurate and efficient theoretical descriptions of lanthanide systems based on ab initio electronic structure theory remain highly challenging due to the complex interplay of strong electronic correlation and significant relativistic effects in 4f electrons. The composite multiconfigurational quantum chemistry method that combines the state-averaged complete active space self-consistent field (SA-CASSCF) approach with subsequent state interaction (SI) treatment of spin-orbit coupling (SOC), abbreviated as CASSCF-SO, has emerged as the preferred method for ab initio studies of lanthanide systems. However, its widespread application is hindered by its substantial computational cost. Building on the success of integrating density matrix embedding theory (DMET) with CASSCF-SO in our previous theoretical study of 3d single-ion magnets (SIMs) (Ai, Sun, and Jiang, J. Phys. Chem. Lett. 2022, 13, 10627), we now extend the DMET + CASSCF-SO approach to lanthanide SIM systems and further consider the dynamical correlation via multireference perturbation theory within the embedded cluster space. We provide a detailed formulation of the regularized direct inversion of iterative subspace (R-DIIS) algorithm, which ensures obtaining physically correct restricted open-shell Hartree-Fock (ROHF) wave functions, a critical factor for the effectiveness of DMET. Additionally, we introduce the subspace R-DIIS (sR-DIIS) algorithm, which proves to be more efficient and robust for lanthanide systems. Using several representative lanthanide single-ion magnets (4f-SIMs) as test cases, we demonstrate the performance of these new algorithms and highlight the exceptional accuracy of the DMET treatment, with respect to its all-electron counterpart. We anticipate that this enhanced DMET-based multiconfigurational quantum chemistry methodology will significantly advance large-scale theoretical investigations of complex lanthanide systems.",
+      "authors": [
+        "Ai Y",
+        "Li ZW",
+        "Guan ZB",
+        "Jiang H"
+      ],
+      "journal": "J Chem Theory Comput",
+      "publishedDate": "2025 Sep 29",
+      "keywords": [
+        "lanthanide",
+        "systems",
+        "dmet",
+        "casscf",
+        "theoretical",
+        "theory",
+        "diis",
+        "efficient"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "lanthanide",
+        "systems",
+        "dmet",
+        "casscf",
+        "theoretical",
+        "theory",
+        "diis",
+        "efficient"
+      ],
+      "externalId": "41020669",
+      "source": "PubMed"
+    },
+    {
+      "title": "The Electronic Structure of the Hydrogen Molecule: A Tutorial Exercise in Classical and Quantum Computation.",
+      "abstract": "In this educational paper, we will discuss calculations on the hydrogen molecule on both classical and quantum computers. In the former case, we will discuss the calculation of molecular integrals that can then be used to calculate potential energy curves at the Hartree-Fock level and to correct them by obtaining the exact results for all states in the minimal basis. Some aspects of spin-symmetry will also be discussed. In the case of quantum computing, we will start out from the second-quantized Hamiltonian and qubit mappings. We then provide circuits for quantum phase estimation using two different algorithms: Trotterization and qubitization. Finally, the significance of quantum error correction will be briefly discussed.",
+      "authors": [
+        "Graves V",
+        "Sünderhauf C",
+        "Blunt NS",
+        "Izsák R",
+        "Szőri M"
+      ],
+      "journal": "ACS Phys Chem Au",
+      "publishedDate": "2025 Sep 24",
+      "keywords": [
+        "will",
+        "quantum",
+        "discuss",
+        "case",
+        "then",
+        "discussed",
+        "educational",
+        "paper"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "will",
+        "quantum",
+        "discuss",
+        "case",
+        "then",
+        "discussed",
+        "educational",
+        "paper"
+      ],
+      "externalId": "41019622",
+      "source": "PubMed"
+    },
+    {
+      "title": "A Grid-Based Gauge-Invariant Non-Perturbative Solution of the Schrödinger Equation for Diatomic Molecules in Strong Magnetic Fields.",
+      "abstract": "The gauge invariant Wilson Hamiltonian is employed to solve the nuclear Schr&#xf6;dinger equation in the presence of a strong time-independent magnetic field. The single particle Hamiltonian is adapted to two particles in an external potential with the goal of computing the rovibrational spectra of diatomic molecules under various magnetic fields. A formalism involving reduced mass along with mass-weighted charges is presented. The Hamiltonian has its roots in Wilson's lattice gauge theory, and we adopt a diagonalization-based nonperturbative algorithm with no limits on the range of applicability with respect to the strength of the magnetic field. We validate and benchmark our implementation by applying it to the extensively studied 2D single electron GaAs quantum dot subject to perpendicular uniform magnetic fields of strengths ranging from weak to ultrastrong (Zeeman-Landau regime), for which the analytical solutions are known. Our reduced-mass-reduced-charge formalism is then applied to compute the first few rovibrational states of a H2 molecule modeled as a 2D harmonic oscillator subject to a perpendicular magnetic field and benchmarked against the corresponding analytical model. Our numerical method, it may be emphasized, can work with any binding potential supplied on a grid such as a Born-Oppenheimer potential energy surface with the field applied in any direction. To the best of our knowledge, this is the first application of the Wilson Hamiltonian to the computation of rovibrational spectra of molecules in magnetic fields and will allow a fully quantum and gauge invariant computation of diatomic rovibrational spectra in magnetic fields of arbitrary strengths and orientations.",
+      "authors": [
+        "Yenugu N",
+        "Tiwari AK",
+        "Sen S"
+      ],
+      "journal": "J Chem Theory Comput",
+      "publishedDate": "2025 Sep 28",
+      "keywords": [
+        "magnetic",
+        "hamiltonian",
+        "field",
+        "rovibrational",
+        "fields",
+        "gauge",
+        "wilson",
+        "potential"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "magnetic",
+        "hamiltonian",
+        "field",
+        "rovibrational",
+        "fields",
+        "gauge",
+        "wilson",
+        "potential"
+      ],
+      "externalId": "41016062",
+      "source": "PubMed"
+    },
+    {
+      "title": "QSEER-Quantum-Enhanced Secure and Energy-Efficient Routing Protocol for Wireless Sensor Networks (WSNs).",
+      "abstract": "Wireless sensor networks (WSNs) play a major role in various applications, but the main challenge is to maintain security and balanced energy efficiency. Classical routing protocols struggle to achieve both energy efficiency and security because they are more vulnerable to security risks and resource limitations. This paper introduces QSEER, a novel approach that uses quantum technologies to overcome these limitations. QSEER employs quantum-inspired optimization algorithms that leverage superposition and entanglement principles to efficiently explore multiple routing possibilities, thereby identifying energy-efficient paths and reducing redundant transmissions. The proposed protocol enhances the security of data transmission against eavesdropping and tampering by using the principles of quantum mechanics, thus mitigating potential security vulnerabilities. Through extensive simulations, we demonstrated the effectiveness of QSEER in achieving both security and energy efficiency objectives, which achieves 15.1% lower energy consumption compared to state-of-the-art protocols while maintaining 99.8% data integrity under various attack scenarios, extending network lifetime by an average of 42%. These results position QSEER as a significant advancement for next-generation WSN deployments in critical applications such as environmental monitoring, smart infrastructure, and healthcare systems.",
+      "authors": [
+        "Uthayakumar C",
+        "Jayaraman R",
+        "Raja HA",
+        "Shabbir N"
+      ],
+      "journal": "Sensors (Basel)",
+      "publishedDate": "2025 Sep 22",
+      "keywords": [
+        "security",
+        "energy",
+        "qseer",
+        "efficiency",
+        "quantum",
+        "various",
+        "applications",
+        "routing"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "security",
+        "energy",
+        "qseer",
+        "efficiency",
+        "quantum",
+        "various",
+        "applications",
+        "routing"
+      ],
+      "externalId": "41013161",
+      "source": "PubMed"
+    },
+    {
+      "title": "Implementation and Performance Evaluation of Quantum-Inspired Clustering Scheme for Energy-Efficient WSNs.",
+      "abstract": "Advancements in communication technologies and the proliferation of smart devices have significantly increased the demand for wireless sensor networks (WSNs). These networks play an important role in the IoT environment. The wireless sensor network has many sensor nodes that are used to monitor the surrounding environment. Energy consumption is the main issue in WSN due to the difficulty in recharging or replacing batteries in the sensor nodes. Cluster head selection is one of the most effective approaches to reduce overall network energy consumption. In recent years, quantum technology has become a growing research area. Various quantum-based algorithms have been developed by researchers for clustering. This article introduces a novel, energy-efficient clustering scheme called the quantum-inspired clustering scheme (QICS), which is based on the Quantum Grover algorithm. It is mainly used to improve the performance of cluster head selection in a wireless sensor network. The research conducted simulations that compared the proposed cluster selection method against established algorithms, LEACH, GSACP, and EDS-KHO. The simulation environment used 100 nodes connected via specific energy and communication settings. QICS stands out as the superior clustering method since it extends the lifetime of the network by 30.5%, decreases energy usage by 22.4%, and increases the packet delivery ratios by 19.8%. The quantum method achieved an increase in speed with its clustering procedure. This study proves how quantum-inspired techniques have become an emerging approach to handling WSN energy restrictions, thus indicating future potential for IoT systems with energy awareness and scalability.",
+      "authors": [
+        "Uthayakumar C",
+        "Jayaraman R",
+        "Raja HA",
+        "Daniel K"
+      ],
+      "journal": "Sensors (Basel)",
+      "publishedDate": "2025 Sep 19",
+      "keywords": [
+        "energy",
+        "quantum",
+        "sensor",
+        "clustering",
+        "network",
+        "have",
+        "wireless",
+        "environment"
+      ],
+      "researchField": "Environmental Science",
+      "subjects": [
+        "energy",
+        "quantum",
+        "sensor",
+        "clustering",
+        "network",
+        "have",
+        "wireless",
+        "environment"
+      ],
+      "externalId": "41013111",
+      "source": "PubMed"
+    },
+    {
+      "title": "Determining the Upper-Bound on the Code Distance of Quantum Stabilizer Codes Through the Monte Carlo Method Based on Fully Decoupled Belief Propagation.",
+      "abstract": "The code distance is a critical parameter of quantum stabilizer codes (QSCs), and determining it-whether exactly or approximately-is known to be an NP-complete problem. However, its upper bound can be determined efficiently by some methods such as the Monte Carlo method. Leveraging the Monte Carlo method, we propose an algorithm to compute the upper bound on the code distance of a given QSC using fully decoupled belief propagation combined with ordered statistics decoding (FDBP-OSD). Our algorithm demonstrates high precision: for various QSCs with known distances, the computed upper bounds match the actual values. Additionally, we explore upper bounds for the minimum weight of logical X operators in the Z-type Tanner-graph-recursive-expansion (Z-TGRE) code and the Chamon code-an XYZ product code constructed from three repetition codes. The results on Z-TGRE codes align with theoretical analysis, while the results on Chamon codes suggest that XYZ product codes may achieve a code distance of O(N2/3), which supports the conjecture of Leverrier et al.",
+      "authors": [
+        "Liang Z",
+        "Wang Z",
+        "Yi Z",
+        "Yang F",
+        "Wang X"
+      ],
+      "journal": "Entropy (Basel)",
+      "publishedDate": "2025 Sep 9",
+      "keywords": [
+        "code",
+        "codes",
+        "upper",
+        "distance",
+        "qscs",
+        "known",
+        "bound",
+        "monte"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "code",
+        "codes",
+        "upper",
+        "distance",
+        "qscs",
+        "known",
+        "bound",
+        "monte"
+      ],
+      "externalId": "41008066",
+      "source": "PubMed"
+    },
+    {
+      "title": "Quantum Information Supports Delayed Decisions.",
+      "abstract": "Chatbots, search engines and Database Query Systems are invaluable sources of information for decision-making processes in the data-driven world in which we live today. In this study, we explore the extent to which classical and Quantum Query Systems can support future decisions, taken at a moment where the query service may be inaccessible and the decision has to be based solely on information collected in the past. We show that encoding information at the quantum level allows Query Systems to support future or delayed decisions. More precisely, Grover's algorithm can be employed in order to extract the desired answer from a large superposition of question-answer pairs obtained through a single interrogation of the system. The method works best for binary answers and can be applied to queries encompassing hundreds or thousands of questions in one query. Extensions are possible if we allow more than one query to be addressed to the system. By comparison, a classical system would require hundreds or thousands of queries in order to offer the same level of support for delayed decisions.",
+      "authors": [
+        "Nagy M",
+        "Nagy N"
+      ],
+      "journal": "Entropy (Basel)",
+      "publishedDate": "2025 Aug 23",
+      "keywords": [
+        "query",
+        "systems",
+        "information",
+        "support",
+        "decisions",
+        "system",
+        "decision",
+        "which"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "query",
+        "systems",
+        "information",
+        "support",
+        "decisions",
+        "system",
+        "decision",
+        "which"
+      ],
+      "externalId": "41008020",
+      "source": "PubMed"
+    },
+    {
+      "title": "Post-Quantum Security of COPA.",
+      "abstract": "COPA is a notable authenticated online cipher and was one of the winning proposals for the CAESAR competition. Current works describe how to break the existentially unforgeable under quantum chosen message attack (EUF-qCMA) of COPA. However, these works do not demonstrate the confidentiality of COPA in the quantum setting. This paper fills this gap, considers the indistinguishable under quantum chosen-plaintext attack (IND-qCPA) security for privacy, and presents the first IND-qCPA security analysis of COPA. In addition, in order to effectively avoid the problems of quantum existential forgery attack and quantum distinguishing attack, we introduce an intermediate state doubling-point technology into COPA, restrict the associated data non-emptiness, and present an enhanced variant, called COPA-ISDP, to support the IND-qCPA and EUF-qCMA security. Our work is of great significance, as it provides a simple and effective post-quantum secure design idea to resist Simon's attack.",
+      "authors": [
+        "Zhang P",
+        "Wang Y"
+      ],
+      "journal": "Entropy (Basel)",
+      "publishedDate": "2025 Aug 23",
+      "keywords": [
+        "copa",
+        "quantum",
+        "attack",
+        "qcpa",
+        "security",
+        "works",
+        "under",
+        "chosen"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "copa",
+        "quantum",
+        "attack",
+        "qcpa",
+        "security",
+        "works",
+        "under",
+        "chosen"
+      ],
+      "externalId": "41008016",
+      "source": "PubMed"
+    },
+    {
+      "title": "Four-limb CFST latticed columns seismic performance: experimental and ANN predictions.",
+      "abstract": "This paper investigates the seismic performance of four-limb concrete-filled steel tubular (CFST) lattice columns with different slenderness ratios (10.8, 10.8, 18.4, and 27.9) and axial load ratios (0.2, 0.3, 0.2, and 0.2), conducting horizontal low-cycle reciprocating load test. Based on the test results, an artificial neural network (ANN) is used to improve the prediction of the seismic performance of four-limb CFST latticed columns, considering ANN's defects of low accuracy prediction and the poor fitting for the load, unload and extreme point of hysteresis curves, the sparrow search optimization algorithm (SSA) is adopted to optimize the ANN's weights and thresholds. Quantum computations are proposed to improve the SSA's iteration convergence and avoidance of local optima, and its convergence curve is compared to circle chaotic sparrow search algorithm and tent chaos sparrow search algorithm (Tent-CSSA). The damage variables are calculated and compared with the predicted results from the SSA, the sparrow search algorithm based on quantum computations and multi-strategy enhancement (QMESSA) and the test results based on the energy damage model and Park's model. The results demonstrate that the load-displacement hysteresis curves of Specimen 1 and Specimen 2 are bow-shaped, which show a strong plastic capacity. The hysteresis curve of Specimen 3 appears in an inverse S-shape, which was due to the slip caused by the low bond strength between concrete and steel pipe. The hysteresis curve of Specimen 4 is pike-shaped, which has a high shear span ratio and obvious bending performance. QMESSA effectively optimizes the weights and thresholds of the ANN, and its predicted damage variables are consistent with those of the conventional damage model. This indicates that QMESSA can effectively predict the load-displacement hysteresis curves of four-limb CFST lattice columns under low-cycle reciprocating loading.",
+      "authors": [
+        "Chen J",
+        "He JJ",
+        "Huang Z",
+        "Huang Y",
+        "Chen YF"
+      ],
+      "journal": "Sci Rep",
+      "publishedDate": "2025 Sep 26",
+      "keywords": [
+        "load",
+        "hysteresis",
+        "sparrow",
+        "search",
+        "algorithm",
+        "damage",
+        "specimen",
+        "performance"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "load",
+        "hysteresis",
+        "sparrow",
+        "search",
+        "algorithm",
+        "damage",
+        "specimen",
+        "performance"
+      ],
+      "externalId": "41006802",
+      "source": "PubMed"
+    },
+    {
+      "title": "A quantum approximate optimization method for finding Hadamard matrices.",
+      "abstract": "Finding a Hadamard matrix of a specific order using a quantum computer can lead to a demonstration of practical quantum advantage. Earlier efforts using a quantum annealer were impeded by the limitations of the present quantum resource and its capability to implement high order interaction terms, which for an M-order matrix will grow by [Formula: see text]. In this paper, we propose a novel qubit-efficient method by implementing the Hadamard matrix searching algorithm on a gate-based quantum computer. We achieve this by employing the Quantum Approximate Optimization Algorithm (QAOA). Since high order interaction terms that are implemented on a gate-based quantum computer do not need ancillary qubits, the proposed method reduces the required number of qubits into O(M). We present the formulation of the method, construction of corresponding quantum circuits, and experiment results in both a quantum simulator and a real gate-based quantum computer.",
+      "authors": [
+        "Suksmono AB"
+      ],
+      "journal": "Sci Rep",
+      "publishedDate": "2025 Sep 26",
+      "keywords": [
+        "quantum",
+        "order",
+        "computer",
+        "matrix",
+        "gate",
+        "based",
+        "hadamard",
+        "using"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "quantum",
+        "order",
+        "computer",
+        "matrix",
+        "gate",
+        "based",
+        "hadamard",
+        "using"
+      ],
+      "externalId": "41006732",
+      "source": "PubMed"
+    },
+    {
+      "title": "Secure and fault tolerant cloud based framework for medical image storage and retrieval in a distributed environment.",
+      "abstract": "In the evolving field of healthcare, centralized cloud-based medical image retrieval faces challenges related to security, availability, and adversarial threats. Existing deep learning-based solutions improve retrieval but remain vulnerable to adversarial attacks and quantum threats, necessitating a shift to more secure distributed cloud solutions. This article proposes SFMedIR, a secure and fault tolerant medical image retrieval framework that contains an adversarial attack-resistant federated learning for hashcode generation, utilizing a ConvNeXt-based model to improve accuracy and generalizability. The framework integrates quantum-chaos-based encryption for security, dynamic threshold-based shadow storage for fault tolerance, and a distributed cloud architecture to mitigate single points of failure. Unlike conventional methods, this approach significantly improves security and availability in cloud-based medical image retrieval systems, providing a resilient and efficient solution for healthcare applications. The framework is validated on Brain MRI and Kidney CT datasets, achieving a 60-70% improvement in retrieval accuracy for adversarial queries and an overall 90% retrieval accuracy, outperforming existing models by 5-10%. The results demonstrate superior performance in terms of both security and retrieval efficiency, making this framework a valuable contribution to the future of secure medical image management.",
+      "authors": [
+        "Amaithi Rajan A",
+        "V V",
+        "M A",
+        "R PK"
+      ],
+      "journal": "Sci Rep",
+      "publishedDate": "2025 Sep 26",
+      "keywords": [
+        "retrieval",
+        "based",
+        "cloud",
+        "medical",
+        "image",
+        "security",
+        "adversarial",
+        "framework"
+      ],
+      "researchField": "Medicine",
+      "subjects": [
+        "retrieval",
+        "based",
+        "cloud",
+        "medical",
+        "image",
+        "security",
+        "adversarial",
+        "framework"
+      ],
+      "externalId": "41006454",
+      "source": "PubMed"
+    },
+    {
+      "title": "Physics-informed deep learning for plasmonic sensing of nanoscale protein dynamics in solution.",
+      "abstract": "Quantifying nanoscale protein secondary structure in aqueous solutions is crucial for understanding protein interactions and dynamics. Deep learning models are adept at predicting protein secondary structures, but their ability to model them in aqueous solutions is hindered by data constraints. Here, we present a mid-infrared plasmonic sensor integrated with a synthesized complex-frequency wave (s-CFW)-informed convolutional neural network (CNN) to address these limitations. The sensor enables direct probing of the amide I band in sub-10-nanometer proteins. By using s-CFW to amplify target spectral features, the developed physics-informed CNN achieves a mean relative error of less than 0.1 in predicting secondary structure percentages, more than twice as accurate as a pristine CNN. This method enables in situ and real-time quantification of subtle conformational changes during protein assembly, thereby addressing the issue of data scarcity that now hinders the development of advanced deep learning models for predicting protein dynamics and interactions in physiological environments.",
+      "authors": [
+        "Wu C",
+        "Yang S",
+        "Zeng K",
+        "Dai X",
+        "Duan Y",
+        "Zhang S",
+        "Ma P",
+        "Guo X",
+        "Zhang S",
+        "Yang X",
+        "Dai Q"
+      ],
+      "journal": "Sci Adv",
+      "publishedDate": "2025 Sep 26",
+      "keywords": [
+        "protein",
+        "secondary",
+        "predicting",
+        "structure",
+        "aqueous",
+        "solutions",
+        "interactions",
+        "dynamics"
+      ],
+      "researchField": "Biotechnology",
+      "subjects": [
+        "protein",
+        "secondary",
+        "predicting",
+        "structure",
+        "aqueous",
+        "solutions",
+        "interactions",
+        "dynamics"
+      ],
+      "externalId": "41004578",
+      "source": "PubMed"
+    },
+    {
+      "title": "An Enhanced Knowledge Salp Swarm Algorithm for Solving the Numerical Optimization and Seed Classification Tasks.",
+      "abstract": "The basic Salp Swarm Algorithm (SSA) offers advantages such as a simple structure and few parameters. However, it is prone to falling into local optima and remains inadequate for seed classification tasks that involve hyperparameter optimization of machine learning classifiers such as Support Vector Machines (SVMs). To overcome these limitations, an Enhanced Knowledge-based Salp Swarm Algorithm (EKSSA) is proposed. The EKSSA incorporates three key strategies: Adaptive adjustment mechanisms for parameters c1 and &#x3b1; to better balance exploration and exploitation within the salp population; a Gaussian walk-based position update strategy after the initial update phase, enhancing the global search ability of individuals; and a dynamic mirror learning strategy that expands the search domain through solution mirroring, thereby strengthening local search capability. The proposed algorithm was evaluated on thirty-two CEC benchmark functions, where it demonstrated superior performance compared to eight state-of-the-art algorithms, including Randomized Particle Swarm Optimizer (RPSO), Grey Wolf Optimizer (GWO), Archimedes Optimization Algorithm (AOA), Hybrid Particle Swarm Butterfly Algorithm (HPSBA), Aquila Optimizer (AO), Honey Badger Algorithm (HBA), Salp Swarm Algorithm (SSA), and Sine-Cosine Quantum Salp Swarm Algorithm (SCQSSA). Furthermore, an EKSSA-SVM hybrid classifier was developed for seed classification, achieving higher classification accuracy.",
+      "authors": [
+        "Li Q",
+        "Zhou Y"
+      ],
+      "journal": "Biomimetics (Basel)",
+      "publishedDate": "2025 Sep 22",
+      "keywords": [
+        "algorithm",
+        "swarm",
+        "salp",
+        "classification",
+        "ekssa",
+        "search",
+        "optimizer",
+        "such"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "algorithm",
+        "swarm",
+        "salp",
+        "classification",
+        "ekssa",
+        "search",
+        "optimizer",
+        "such"
+      ],
+      "externalId": "41002872",
+      "source": "PubMed"
+    },
+    {
+      "title": "Research on Quantum Circuit Learning Models for Molecular Dynamics Simulation.",
+      "abstract": "In the past decade, many hybrid quantum-classical algorithms have been applied to various industrial fields, reflecting the growing interest in NISQ devices. For example, in the field of chemistry, many studies were conducted to calculate the energies of eigenstates with high precision. However, there is still little research on molecular dynamics using quantum computers, because traditional approaches based on variational quantum algorithms are not suitable for the long-time steps of molecular dynamics. In this study, we propose a quantum circuit learning model that estimates the eigenvalues of a given molecular Hamiltonian for an arbitrary molecular configuration. Our model must first be costly to train; however, once trained, the resulting trained model can eliminate procedures that required variational optimization each time the molecular coordinates are updated in the previous variational approach. By using the proposed model, we demonstrate that the proposed model can be used to perform simple molecular dynamics simulations, such as Langevin dynamics and NVE simulation. We also show several applications of our model inspired by classical machine learning.",
+      "authors": [
+        "Nishida Y"
+      ],
+      "journal": "J Phys Chem A",
+      "publishedDate": "2025 Sep 26",
+      "keywords": [
+        "molecular",
+        "model",
+        "quantum",
+        "dynamics",
+        "variational",
+        "many",
+        "classical",
+        "algorithms"
+      ],
+      "researchField": "Biotechnology",
+      "subjects": [
+        "molecular",
+        "model",
+        "quantum",
+        "dynamics",
+        "variational",
+        "many",
+        "classical",
+        "algorithms"
+      ],
+      "externalId": "41001988",
+      "source": "PubMed"
+    },
+    {
+      "title": "Bridging Quantum Mechanics and Biology at the Million-Atom Scale.",
+      "abstract": "Quantum-mechanical simulations provide the most fundamental description of matter, yet their computational cost has limited applications to systems containing at most thousands of atoms. Here, we present an all-electron quantum-mechanical framework that extends the accessible system size to the multimillion-atom regime. By combining an algorithmically optimized Hartree-Fock formalism with divide-and-conquer, our new approach efficiently handles structures containing millions of atoms with subatomic resolution. We demonstrate this approach on very large biological systems, including a complete bacteriophage in water, totalling over 150 million electrons, representing, to our knowledge, the largest quantum-mechanical calculation performed to date. Our framework allows computing spectral data for DNA and drugs and enables protein structure assessments in strong agreement with structure evaluations by AlphaFold. This approach opens new avenues in quantum physics, structural biology, spectroscopy, bioinformatics, medicine, and materials science.",
+      "authors": [
+        "Garcia M",
+        "Wieners L"
+      ],
+      "journal": "Res Sq",
+      "publishedDate": "2025 Sep 16",
+      "keywords": [
+        "quantum",
+        "mechanical",
+        "most",
+        "systems",
+        "containing",
+        "atoms",
+        "framework",
+        "structure"
+      ],
+      "researchField": "Computer Science",
+      "subjects": [
+        "quantum",
+        "mechanical",
+        "most",
+        "systems",
+        "containing",
+        "atoms",
+        "framework",
+        "structure"
+      ],
+      "externalId": "41001558",
+      "source": "PubMed"
+    },
+    {
+      "title": "Quantum-Assisted Variational Monte Carlo.",
+      "abstract": "Solving the ground state of quantum many-body systems remains a fundamental challenge in physics and chemistry. Recent advancements in quantum hardware have opened new avenues for addressing this challenge. Inspired by the quantum-enhanced Markov chain Monte Carlo (QeMCMC) algorithm, which was originally designed for sampling the Boltzmann distribution of classical spin models using quantum computers, we introduce a quantum-assisted variational Monte Carlo (QA-VMC) algorithm for solving the ground state of quantum many-body systems by adapting QeMCMC to sample the distribution of a (neural-network) wave function in VMC. The central question is whether such a quantum-assisted proposal can potentially offer a computational advantage over classical methods. Through numerical investigations for the Fermi-Hubbard model and molecular systems, we demonstrate that the quantum-assisted proposal exhibits larger absolute spectral gaps and reduced autocorrelation times compared to conventional classical proposals, leading to more efficient sampling and faster convergence to the ground state in VMC as well as a more accurate and precise estimation of physical observables. This advantage is especially pronounced for specific parameter ranges, where the ground-state configurations are more concentrated in some configurations separated by large Hamming distances. Our results underscore the potential of quantum-assisted algorithms to enhance classical variational methods for solving the ground state of quantum many-body systems.",
+      "authors": [
+        "Chang L",
+        "Li Z",
+        "Fang WH"
+      ],
+      "journal": "Precis Chem",
+      "publishedDate": "2025 Sep 22",
+      "keywords": [
+        "quantum",
+        "ground",
+        "state",
+        "systems",
+        "classical",
+        "assisted",
+        "solving",
+        "many"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "quantum",
+        "ground",
+        "state",
+        "systems",
+        "classical",
+        "assisted",
+        "solving",
+        "many"
+      ],
+      "externalId": "41001091",
+      "source": "PubMed"
+    },
+    {
+      "title": "Efficiently finding activity cliffs.",
+      "abstract": "Activity cliffs remain a key challenge in computational drug design, defying even modern machine learning approaches. Here, we present a dual approach that allows either navigating a structure-activity landscape to quickly identify activity cliffs, or how avoid them and identify maximally smooth sectors of chemical space. Both methods are built upon the BitBIRCH clustering algorithm, so they are ideally suited to analyze very large compound libraries. The code is freely available at https://github.com/mqcomplab/BitBIRCH_AC.",
+      "authors": [
+        "Surendran A",
+        "Miranda-Quintana RA"
+      ],
+      "journal": "bioRxiv",
+      "publishedDate": "2025 Sep 20",
+      "keywords": [
+        "activity",
+        "cliffs",
+        "identify",
+        "remain",
+        "challenge",
+        "computational",
+        "drug",
+        "design"
+      ],
+      "researchField": "Computer Science",
+      "subjects": [
+        "activity",
+        "cliffs",
+        "identify",
+        "remain",
+        "challenge",
+        "computational",
+        "drug",
+        "design"
+      ],
+      "externalId": "41000672",
+      "source": "PubMed"
+    },
+    {
+      "title": "Analog quantum simulation of coupled electron-nuclear dynamics in molecules.",
+      "abstract": "Quantum computing has the potential to reduce the computational cost required for quantum dynamics simulations. However, existing quantum algorithms for coupled electron-nuclear dynamics simulation either require fault-tolerant devices, or involve the Born-Oppenheimer (BO) approximation and pre-calculation of electronic states on classical computers. We present the first quantum simulation approach for molecular vibronic dynamics in a pre-BO framework with an analog mapping of nuclear degrees of freedom, i.e. without the separation of electrons and nuclei, by mapping the molecular Hamiltonian to a device with coupled qubits and bosonic modes. We perform a proof-of-principle emulation of our ansatz using a single-mode model system which represents vibronic dynamics of chemical systems, such as nonadiabatic charge transfer involving polarization of the medium, and propose an implementation of our approach on a trapped-ion device. We show that our approach has exponential savings in resource and computational costs compared to the equivalent classical algorithms. Furthermore, our approach has a much smaller resource and implementation scaling than the existing pre-BO quantum algorithms for chemical dynamics. The low cost of our approach will enable an exact treatment of electron-nuclear dynamics on near-term quantum devices.",
+      "authors": [
+        "Ha JK",
+        "MacDonell RJ"
+      ],
+      "journal": "Chem Sci",
+      "publishedDate": "2025 Sep 16",
+      "keywords": [
+        "quantum",
+        "dynamics",
+        "algorithms",
+        "nuclear",
+        "computational",
+        "cost",
+        "existing",
+        "coupled"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "quantum",
+        "dynamics",
+        "algorithms",
+        "nuclear",
+        "computational",
+        "cost",
+        "existing",
+        "coupled"
+      ],
+      "externalId": "41000127",
+      "source": "PubMed"
+    },
+    {
+      "title": "Variational quantum recommendation system with embedded latent vectors.",
+      "abstract": "As digital content expands, the need to deliver recommendations quickly becomes increasingly important. In traditional recommendation methods the online recommendation time scales linearly with the number of items, making such approaches less effective as datasets grow. Quantum computing offers novel techniques for parallel computation and sampling, yet current hardware remains constrained by noise and limited scalability. Variational quantum algorithms (VQAs), which rely on shallow circuits, are better suited for noisy quantum machines. In this work, we explore a scheme for variational quantum recommendation system (VQRS), which combines classical matrix factorization (MF) and data re-uploading in the offline phase with quantum sampling in the online phase, aiming to accelerate inference. Using noiseless simulations on small-size standard datasets, we assess the method's performance and analyze its computational resource requirements. Our findings indicate that the scheme is capable of learning accurate recommendations on small datasets, but faces scalability challenges and may requires long offline training. Nonetheless, the results show that the proposed quantum circuit design supports the inference of user preferences, and that a relatively small number of online circuit executions suffices to yield moderately accurate predictions. This highlights a trade-off between inference time and accuracy, which may be of interest in applications where online speed is prioritized over precision.",
+      "authors": [
+        "Debi S",
+        "Makmal A"
+      ],
+      "journal": "Sci Rep",
+      "publishedDate": "2025 Sep 25",
+      "keywords": [
+        "quantum",
+        "online",
+        "recommendation",
+        "datasets",
+        "which",
+        "inference",
+        "small",
+        "recommendations"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "quantum",
+        "online",
+        "recommendation",
+        "datasets",
+        "which",
+        "inference",
+        "small",
+        "recommendations"
+      ],
+      "externalId": "40998861",
+      "source": "PubMed"
+    },
+    {
+      "title": "Machine-learned density functional based quantum chemical computations for ethane: performance of DeepMind 21 on potential energy surface and molecular properties.",
+      "abstract": "Machine learning (ML) has proven to be a promising method in quantum chemistry calculations. Researchers at Google DeepMind established the superior performance of a machine-learned functional DeepMind 21 (DM21), the neural network-based functionals which emerged as a powerful tool for developing exchange-correlation energy approximation in density functional theory (DFT), to accurately explain the charge delocalization and strong correlation. While many researchers have cited the work of DeepMind, still there remains a paucity of research publications that perform algorithmic computations with DeepMind's AI model for quantum sciences. To address this lacuna, this paper investigates quantum chemistry algorithmic computations of potential energy surface and analysis properties of ethane molecule (C2H6) by employing the machine learning model to predict exchange-correlation potential. This paper utilizes neural density functional, DeepMind 21 to compute the dipole moment, molecular orbitals (HOMO/LUMO), and long-range interactions. Our computations were based on DM21m TensorFlow neural network model-based prediction of exchange-correlation potential, and then using this prediction to compute self-consistent field energies using PySCF Python package with cc-pVDZ Dunning dual basis set. The accuracy of the DM21 functional was rigorously assessed through comparison with conventional DFT methods (B3LYP, PW6B95) and the reference CCSD(T) standard. The findings indicate that the DM21 functional yields result in close agreement with the CCSD(T) benchmark energies and established literature values, confirming its efficacy for PES generation and quantum chemical computation in systems like ethane. This investigation demonstrates the suitability of the deep learning density functional for quantum science computations of ethane molecule for the first time.",
+      "authors": [
+        "Jijila B",
+        "Ezhilarasi SS",
+        "Nirmala V"
+      ],
+      "journal": "J Mol Model",
+      "publishedDate": "2025 Sep 25",
+      "keywords": [
+        "functional",
+        "quantum",
+        "deepmind",
+        "correlation",
+        "computations",
+        "machine",
+        "learning",
+        "dm21"
+      ],
+      "researchField": "Computer Science",
+      "subjects": [
+        "functional",
+        "quantum",
+        "deepmind",
+        "correlation",
+        "computations",
+        "machine",
+        "learning",
+        "dm21"
+      ],
+      "externalId": "40996570",
+      "source": "PubMed"
+    },
+    {
+      "title": "Quantum Speedups for Multiproposal MCMC.",
+      "abstract": "Multiproposal Markov chain Monte Carlo (MCMC) algorithms choose from multiple proposals to generate their next chain step in order to sample from challenging target distributions more efficiently. However, on classical machines, these algorithms require &#x1d4aa; ( P ) target evaluations for each Markov chain step when choosing from P proposals. Recent work demonstrates the possibility of quadratic quantum speedups for one such multiproposal MCMC algorithm. After generating P proposals, this quantum parallel MCMC (QPMCMC) algorithm requires only &#x1d4aa; ( P ) target evaluations at each step, outperforming its classical counterpart. However, generating P proposals using classical computers still requires &#x1d4aa; ( P ) time complexity, resulting in the overall complexity of QPMCMC remaining &#x1d4aa; ( P ) . Here, we present a new, faster quantum multiproposal MCMC strategy, QPMCMC2. With a specially designed Tjelmeland distribution that generates proposals close to the input state, QPMCMC2 requires only &#x1d4aa; ( 1 ) target evaluations and &#x1d4aa; ( log  P ) qubits when computing over a large number of proposals P . Unlike its slower predecessor, the QPMCMC2 Markov kernel (1) maintains detailed balance exactly and (2) is fully explicit for a large class of graphical models. We demonstrate this flexibility by applying QPMCMC2 to novel Ising-type models built on bacterial evolutionary networks and obtain significant speedups for Bayesian ancestral trait reconstruction for 248 observed salmonella bacteria.",
+      "authors": [
+        "Lin CY",
+        "Chen KC",
+        "Lemey P",
+        "Suchard MA",
+        "Holbrook AJ",
+        "Hsieh MH"
+      ],
+      "journal": "Bayesian Anal",
+      "publishedDate": "2025 Aug 18",
+      "keywords": [
+        "proposals",
+        "x1d4aa",
+        "mcmc",
+        "target",
+        "qpmcmc2",
+        "multiproposal",
+        "markov",
+        "chain"
+      ],
+      "researchField": "Computer Science",
+      "subjects": [
+        "proposals",
+        "x1d4aa",
+        "mcmc",
+        "target",
+        "qpmcmc2",
+        "multiproposal",
+        "markov",
+        "chain"
+      ],
+      "externalId": "40995377",
+      "source": "PubMed"
+    },
+    {
+      "title": "Low-overhead transversal fault tolerance for universal quantum computation.",
+      "abstract": "Fast, reliable logical operations are essential for realizing useful quantum computers1-3. By redundantly encoding logical qubits into many physical qubits and using syndrome measurements to detect and correct errors, we can achieve low logical error rates. However, for many practical quantum error correction codes such as the surface code, owing to syndrome measurement errors, standard constructions require multiple extraction rounds-of the order of the code distance d-for fault-tolerant computation, particularly considering fault-tolerant state preparation4-12. Here we show that logical operations can be performed fault-tolerantly with only a constant number of extraction rounds for a broad class of quantum error correction codes, including the surface code with magic state inputs and feedforward, to achieve 'transversal algorithmic fault tolerance'. Through the combination of transversal operations7 and new strategies for correlated decoding13, despite only having access to partial syndrome information, we prove that the deviation from the ideal logical measurement distribution can be made exponentially small in the distance, even if the instantaneous quantum state cannot be made close to a logical codeword because of measurement errors. We supplement this proof with circuit-level simulations in a range of relevant settings, demonstrating the fault tolerance and competitive performance of our approach. Our work sheds new light on the theory of quantum fault tolerance and has the potential to reduce the space-time cost of practical fault-tolerant quantum computation by over an order of magnitude.",
+      "authors": [
+        "Zhou H",
+        "Zhao C",
+        "Cain M",
+        "Bluvstein D",
+        "Maskara N",
+        "Duckering C",
+        "Hu HY",
+        "Wang ST",
+        "Kubica A",
+        "Lukin MD"
+      ],
+      "journal": "Nature",
+      "publishedDate": "2025 Sep 24",
+      "keywords": [
+        "fault",
+        "logical",
+        "quantum",
+        "syndrome",
+        "errors",
+        "error",
+        "code",
+        "measurement"
+      ],
+      "researchField": "Physics",
+      "subjects": [
+        "fault",
+        "logical",
+        "quantum",
+        "syndrome",
+        "errors",
+        "error",
+        "code",
+        "measurement"
+      ],
+      "externalId": "40993394",
+      "source": "PubMed"
+    },
+    {
+      "title": "A novel framework for secure cryptocurrency transactions using quantum crypto guard.",
+      "abstract": "In today's digital world, cryptocurrencies like Bitcoin can secure transactions without banks. However, the rise of quantum computing poses significant threats to their security, as traditional cryptographic methods may be easily compromised. In addition, the existing algorithms face difficulties like slow transaction speeds, interoperability issues between different cryptocurrencies, and privacy concerns. Hence, Quantum Crypto Guard for Secure Transactions (QCG-ST), a novel blockchain framework, is introduced, offering enhanced security and efficiency for cryptocurrency transactions. The QCG-ST employs lattice-based cryptography to provide robust protection against quantum threats and incorporates a new consensus mechanism to increase the transaction speed and reduce energy consumption. The QCG-ST system uses lattice-based encryption that is based on the Ring Learning With Errors (Ring-LWE) issue to protect itself from quantum assaults. It uses sharding, a Proof-of-Stake (PoS) consensus method, and a threshold signature scheme (TSS) to make the system more scalable and use less energy. Zero-knowledge proofs (ZKPs) are used to check transactions without giving out private information. We offer a cross-chain atomic swap protocol that uses hashed time-lock contracts to make sure that it works on all platforms. Blockchain transaction data utilized in testing originated from the Bitcoin Historical Dataset available on Kaggle, and quantum resistance has been assessed using the Qiskit Aer simulator. It evaluated the framework's performance to that of traditional methods like Payment Channel-Lightning Network (PC-LN), Variational Quantum Eigensolver (VQE), and Cross-Chain Transaction with Hyperledger (CCT-H). Results show that QCG-ST does far better than traditional systems in terms of transaction success rate (up to 98.5%), speed, energy efficiency, latency, and throughput, especially when tested in a quantum-simulated environment. This study completes in an essential vacuum in blockchain technology by suggesting a strong, quantum-resistant, privacy-protecting architecture that can handle the problems that could arise up in decentralized digital banking in the future.",
+      "authors": [
+        "Alsayaydeh JAJ",
+        "Yusof MF",
+        "Yahaya NA",
+        "Kovtun V",
+        "Herawan SG"
+      ],
+      "journal": "PeerJ Comput Sci",
+      "publishedDate": "2025",
+      "keywords": [
+        "quantum",
+        "transaction",
+        "transactions",
+        "like",
+        "traditional",
+        "blockchain",
+        "based",
+        "energy"
+      ],
+      "researchField": "Computer Science",
+      "subjects": [
+        "quantum",
+        "transaction",
+        "transactions",
+        "like",
+        "traditional",
+        "blockchain",
+        "based",
+        "energy"
+      ],
+      "externalId": "40989389",
+      "source": "PubMed"
+    }
+  ]
+}

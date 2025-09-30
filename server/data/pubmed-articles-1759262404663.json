@@ -1,0 +1,609 @@
+{
+  "articles": [
+    {
+      "title": "Wearable interactive full-body motion tracking and haptic feedback network systems with deep learning.",
+      "abstract": "The increasing demand for motion tracking systems has been accelerated by advancements in virtual reality (VR) and motion reconstruction technologies. Combined with emerging innovations in the Internet of Things (IoT), these systems have unlocked transformative applications, from immersive user experiences to personalized healthcare solutions. However, conventional motion tracking systems often fall short of delivering sophisticated tracking and feedback capabilities, while systems designed for detailed motion analysis are typically costly and limited to controlled environments. This study introduces a cost-effective motion tracking system that integrates full-body motion analysis with real-time, bidirectional haptic feedback. Utilizing flexible, patch-type epidermal haptic devices alongside a remote machine&#x2011;learning framework, the system captures full&#x2011;body motion and delivers personalized, time&#x2011;synchronized feedback. Its closed&#x2011;loop design lays the groundwork for real&#x2011;time bidirectional haptic cues that accommodate user responsiveness and engagement.",
+      "authors": [
+        "Park SU",
+        "Lee HK",
+        "Kim HB",
+        "Kim D",
+        "Kim W",
+        "Joo J",
+        "Kim B",
+        "Lee BW",
+        "Jung YH",
+        "Park S",
+        "Chun IY",
+        "Jeong H",
+        "Kang J",
+        "Yoo JY",
+        "Won SM"
+      ],
+      "journal": "Nat Commun",
+      "publishedDate": "2025 Sep 29",
+      "keywords": [
+        "motion",
+        "x2011",
+        "tracking",
+        "systems",
+        "feedback",
+        "time",
+        "haptic",
+        "user"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "motion",
+        "x2011",
+        "tracking",
+        "systems",
+        "feedback",
+        "time",
+        "haptic",
+        "user"
+      ],
+      "externalId": "41022813",
+      "source": "PubMed"
+    },
+    {
+      "title": "Modelling Follicular Growth During Ovarian Stimulation Using Agent-based Artificial Intelligence.",
+      "abstract": "Ovarian stimulation is a key step in medically assisted reproduction (MAR), whereby supraphysiological doses of FSH extend the 'FSH window' and induce multi-follicular growth. However, only limited data exist examining individual follicular growth rates during fertility treatment.",
+      "authors": [
+        "Hramyka A",
+        "Kelsey TW",
+        "Hanassab S",
+        "Nelson SM",
+        "Yeung AC",
+        "Saravelos S",
+        "Salim R",
+        "Comninos AN",
+        "Tsaneva-Atanasova K",
+        "Voliotis M",
+        "Trew GH",
+        "Heinis T",
+        "Dhillo WS",
+        "Abbara A"
+      ],
+      "journal": "J Clin Endocrinol Metab",
+      "publishedDate": "2025 Sep 30",
+      "keywords": [
+        "follicular",
+        "growth",
+        "ovarian",
+        "stimulation",
+        "step",
+        "medically",
+        "assisted",
+        "reproduction"
+      ],
+      "researchField": "Medicine",
+      "subjects": [
+        "follicular",
+        "growth",
+        "ovarian",
+        "stimulation",
+        "step",
+        "medically",
+        "assisted",
+        "reproduction"
+      ],
+      "externalId": "41022662",
+      "source": "PubMed"
+    },
+    {
+      "title": "Predicting risk of early-onset sepsis in low-resource neonatal units using routine healthcare data: development and evaluation of multivariable statistical and machine learning models.",
+      "abstract": "Neonatal sepsis is a major cause of morbidity and mortality in low-resource settings and accurate, context-appropriate diagnostic methods are urgently needed to improve clinical outcomes.",
+      "authors": [
+        "Lowther E",
+        "Khan N",
+        "Cortina-Borja M",
+        "Chimhini GL",
+        "Neal SR",
+        "Mangiza M",
+        "Fitzgerald F",
+        "Heys M",
+        "Chimhuya S"
+      ],
+      "journal": "BMJ Paediatr Open",
+      "publishedDate": "2025 Sep 29",
+      "keywords": [
+        "neonatal",
+        "sepsis",
+        "major",
+        "cause",
+        "morbidity",
+        "mortality",
+        "resource",
+        "settings"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "neonatal",
+        "sepsis",
+        "major",
+        "cause",
+        "morbidity",
+        "mortality",
+        "resource",
+        "settings"
+      ],
+      "externalId": "41022643",
+      "source": "PubMed"
+    },
+    {
+      "title": "Role of artificial intelligence in virtual emergency care: a protocol for a systematic review.",
+      "abstract": "Artificial intelligence (AI) has the potential to revolutionise healthcare delivery, particularly in the domain of emergency medicine. With the rise of telemedicine and virtual care, AI-powered tools could assist in triage, diagnosis and treatment recommendations for patients seeking emergency care remotely. This systematic review aims to synthesise the current state of research on AI applications in virtual emergency care, identify key challenges and opportunities and provide recommendations for future research and implementation.",
+      "authors": [
+        "Shankar R",
+        "Wang L",
+        "Hoe HS",
+        "Liew MF",
+        "Gollamudi SPK",
+        "Wong S"
+      ],
+      "journal": "BMJ Open",
+      "publishedDate": "2025 Sep 28",
+      "keywords": [
+        "emergency",
+        "care",
+        "virtual",
+        "recommendations",
+        "artificial",
+        "intelligence",
+        "potential",
+        "revolutionise"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "emergency",
+        "care",
+        "virtual",
+        "recommendations",
+        "artificial",
+        "intelligence",
+        "potential",
+        "revolutionise"
+      ],
+      "externalId": "41022432",
+      "source": "PubMed"
+    },
+    {
+      "title": "Impact of health information on medical, dental, and long-term care costs for patients with type 2 diabetes utilizing care insurance.",
+      "abstract": "Objective: With the growing burden of type 2 diabetes and its associated healthcare costs, the factors influencing future expenditures, particularly among long-term care insurance (LTCI) users, must be identified. Few studies have addressed the prediction of multiple cost domains, including medical, LTC, and dental expenditures. This study predicted medical, dental, and LTC costs in the following year for patients with type 2 diabetes and identified key predictors based on health information from the previous year. Methods: We applied three machine learning models-random forest, boosted trees, and neural networks-to LTCI users' data in Japan and incorporated prior-year healthcare costs, service usage patterns, and diabetes status. Results: In the 2019 medical cost model, boosted trees showed the best performance for those aged 74 or younger (R2 = 0.46, RMSE = 151,804 JPY). LTC costs were influenced by prior LTC spending (&#x223c;40%) and facility service use (30-50%), while dental costs were predicted by prior dental expenditures. Conclusions: Prior-year medical costs strongly influenced later medical expenditures, while LTC costs reflected prior LTC spending and facility use. These quantified relationships provide insights for healthcare cost optimization and support policymakers in designing preventive strategies and care systems for aging populations with chronic diseases.",
+      "authors": [
+        "Suzuki T",
+        "Saito H",
+        "Enomoto H",
+        "Aoyama T",
+        "Nagai W",
+        "Ogasawara K"
+      ],
+      "journal": "Health Informatics J",
+      "publishedDate": "2025 Jul-Sep",
+      "keywords": [
+        "costs",
+        "medical",
+        "prior",
+        "expenditures",
+        "dental",
+        "year",
+        "diabetes",
+        "healthcare"
+      ],
+      "researchField": "Medicine",
+      "subjects": [
+        "costs",
+        "medical",
+        "prior",
+        "expenditures",
+        "dental",
+        "year",
+        "diabetes",
+        "healthcare"
+      ],
+      "externalId": "41022146",
+      "source": "PubMed"
+    },
+    {
+      "title": "Estimating heterogeneous impacts Of subsidised health insurance: A causal machine learning approach.",
+      "abstract": "The evaluation of social and health policies often necessitates understanding the variations in impacts based on recipients' observed characteristics, underscoring the value of estimating treatment effect heterogeneity. In this study, we leverage predictive and causal machine learning to assess the impact of the subsidised component of Indonesia's National Health Insurance Programme (\"JKN\") on healthcare utilisation in 2017. We employ causal forests for estimating heterogeneous treatment effects and the super learner algorithm for prediction tasks. Our approach addresses the prevalence of zeros in the utilisation outcomes through a two-part model, which separates the outcome model into zero and non-zero counts. This allows for distinct investigation of policy impacts on the decision to seek care and the quantity of care consumed. We interpret and summarise treatment effect heterogeneity using various approaches, including data-driven subgroup analyses and linear projections, which are grounded in theory. Our results demonstrate a positive average impact on healthcare demand with evident heterogeneity; for instance, the increase in demand varies among recipients. We also find that the effect is modified by a set of theoretically motivated covariates and those identified through our data-driven approach.",
+      "authors": [
+        "Shah V",
+        "Kreif N"
+      ],
+      "journal": "PLoS One",
+      "publishedDate": "2025",
+      "keywords": [
+        "treatment",
+        "effect",
+        "heterogeneity",
+        "health",
+        "impacts",
+        "recipients",
+        "estimating",
+        "causal"
+      ],
+      "researchField": "Biotechnology",
+      "subjects": [
+        "treatment",
+        "effect",
+        "heterogeneity",
+        "health",
+        "impacts",
+        "recipients",
+        "estimating",
+        "causal"
+      ],
+      "externalId": "41021617",
+      "source": "PubMed"
+    },
+    {
+      "title": "[An objective overview of lifestyle and quality of life in the Spanish population: a quantification of nutri-indices and qualitative health nutritypes].",
+      "abstract": "precision nutritional epidemiology studies require the development of initiatives to obtain objective population data that enable the implementation of health strategies. Therefore, the integration of health determinants and risk factors is essential to ensure the quality of life associated with nutrition through the use of new health indicators such as nutritypes and nutritional indices.",
+      "authors": [
+        "García Perea A",
+        "Fernández-Cruz E",
+        "de la O Pascual V",
+        "Visioli F",
+        "Moreno Aliaga MJ",
+        "González Zorzano E",
+        "Martínez Hernández JA",
+        "Martínez Hernández JA"
+      ],
+      "journal": "Nutr Hosp",
+      "publishedDate": "2025 Sep 5",
+      "keywords": [
+        "health",
+        "nutritional",
+        "precision",
+        "epidemiology",
+        "studies",
+        "require",
+        "development",
+        "initiatives"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "health",
+        "nutritional",
+        "precision",
+        "epidemiology",
+        "studies",
+        "require",
+        "development",
+        "initiatives"
+      ],
+      "externalId": "41021346",
+      "source": "PubMed"
+    },
+    {
+      "title": "Machine learning for endoscopic third ventriculostomy success prediction-a systematic review and meta-analysis.",
+      "abstract": "Endoscopic third ventriculostomy (ETV) is a common treatment for pediatric obstructive hydrocephalus, but predicting its success remains challenging. Traditional predictive tools, such as the Endoscopic Third Ventriculostomy Success Score (ETVSS) and logistic regression (LR) models, are widely used; however, recent advancements in machine learning (ML) have shown promise in improving prediction accuracy. This systematic review and meta-analysis aim to evaluate the effectiveness of ML models in predicting ETV success and compare them to traditional models.",
+      "authors": [
+        "Łajczak A",
+        "Silva YP",
+        "Łajczak P"
+      ],
+      "journal": "Childs Nerv Syst",
+      "publishedDate": "2025 Sep 29",
+      "keywords": [
+        "success",
+        "models",
+        "endoscopic",
+        "third",
+        "ventriculostomy",
+        "predicting",
+        "traditional",
+        "common"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "success",
+        "models",
+        "endoscopic",
+        "third",
+        "ventriculostomy",
+        "predicting",
+        "traditional",
+        "common"
+      ],
+      "externalId": "41021052",
+      "source": "PubMed"
+    },
+    {
+      "title": "Personalised sports rehabilitation analysis using a fitness enhanced model based on big data and deep learning.",
+      "abstract": "Health rehabilitation plays a vital role in contemporary healthcare in ensuring post-illness, post-injury, and post chronic condition recovery, and serving on maintaining or improving physical functions and overall quality of life and preventing long-term complications and conditions. Conventional approaches to rehabilitation have tended to involve off-the-shelf procedures and frequent clinical assessments.",
+      "authors": [
+        "Zhang R"
+      ],
+      "journal": "Disabil Rehabil Assist Technol",
+      "publishedDate": "2025 Sep 29",
+      "keywords": [
+        "post",
+        "rehabilitation",
+        "health",
+        "plays",
+        "vital",
+        "role",
+        "contemporary",
+        "healthcare"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "post",
+        "rehabilitation",
+        "health",
+        "plays",
+        "vital",
+        "role",
+        "contemporary",
+        "healthcare"
+      ],
+      "externalId": "41020342",
+      "source": "PubMed"
+    },
+    {
+      "title": "Machine learning prediction of post-CABG atrial fibrillation using clinical and pharmacogenomic biomarkers.",
+      "abstract": "Postoperative atrial fibrillation (POAF) is a frequent complication following coronary artery bypass grafting (CABG), significantly impacting patient prognosis and healthcare costs. This study aimed to develop an integrated predictive model for POAF risk stratification to optimize clinical management.",
+      "authors": [
+        "Hua L",
+        "Han J",
+        "Zhang S",
+        "Li Z",
+        "Qiao H",
+        "Yang B",
+        "Meng X"
+      ],
+      "journal": "Front Med (Lausanne)",
+      "publishedDate": "2025",
+      "keywords": [
+        "poaf",
+        "postoperative",
+        "atrial",
+        "fibrillation",
+        "frequent",
+        "complication",
+        "following",
+        "coronary"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "poaf",
+        "postoperative",
+        "atrial",
+        "fibrillation",
+        "frequent",
+        "complication",
+        "following",
+        "coronary"
+      ],
+      "externalId": "41020232",
+      "source": "PubMed"
+    },
+    {
+      "title": "Error-controlled non-additive interaction discovery in machine learning models.",
+      "abstract": "Machine learning (ML) models are powerful tools for detecting complex patterns, yet their 'black-box' nature limits their interpretability, hindering their use in critical domains like healthcare and finance. Interpretable ML methods aim to explain how features influence model predictions but often focus on univariate feature importance, overlooking complex feature interactions. Although recent efforts extend interpretability to feature interactions, existing approaches struggle with robustness and error control, especially under data perturbations. In this study, we introduce Diamond, a method for trustworthy feature interaction discovery. Diamond uniquely integrates the model-X knockoffs framework to control the false discovery rate, ensuring a low proportion of falsely detected interactions. Diamond includes a non-additivity distillation procedure that refines existing interaction importance measures to isolate non-additive interaction effects and preserve false discovery rate control. This approach addresses the limitations of off-the-shelf interaction measures, which, when used naively, can lead to inaccurate discoveries. Diamond's applicability spans a broad class of ML models, including deep neural networks, transformers, tree-based models and factorization-based models. Empirical evaluations on both simulated and real datasets across various biomedical studies demonstrate its utility in enabling reliable data-driven scientific discoveries. Diamond represents a significant step forward in leveraging ML for scientific innovation and hypothesis generation.",
+      "authors": [
+        "Chen W",
+        "Jiang Y",
+        "Noble WS",
+        "Lu YY"
+      ],
+      "journal": "Nat Mach Intell",
+      "publishedDate": "2025",
+      "keywords": [
+        "diamond",
+        "models",
+        "feature",
+        "interaction",
+        "their",
+        "interactions",
+        "control",
+        "discovery"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "diamond",
+        "models",
+        "feature",
+        "interaction",
+        "their",
+        "interactions",
+        "control",
+        "discovery"
+      ],
+      "externalId": "41019459",
+      "source": "PubMed"
+    },
+    {
+      "title": "Reshaping Anesthesia with Artificial Intelligence: From Concept to Reality.",
+      "abstract": "Artificial intelligence (AI) is transforming anesthesiology, showcasing applications that address patient monitoring, closed-loop anesthetic delivery, risk forecasting, customized management, and workflow betterment. This review highlights modern developments, analyzing the role of AI from early rule-based systems to machine learning and deep learning models, aided by the foundational role of anesthesia information Management Systems. AI processes depict strong performance of the clinical team and allowing anesthesiologists to intervene earlier in cases of intraoperative hypotension, acute kidney injury, tissue hypoxia, and giving them more time to focus on complex patient cases. Closed-loop systems guided by the physiologic and electroencephalogram feedback exemplify the ability of AI to maintain anesthetic stability while reducing clinician workload. Predictive models help with the American Society of Anesthesiologists' classification in categorizing the patients, airway risk stratification, and customized treatment planning with improving preoperative evaluation. A move toward precision anesthetic administration is indicated by new developments in pharmacogenomics, perioperative pain characterization, and AI-assisted ultrasonography. Beyond clinical gains, AI guarantees improved operating room efficiency through organized scheduling, natural language processing documentation. Yet, widespread integration of AI in anesthesia still faces barriers regarding ethical concerns, clinical doubt, including replicability amongst healthcare systems, and a lack of in-depth data regarding the topic. Addressing these concerns demands data from multicenters, interdisciplinary education, and integration of explainable AI frameworks that are palatable to the clinical world. Overall, AI has the potential to behave as an adjunct, instead of replacing anesthesiologists by aiding in decision making, improving patient safety, and preparing for perioperative care.",
+      "authors": [
+        "Dost A",
+        "Alaraj R",
+        "Mayet R",
+        "Agrawal DK"
+      ],
+      "journal": "Anesth Crit Care",
+      "publishedDate": "2025",
+      "keywords": [
+        "systems",
+        "clinical",
+        "patient",
+        "anesthetic",
+        "anesthesiologists",
+        "closed",
+        "loop",
+        "risk"
+      ],
+      "researchField": "Medicine",
+      "subjects": [
+        "systems",
+        "clinical",
+        "patient",
+        "anesthetic",
+        "anesthesiologists",
+        "closed",
+        "loop",
+        "risk"
+      ],
+      "externalId": "41019310",
+      "source": "PubMed"
+    },
+    {
+      "title": "Malaria RDT (mRDT) interpretation accuracy by frontline health workers compared to AI in Kano state, Nigeria.",
+      "abstract": "Although malaria is preventable and treatable, it continues to be a significant cause of illness and death. Early diagnosis through testing is critical in reducing malaria-related morbidity and mortality. Malaria rapid diagnostic tests (mRDTs) are preferred for their ease of use, sensitivity, and rapid results, yet misadministration and misinterpretation errors persist. This study investigated whether pairing an existing application with an AI-based software could enhance interpretation accuracy among Frontline Healthcare Workers (FHWs) in Kano State, Nigeria.",
+      "authors": [
+        "Frade S",
+        "Cooper S",
+        "Smedinghoff S",
+        "Hattery D",
+        "Ruan Y",
+        "Isabelli P",
+        "Ravi N",
+        "McLaughlin M",
+        "Metz L",
+        "Finette B"
+      ],
+      "journal": "BMC Digit Health",
+      "publishedDate": "2025",
+      "keywords": [
+        "malaria",
+        "rapid",
+        "although",
+        "preventable",
+        "treatable",
+        "continues",
+        "significant",
+        "cause"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "malaria",
+        "rapid",
+        "although",
+        "preventable",
+        "treatable",
+        "continues",
+        "significant",
+        "cause"
+      ],
+      "externalId": "41018674",
+      "source": "PubMed"
+    },
+    {
+      "title": "The Landscape of Wearable Sensors and Automated Literature Analysis with Large-Language Models.",
+      "abstract": "The rapid growth of scientific literature demands advanced methodologies to analyze and synthesize research trends efficiently. This paper explores the integration of complex network analysis and large language models (LLMs) to automate the generation of literature analyses, focusing on the field of wearable sensors for health monitoring. Using OpenAlex as a source of scientific papers in this field, paper citation networks were constructed and partitioned into thematic clusters, revealing key subtopics such as flexible graphene-based sensors, gait analysis, and machine learning applications. These clusters, characterized by their term importance and interconnectivity, served as input for LLMs (ChatGPT) to generate structured outlines and descriptive summaries. While LLMs produced coherent overviews, limitations emerged, including superficial analyses and inaccuracies in referenced literature. The study demonstrates the potential of combining network-based methodologies with LLMs to create scalable literature reviews, albeit with limitations to be addressed concerning depth and accuracy. The analyses highlight wearable sensors' transformative role in healthcare, driven by advancements in materials science, artificial intelligence, and device integration, while also identifying critical gaps such as standardization, biocompatibility, and energy efficiency. This hybrid approach offers a promising framework for accelerating scholarly synthesis, though today human oversight remains essential to ensure rigor and relevance.",
+      "authors": [
+        "Klarák J",
+        "D Santi VHB",
+        "Moreira LF",
+        "Andok R",
+        "Bardosova M",
+        "Oliveira MCF",
+        "Oliveira ON Jr"
+      ],
+      "journal": "ACS Omega",
+      "publishedDate": "2025 Sep 23",
+      "keywords": [
+        "literature",
+        "llms",
+        "analyses",
+        "sensors",
+        "scientific",
+        "methodologies",
+        "paper",
+        "integration"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "literature",
+        "llms",
+        "analyses",
+        "sensors",
+        "scientific",
+        "methodologies",
+        "paper",
+        "integration"
+      ],
+      "externalId": "41018584",
+      "source": "PubMed"
+    },
+    {
+      "title": "Clinical data integration and processing challenges in healthcare caused by contemporary software design.",
+      "abstract": "The quantity of patient data in healthcare is exponentially increasing. While big data and artificial intelligence have emerged across the fields, in healthcare, such rapid development is hindered by numerous factors. Predominantly, health-care software developed decades ago cannot foresee the demands of modern data processing and analysis. We present the challenges, remedies, and steps of efficient patient data integration that have been co-developed with clinicians at Lenval Children's University Hospital in Nice, France.",
+      "authors": [
+        "Petri V",
+        "Antoine T",
+        "Emma B",
+        "Hervé H",
+        "Emma F",
+        "Hana V"
+      ],
+      "journal": "Digit Health",
+      "publishedDate": "2025 Jan-Dec",
+      "keywords": [
+        "data",
+        "patient",
+        "healthcare",
+        "have",
+        "developed",
+        "quantity",
+        "exponentially",
+        "increasing"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "data",
+        "patient",
+        "healthcare",
+        "have",
+        "developed",
+        "quantity",
+        "exponentially",
+        "increasing"
+      ],
+      "externalId": "41018514",
+      "source": "PubMed"
+    },
+    {
+      "title": "Balancing privacy and performance in healthcare: A federated learning framework for sensitive data.",
+      "abstract": "To design and evaluate a privacy-preserving federated learning (PPFL) framework for sensitive healthcare data, balancing robust privacy, model performance, and computational efficiency, while promoting user trust.",
+      "authors": [
+        "Tanveer F",
+        "Iradat F",
+        "Iqbal W",
+        "Alsagri HS",
+        "Alhakbani HAA",
+        "Ahmad A",
+        "Khan FA"
+      ],
+      "journal": "Digit Health",
+      "publishedDate": "2025 Jan-Dec",
+      "keywords": [
+        "privacy",
+        "design",
+        "evaluate",
+        "preserving",
+        "federated",
+        "learning",
+        "ppfl",
+        "framework"
+      ],
+      "researchField": "General Science",
+      "subjects": [
+        "privacy",
+        "design",
+        "evaluate",
+        "preserving",
+        "federated",
+        "learning",
+        "ppfl",
+        "framework"
+      ],
+      "externalId": "41018509",
+      "source": "PubMed"
+    }
+  ]
+}

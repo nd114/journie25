@@ -222,8 +222,11 @@ Or create your own query with keywords like:
 // Export for use in other files
 export { PubMedFetcher, fetchByTopic };
 
-// Run if called directly
-if (require.main === module) {
+// Run if called directly - ES module compatible check
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMainModule) {
+  // Fetch articles based on command-line arguments
   const query = process.argv[2] || "machine learning healthcare";
   const maxResults = parseInt(process.argv[3]) || 25;
 
