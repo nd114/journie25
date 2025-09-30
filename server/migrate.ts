@@ -31,12 +31,88 @@ async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS trending_topics (
         id SERIAL PRIMARY KEY,
-        topic TEXT NOT NULL,
-        field TEXT,
-        momentum_score DECIMAL(5,2) DEFAULT 0.0,
-        paper_count INTEGER DEFAULT 0,
+        topic VARCHAR(255) NOT NULL,
+        field VARCHAR(255),
+        momentum DECIMAL(10,2) DEFAULT 0.0,
+        momentum_score DECIMAL(10,2) DEFAULT 0.0,
+        related_paper_ids INTEGER[],
+        calculated_at TIMESTAMP DEFAULT NOW(),
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create communities table
+    await sql`
+      CREATE TABLE IF NOT EXISTS communities (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100),
+        member_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create community_members table
+    await sql`
+      CREATE TABLE IF NOT EXISTS community_members (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+        joined_at TIMESTAMP DEFAULT NOW(),
+        role VARCHAR(50) DEFAULT 'member'
+      )
+    `;
+
+    // Create learning_paths table
+    await sql`
+      CREATE TABLE IF NOT EXISTS learning_paths (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        difficulty VARCHAR(50),
+        estimated_hours INTEGER,
+        steps JSONB NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create user_learning_progress table
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_learning_progress (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        path_id INTEGER REFERENCES learning_paths(id) ON DELETE CASCADE,
+        completed_steps JSONB DEFAULT '[]',
+        overall_progress INTEGER DEFAULT 0,
+        started_at TIMESTAMP DEFAULT NOW(),
+        last_accessed_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create research_tools table
+    await sql`
+      CREATE TABLE IF NOT EXISTS research_tools (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100),
+        icon VARCHAR(100),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create user_bookmarks table
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_bookmarks (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        paper_id INTEGER REFERENCES papers(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT NOW()
       )
     `;
 

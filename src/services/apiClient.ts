@@ -162,6 +162,95 @@ class ApiClient {
       body: JSON.stringify({ currentPassword, newPassword }),
     });
   }
+
+  // Communities
+  async getCommunities(category?: string) {
+    const params = category ? `?category=${category}` : '';
+    return this.request<any[]>(`/communities${params}`);
+  }
+
+  async joinCommunity(communityId: number) {
+    return this.request<any>(`/communities/${communityId}/join`, {
+      method: 'POST',
+    });
+  }
+
+  async leaveCommunity(communityId: number) {
+    return this.request<any>(`/communities/${communityId}/leave`, {
+      method: 'POST',
+    });
+  }
+
+  // Learning Paths
+  async getLearningPaths() {
+    return this.request<any[]>('/learning-paths');
+  }
+
+  async getLearningPathProgress(pathId: number) {
+    return this.request<any>(`/learning-paths/${pathId}/progress`);
+  }
+
+  async completeLearningStep(pathId: number, stepId: string) {
+    return this.request<any>(`/learning-paths/${pathId}/complete-step`, {
+      method: 'POST',
+      body: JSON.stringify({ stepId }),
+    });
+  }
+
+  // Research Tools
+  async getResearchTools() {
+    return this.request<any[]>('/tools');
+  }
+
+  async useResearchTool(toolId: number, input: any) {
+    return this.request<any>(`/tools/${toolId}/use`, {
+      method: 'POST',
+      body: JSON.stringify({ input }),
+    });
+  }
+
+  // User Bookmarks
+  async bookmarkPaper(paperId: number) {
+    return this.request<any>(`/papers/${paperId}/bookmark`, {
+      method: 'POST',
+    });
+  }
+
+  async removeBookmark(paperId: number) {
+    return this.request<any>(`/papers/${paperId}/bookmark`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getUserBookmarks() {
+    return this.request<any[]>('/user/bookmarks');
+  }
+
+  // Dashboard
+  async getDashboardData() {
+    return this.request<any>('/user/dashboard');
+  }
+
+  // Trending and Analytics
+  async getTrendingPapers(limit?: number) {
+    const params = limit ? `?limit=${limit}` : '';
+    return this.request<any[]>(`/papers/trending${params}`);
+  }
+
+  async recordPaperView(paperId: number, readTime?: number) {
+    return this.request<any>(`/papers/${paperId}/view`, {
+      method: 'POST',
+      body: JSON.stringify({ 
+        sessionId: `session_${Date.now()}`,
+        readTime 
+      }),
+    });
+  }
+
+  async getRecommendations(limit?: number) {
+    const params = limit ? `?limit=${limit}` : '';
+    return this.request<any[]>(`/recommendations${params}`);
+  }
 }
 
 export const apiClient = new ApiClient();

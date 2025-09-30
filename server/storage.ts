@@ -60,6 +60,26 @@ export interface IStorage {
   // Trending topics
   getTrendingTopics(limit?: number): Promise<any[]>;
   updateTrendingTopics(): Promise<void>;
+
+  // Communities
+  getCommunities(category?: string): Promise<any[]>;
+  joinCommunity(userId: number, communityId: number): Promise<void>;
+  leaveCommunity(userId: number, communityId: number): Promise<void>;
+
+  // Learning paths
+  getLearningPaths(): Promise<any[]>;
+  getLearningPathProgress(userId: number, pathId: number): Promise<any>;
+  completeLearningStep(userId: number, pathId: number, stepId: string): Promise<any>;
+
+  // Research tools
+  getResearchTools(): Promise<any[]>;
+  useResearchTool(toolId: number, input: any, userId: number): Promise<any>;
+
+  // User bookmarks and engagement
+  bookmarkPaper(userId: number, paperId: number): Promise<void>;
+  removeBookmark(userId: number, paperId: number): Promise<void>;
+  getUserBookmarks(userId: number): Promise<any[]>;
+  getUserDashboardData(userId: number): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -525,6 +545,250 @@ export class DatabaseStorage implements IStorage {
           calculatedAt: new Date(),
         }
       });
+    }
+  }
+
+  // Communities implementation
+  async getCommunities(category?: string) {
+    try {
+      // Mock communities data - in real app, this would come from database
+      const allCommunities = [
+        {
+          id: 1,
+          name: 'AI & Machine Learning',
+          description: 'Discuss latest developments in artificial intelligence and machine learning research.',
+          memberCount: 1240,
+          category: 'Technology',
+          isJoined: false
+        },
+        {
+          id: 2,
+          name: 'Climate Science',
+          description: 'Community for researchers working on climate change and environmental science.',
+          memberCount: 890,
+          category: 'Environment',
+          isJoined: false
+        },
+        {
+          id: 3,
+          name: 'Quantum Computing',
+          description: 'Explore quantum computing research, algorithms, and applications.',
+          memberCount: 567,
+          category: 'Technology',
+          isJoined: false
+        },
+        {
+          id: 4,
+          name: 'Medical Research',
+          description: 'Share and discuss medical research findings and methodologies.',
+          memberCount: 2100,
+          category: 'Medicine',
+          isJoined: false
+        }
+      ];
+
+      return category ? allCommunities.filter(c => c.category === category) : allCommunities;
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+      return [];
+    }
+  }
+
+  async joinCommunity(userId: number, communityId: number) {
+    // Mock implementation - would insert into community_members table
+    console.log(`User ${userId} joined community ${communityId}`);
+  }
+
+  async leaveCommunity(userId: number, communityId: number) {
+    // Mock implementation - would delete from community_members table
+    console.log(`User ${userId} left community ${communityId}`);
+  }
+
+  // Learning paths implementation
+  async getLearningPaths() {
+    try {
+      return [
+        {
+          id: 1,
+          title: 'Introduction to Research Methods',
+          description: 'Learn the fundamentals of scientific research methodology.',
+          difficulty: 'Beginner',
+          estimatedHours: 20,
+          steps: [
+            { id: 'step1', title: 'Understanding Research Questions', completed: false },
+            { id: 'step2', title: 'Literature Review Techniques', completed: false },
+            { id: 'step3', title: 'Data Collection Methods', completed: false }
+          ]
+        },
+        {
+          id: 2,
+          title: 'Advanced Statistical Analysis',
+          description: 'Master statistical techniques for research data analysis.',
+          difficulty: 'Advanced',
+          estimatedHours: 40,
+          steps: [
+            { id: 'step1', title: 'Descriptive Statistics', completed: false },
+            { id: 'step2', title: 'Inferential Statistics', completed: false },
+            { id: 'step3', title: 'Advanced Modeling', completed: false }
+          ]
+        }
+      ];
+    } catch (error) {
+      console.error('Error fetching learning paths:', error);
+      return [];
+    }
+  }
+
+  async getLearningPathProgress(userId: number, pathId: number) {
+    // Mock implementation - would query user_learning_progress table
+    return {
+      pathId,
+      userId,
+      completedSteps: [],
+      overallProgress: 0,
+      startedAt: new Date(),
+      lastAccessedAt: new Date()
+    };
+  }
+
+  async completeLearningStep(userId: number, pathId: number, stepId: string) {
+    // Mock implementation - would update user_learning_progress table
+    return {
+      stepId,
+      completedAt: new Date(),
+      xpGained: 15
+    };
+  }
+
+  // Research tools implementation
+  async getResearchTools() {
+    try {
+      return [
+        {
+          id: 1,
+          name: 'Citation Generator',
+          description: 'Generate properly formatted citations in various academic styles.',
+          category: 'Writing',
+          icon: 'FileText'
+        },
+        {
+          id: 2,
+          name: 'Statistical Calculator',
+          description: 'Perform statistical calculations and hypothesis testing.',
+          category: 'Analysis',
+          icon: 'Calculator'
+        },
+        {
+          id: 3,
+          name: 'Research Planner',
+          description: 'Plan and organize your research timeline and milestones.',
+          category: 'Planning',
+          icon: 'Calendar'
+        },
+        {
+          id: 4,
+          name: 'Data Visualizer',
+          description: 'Create charts and graphs from your research data.',
+          category: 'Visualization',
+          icon: 'BarChart'
+        }
+      ];
+    } catch (error) {
+      console.error('Error fetching research tools:', error);
+      return [];
+    }
+  }
+
+  async useResearchTool(toolId: number, input: any, userId: number) {
+    // Mock implementation for different tools
+    switch (toolId) {
+      case 1: // Citation Generator
+        return {
+          result: `Author, A. (2024). ${input.title || 'Sample Title'}. Journal Name, 1(1), 1-10.`,
+          format: 'APA'
+        };
+      case 2: // Statistical Calculator
+        return {
+          result: 'Mean: 25.5, Standard Deviation: 3.2, p-value: 0.045',
+          significant: true
+        };
+      case 3: // Research Planner
+        return {
+          timeline: [
+            { phase: 'Literature Review', duration: '2 weeks' },
+            { phase: 'Data Collection', duration: '4 weeks' },
+            { phase: 'Analysis', duration: '3 weeks' },
+            { phase: 'Writing', duration: '3 weeks' }
+          ]
+        };
+      case 4: // Data Visualizer
+        return {
+          chartUrl: '/api/charts/generated-chart.png',
+          chartType: 'bar'
+        };
+      default:
+        return { result: 'Tool not implemented' };
+    }
+  }
+
+  // User bookmarks and engagement
+  async bookmarkPaper(userId: number, paperId: number) {
+    // Mock implementation - would insert into user_bookmarks table
+    console.log(`User ${userId} bookmarked paper ${paperId}`);
+  }
+
+  async removeBookmark(userId: number, paperId: number) {
+    // Mock implementation - would delete from user_bookmarks table
+    console.log(`User ${userId} removed bookmark for paper ${paperId}`);
+  }
+
+  async getUserBookmarks(userId: number) {
+    try {
+      // Mock implementation - would join papers and user_bookmarks tables
+      return await db.query.papers.findMany({
+        where: eq(papers.isPublished, true),
+        limit: 5,
+        orderBy: [desc(papers.createdAt)]
+      });
+    } catch (error) {
+      console.error('Error fetching user bookmarks:', error);
+      return [];
+    }
+  }
+
+  async getUserDashboardData(userId: number) {
+    try {
+      const recentPapers = await db.query.papers.findMany({
+        where: eq(papers.createdBy, userId),
+        limit: 5,
+        orderBy: [desc(papers.updatedAt)]
+      });
+
+      const progress = await this.getUserProgress(userId);
+      const achievements = await this.getUserAchievements(userId);
+      const bookmarks = await this.getUserBookmarks(userId);
+
+      return {
+        recentPapers,
+        progress,
+        achievements: achievements.slice(0, 3),
+        bookmarks: bookmarks.slice(0, 5),
+        stats: {
+          totalPapers: recentPapers.length,
+          totalViews: recentPapers.reduce((sum, p) => sum + (p.viewCount || 0), 0),
+          level: progress?.level || 1,
+          xp: progress?.xp || 0
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      return {
+        recentPapers: [],
+        progress: null,
+        achievements: [],
+        bookmarks: [],
+        stats: { totalPapers: 0, totalViews: 0, level: 1, xp: 0 }
+      };
     }
   }
 }

@@ -517,6 +517,141 @@ app.get("/api/trending-topics", async (req, res) => {
   }
 });
 
+// Communities endpoints
+app.get("/api/communities", async (req, res) => {
+  try {
+    const { category } = req.query;
+    const communities = await storage.getCommunities(category as string);
+    res.json(communities);
+  } catch (error) {
+    console.error("Error fetching communities:", error);
+    res.status(500).json({ error: "Failed to fetch communities" });
+  }
+});
+
+app.post("/api/communities/:id/join", authenticateToken, async (req: any, res) => {
+  try {
+    const communityId = parseInt(req.params.id);
+    await storage.joinCommunity(req.user.id, communityId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error joining community:", error);
+    res.status(500).json({ error: "Failed to join community" });
+  }
+});
+
+app.post("/api/communities/:id/leave", authenticateToken, async (req: any, res) => {
+  try {
+    const communityId = parseInt(req.params.id);
+    await storage.leaveCommunity(req.user.id, communityId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error leaving community:", error);
+    res.status(500).json({ error: "Failed to leave community" });
+  }
+});
+
+// Learning paths endpoints
+app.get("/api/learning-paths", async (req, res) => {
+  try {
+    const paths = await storage.getLearningPaths();
+    res.json(paths);
+  } catch (error) {
+    console.error("Error fetching learning paths:", error);
+    res.status(500).json({ error: "Failed to fetch learning paths" });
+  }
+});
+
+app.get("/api/learning-paths/:id/progress", authenticateToken, async (req: any, res) => {
+  try {
+    const pathId = parseInt(req.params.id);
+    const progress = await storage.getLearningPathProgress(req.user.id, pathId);
+    res.json(progress);
+  } catch (error) {
+    console.error("Error fetching learning path progress:", error);
+    res.status(500).json({ error: "Failed to fetch progress" });
+  }
+});
+
+app.post("/api/learning-paths/:id/complete-step", authenticateToken, async (req: any, res) => {
+  try {
+    const pathId = parseInt(req.params.id);
+    const { stepId } = req.body;
+    const progress = await storage.completeLearningStep(req.user.id, pathId, stepId);
+    res.json(progress);
+  } catch (error) {
+    console.error("Error completing learning step:", error);
+    res.status(500).json({ error: "Failed to complete step" });
+  }
+});
+
+// Research tools endpoints
+app.get("/api/tools", async (req, res) => {
+  try {
+    const tools = await storage.getResearchTools();
+    res.json(tools);
+  } catch (error) {
+    console.error("Error fetching research tools:", error);
+    res.status(500).json({ error: "Failed to fetch research tools" });
+  }
+});
+
+app.post("/api/tools/:id/use", authenticateToken, async (req: any, res) => {
+  try {
+    const toolId = parseInt(req.params.id);
+    const { input } = req.body;
+    const result = await storage.useResearchTool(toolId, input, req.user.id);
+    res.json(result);
+  } catch (error) {
+    console.error("Error using research tool:", error);
+    res.status(500).json({ error: "Failed to use research tool" });
+  }
+});
+
+// User bookmarks
+app.post("/api/papers/:id/bookmark", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    await storage.bookmarkPaper(req.user.id, paperId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error bookmarking paper:", error);
+    res.status(500).json({ error: "Failed to bookmark paper" });
+  }
+});
+
+app.delete("/api/papers/:id/bookmark", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    await storage.removeBookmark(req.user.id, paperId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error removing bookmark:", error);
+    res.status(500).json({ error: "Failed to remove bookmark" });
+  }
+});
+
+app.get("/api/user/bookmarks", authenticateToken, async (req: any, res) => {
+  try {
+    const bookmarks = await storage.getUserBookmarks(req.user.id);
+    res.json(bookmarks);
+  } catch (error) {
+    console.error("Error fetching bookmarks:", error);
+    res.status(500).json({ error: "Failed to fetch bookmarks" });
+  }
+});
+
+// User dashboard data
+app.get("/api/user/dashboard", authenticateToken, async (req: any, res) => {
+  try {
+    const data = await storage.getUserDashboardData(req.user.id);
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    res.status(500).json({ error: "Failed to fetch dashboard data" });
+  }
+});
+
 // Phase 3: Gamification and Creator Tools endpoints
 
 // Get user progress and quests

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 
@@ -8,9 +7,14 @@ interface TrendingPaper {
   authors: string[];
   abstract: string;
   field: string;
-  viewCount: number;
-  trendingScore: number;
+  metrics: {
+    views: number;
+    discussions: number;
+    citations: number;
+    trend: string;
+  };
   publishedAt: string;
+  isBookmarked: boolean;
 }
 
 export function TrendingResearch() {
@@ -19,40 +23,70 @@ export function TrendingResearch() {
   const [fieldFilter, setFieldFilter] = useState('all');
 
   useEffect(() => {
-    // Mock data - in real app, fetch from API
-    setTrendingPapers([
-      {
-        id: 1,
-        title: 'Revolutionary Quantum Error Correction Using AI-Optimized Protocols',
-        authors: ['Dr. Sarah Chen', 'Prof. Michael Rodriguez'],
-        abstract: 'We present a novel approach to quantum error correction that leverages machine learning to optimize correction protocols in real-time...',
-        field: 'Quantum Computing',
-        viewCount: 12500,
-        trendingScore: 98.5,
-        publishedAt: '2024-01-15'
-      },
-      {
-        id: 2,
-        title: 'CRISPR-Cas9 Breakthrough: Precision Gene Editing in Neural Tissue',
-        authors: ['Dr. Emma Watson', 'Dr. James Liu', 'Prof. Sarah Johnson'],
-        abstract: 'Our research demonstrates unprecedented precision in gene editing within neural tissue using modified CRISPR-Cas9 systems...',
-        field: 'Biotechnology',
-        viewCount: 9800,
-        trendingScore: 94.2,
-        publishedAt: '2024-01-12'
-      },
-      {
-        id: 3,
-        title: 'Climate Tipping Points: New Models Predict Earlier Timeline',
-        authors: ['Prof. David Kim', 'Dr. Maria Santos'],
-        abstract: 'Advanced climate modeling reveals that critical tipping points may occur 15-20 years earlier than previously predicted...',
-        field: 'Climate Science',
-        viewCount: 15200,
-        trendingScore: 92.8,
-        publishedAt: '2024-01-10'
+    loadTrendingPapers();
+  }, [timeFilter, fieldFilter]); // Added dependencies to re-fetch on filter change
+
+  const loadTrendingPapers = async () => {
+    try {
+      // Construct API URL with filters
+      const apiUrl = `/api/papers/trending?time=${timeFilter}&field=${fieldFilter}&limit=10`;
+      const response = await fetch(apiUrl);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const formattedPapers = data.map((paper: any) => ({
+          id: paper.id,
+          title: paper.title,
+          authors: paper.authors || ['Unknown Author'],
+          abstract: paper.abstract || 'No abstract available',
+          field: paper.researchField || 'Uncategorized',
+          metrics: {
+            views: paper.viewCount || 0,
+            discussions: paper.metrics?.discussions || 0, // Assuming metrics object from backend
+            citations: paper.metrics?.citations || 0, // Assuming metrics object from backend
+            trend: paper.metrics?.trend || "+0%" // Assuming metrics object from backend
+          },
+          publishedAt: paper.publishedAt || paper.createdAt,
+          isBookmarked: paper.isBookmarked || false // Assuming backend provides bookmark status
+        }));
+        setTrendingPapers(formattedPapers);
+      } else {
+        console.error('Failed to load trending papers:', response.statusText);
+        // Optionally set an error state here
       }
-    ]);
-  }, [timeFilter, fieldFilter]);
+    } catch (error) {
+      console.error('Error fetching trending papers:', error);
+      // Optionally set an error state here
+    }
+  };
+
+  const handleBookmark = async (paperId: number) => {
+    try {
+      const paper = trendingPapers.find(p => p.id === paperId);
+      if (!paper) return;
+
+      const endpoint = paper.isBookmarked ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/papers/${paperId}/bookmark`, {
+        method: endpoint,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setTrendingPapers(prev => prev.map(p => 
+          p.id === paperId ? { ...p, isBookmarked: !p.isBookmarked } : p
+        ));
+      } else {
+        console.error('Failed to update bookmark:', response.statusText);
+        // Optionally show error to user
+      }
+    } catch (error) {
+      console.error('Error updating bookmark:', error);
+      // Optionally show error to user
+    }
+  };
 
   const timeFilters = [
     { value: 'day', label: 'Today' },
@@ -66,7 +100,7 @@ export function TrendingResearch() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Trending Research</h1>
@@ -109,57 +143,64 @@ export function TrendingResearch() {
 
         {/* Trending Papers */}
         <div className="space-y-6">
-          {trendingPapers.map((paper, index) => (
-            <div key={paper.id} className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                      index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-500' : 'bg-blue-500'
-                    }`}>
-                      {index + 1}
+          {trendingPapers.length === 0 ? (
+            <p className="text-center text-gray-500 py-10">No trending papers found. Try adjusting filters.</p>
+          ) : (
+            trendingPapers.map((paper, index) => (
+              <div key={paper.id} className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                        index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-500' : 'bg-blue-500'
+                      }`}>
+                        {index + 1}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{paper.title}</h3>
+                      <p className="text-sm text-gray-600 mb-1">
+                        by {paper.authors.join(', ')}
+                      </p>
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          {paper.field}
+                        </span>
+                        <span>{paper.metrics.views.toLocaleString()} views</span>
+                        <span>Published {new Date(paper.publishedAt).toLocaleDateString()}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{paper.title}</h3>
-                    <p className="text-sm text-gray-600 mb-1">
-                      by {paper.authors.join(', ')}
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        {paper.field}
-                      </span>
-                      <span>{paper.viewCount.toLocaleString()} views</span>
-                      <span>Published {new Date(paper.publishedAt).toLocaleDateString()}</span>
-                    </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-green-600">{paper.metrics.trend}</div>
+                    <div className="text-xs text-gray-500">Trend</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-600">{paper.trendingScore}</div>
-                  <div className="text-xs text-gray-500">Trending Score</div>
+
+                <p className="text-gray-700 mb-4">{paper.abstract}</p>
+
+                <div className="flex justify-between items-center">
+                  <button className="text-blue-600 hover:text-blue-800 font-medium">
+                    Read Full Paper →
+                  </button>
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => handleBookmark(paper.id)}
+                      className={`px-3 py-1 text-sm border rounded-md hover:bg-gray-50 ${paper.isBookmarked ? 'bg-yellow-100 border-yellow-400' : 'border-gray-300'}`}
+                    >
+                      {paper.isBookmarked ? 'Unsave' : 'Save'}
+                    </button>
+                    <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
+                      Share
+                    </button>
+                  </div>
                 </div>
               </div>
-              
-              <p className="text-gray-700 mb-4">{paper.abstract}</p>
-              
-              <div className="flex justify-between items-center">
-                <button className="text-blue-600 hover:text-blue-800 font-medium">
-                  Read Full Paper →
-                </button>
-                <div className="flex space-x-2">
-                  <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
-                    Save
-                  </button>
-                  <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        {/* Trending Topics Section */}
+        {/* Trending Topics Section - This section remains as mock data for now */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Trending Topics</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

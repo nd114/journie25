@@ -16,50 +16,50 @@ export function ResearchCommunities() {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    // Mock data - in real app, fetch from API
-    setCommunities([
-      {
-        id: '1',
-        name: 'AI & Machine Learning',
-        description: 'Discuss latest developments in artificial intelligence and machine learning research.',
-        memberCount: 1240,
-        category: 'Technology',
-        isJoined: false
-      },
-      {
-        id: '2',
-        name: 'Climate Science',
-        description: 'Community for researchers working on climate change and environmental science.',
-        memberCount: 890,
-        category: 'Environment',
-        isJoined: true
-      },
-      {
-        id: '3',
-        name: 'Quantum Computing',
-        description: 'Explore quantum computing research, algorithms, and applications.',
-        memberCount: 567,
-        category: 'Technology',
-        isJoined: false
-      },
-      {
-        id: '4',
-        name: 'Medical Research',
-        description: 'Share and discuss medical research findings and methodologies.',
-        memberCount: 2100,
-        category: 'Medicine',
-        isJoined: false
+    loadCommunities();
+  }, [filter]);
+
+  const loadCommunities = async () => {
+    try {
+      const response = await fetch(`/api/communities${filter !== 'all' ? `?category=${filter}` : ''}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCommunities(data.map((c: any) => ({ ...c, id: c.id.toString() })));
       }
-    ]);
-  }, []);
+    } catch (error) {
+      console.error('Failed to load communities:', error);
+    }
+  };
 
   const categories = ['all', 'Technology', 'Environment', 'Medicine', 'Physics', 'Biology'];
   const filteredCommunities = filter === 'all' ? communities : communities.filter(c => c.category === filter);
 
-  const handleJoinCommunity = (communityId: string) => {
-    setCommunities(prev => prev.map(c => 
-      c.id === communityId ? { ...c, isJoined: !c.isJoined, memberCount: c.isJoined ? c.memberCount - 1 : c.memberCount + 1 } : c
-    ));
+  const handleJoinCommunity = async (communityId: string) => {
+    try {
+      const community = communities.find(c => c.id === communityId);
+      if (!community) return;
+
+      const endpoint = community.isJoined ? 'leave' : 'join';
+      const response = await fetch(`/api/communities/${communityId}/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setCommunities(prev => prev.map(c => 
+          c.id === communityId ? { 
+            ...c, 
+            isJoined: !c.isJoined, 
+            memberCount: c.isJoined ? c.memberCount - 1 : c.memberCount + 1 
+          } : c
+        ));
+      }
+    } catch (error) {
+      console.error('Failed to update community membership:', error);
+    }
   };
 
   return (

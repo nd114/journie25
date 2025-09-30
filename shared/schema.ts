@@ -1,5 +1,6 @@
 import { pgTable, text, serial, timestamp, integer, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { varchar } from "drizzle-orm/pg-core";
 
 // Users table
 export const users = pgTable("users", {
@@ -178,14 +179,70 @@ export const achievements = pgTable("achievements", {
   unlockedAt: timestamp("unlocked_at").defaultNow().notNull(),
 });
 
-export const visualAbstracts = pgTable("visual_abstracts", {
-  id: serial("id").primaryKey(),
-  paperId: integer("paper_id").notNull().references(() => papers.id),
-  userId: integer("user_id").notNull().references(() => users.id),
-  elements: jsonb("elements").notNull(),
-  canvasStyle: jsonb("canvas_style").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+export const visualAbstracts = pgTable('visual_abstracts', {
+  id: serial('id').primaryKey(),
+  paperId: integer('paper_id').references(() => papers.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  elements: jsonb('elements').notNull(),
+  canvasStyle: jsonb('canvas_style').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const communities = pgTable('communities', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  category: varchar('category', { length: 100 }),
+  memberCount: integer('member_count').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const communityMembers = pgTable('community_members', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  communityId: integer('community_id').references(() => communities.id).notNull(),
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  role: varchar('role', { length: 50 }).default('member'),
+});
+
+export const learningPaths = pgTable('learning_paths', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  difficulty: varchar('difficulty', { length: 50 }),
+  estimatedHours: integer('estimated_hours'),
+  steps: jsonb('steps').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const userLearningProgress = pgTable('user_learning_progress', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  pathId: integer('path_id').references(() => learningPaths.id).notNull(),
+  completedSteps: jsonb('completed_steps').default('[]'),
+  overallProgress: integer('overall_progress').default(0),
+  startedAt: timestamp('started_at').defaultNow().notNull(),
+  lastAccessedAt: timestamp('last_accessed_at').defaultNow().notNull(),
+});
+
+export const researchTools = pgTable('research_tools', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  category: varchar('category', { length: 100 }),
+  icon: varchar('icon', { length: 100 }),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const userBookmarks = pgTable('user_bookmarks', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  paperId: integer('paper_id').references(() => papers.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Quests
@@ -334,6 +391,51 @@ export const userInteractionsRelations = relations(userInteractions, ({ one }) =
   }),
 }));
 
+export const communityRelations = relations(communities, ({ many }) => ({
+  members: many(communityMembers),
+}));
+
+export const communityMembersRelations = relations(communityMembers, ({ one }) => ({
+  user: one(users, {
+    fields: [communityMembers.userId],
+    references: [users.id],
+  }),
+  community: one(communities, {
+    fields: [communityMembers.communityId],
+    references: [communities.id],
+  }),
+}));
+
+export const learningPathRelations = relations(learningPaths, ({ many }) => ({
+  userProgress: many(userLearningProgress),
+}));
+
+export const userLearningProgressRelations = relations(userLearningProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userLearningProgress.userId],
+    references: [users.id],
+  }),
+  path: one(learningPaths, {
+    fields: [userLearningProgress.pathId],
+    references: [learningPaths.id],
+  }),
+}));
+
+export const researchToolRelations = relations(researchTools, ({}) => ({
+  // No relations defined for researchTools for now
+}));
+
+export const userBookmarksRelations = relations(userBookmarks, ({ one }) => ({
+  user: one(users, {
+    fields: [userBookmarks.userId],
+    references: [users.id],
+  }),
+  paper: one(papers, {
+    fields: [userBookmarks.paperId],
+    references: [papers.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -375,3 +477,17 @@ export type MultiLevelContent = typeof multiLevelContent.$inferSelect;
 export type InsertMultiLevelContent = typeof multiLevelContent.$inferInsert;
 export type ResearchTimeline = typeof researchTimelines.$inferSelect;
 export type InsertResearchTimeline = typeof researchTimelines.$inferInsert;
+
+// New types for added tables
+export type Community = typeof communities.$inferSelect;
+export type InsertCommunity = typeof communities.$inferInsert;
+export type CommunityMember = typeof communityMembers.$inferSelect;
+export type InsertCommunityMember = typeof communityMembers.$inferInsert;
+export type LearningPath = typeof learningPaths.$inferSelect;
+export type InsertLearningPath = typeof learningPaths.$inferInsert;
+export type UserLearningProgress = typeof userLearningProgress.$inferSelect;
+export type InsertUserLearningProgress = typeof userLearningProgress.$inferInsert;
+export type ResearchTool = typeof researchTools.$inferSelect;
+export type InsertResearchTool = typeof researchTools.$inferInsert;
+export type UserBookmark = typeof userBookmarks.$inferSelect;
+export type InsertUserBookmark = typeof userBookmarks.$inferInsert;
