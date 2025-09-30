@@ -12,6 +12,12 @@ import About from './pages/About';
 import HowItWorks from './pages/HowItWorks';
 import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
+import { ResearchCommunities } from './pages/ResearchCommunities';
+import { TrendingResearch } from './pages/TrendingResearch';
+import { LearningPaths } from './pages/LearningPaths';
+import { ResearchTools } from './pages/ResearchTools';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsOfService } from './pages/TermsOfService';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -42,6 +48,12 @@ function AppRoutes() {
       <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/faq" element={<FAQ />} />
+      <Route path="/communities" element={<ResearchCommunities />} />
+      <Route path="/trending" element={<TrendingResearch />} />
+      <Route path="/learning-paths" element={<LearningPaths />} />
+      <Route path="/tools" element={<ResearchTools />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
       <Route
         path="/workspace"
         element={

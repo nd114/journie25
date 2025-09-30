@@ -22,13 +22,25 @@ const Navbar: React.FC = () => {
           </Link>
 
           <div className="flex items-center space-x-6">
-            <Link to="/library" className="text-gray-700 hover:text-indigo-600 transition-colors">
-              Browse Papers
-            </Link>
+            <Link to="/browse" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                Browse Papers
+              </Link>
+              <Link to="/trending" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                Trending
+              </Link>
+              <Link to="/communities" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                Communities
+              </Link>
+              <Link to="/learning-paths" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                Learning Paths
+              </Link>
+              <Link to="/tools" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                Tools
+              </Link>
+              <Link to="/about" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                About
+              </Link>
 
-            <Link to="/about" className="text-gray-700 hover:text-indigo-600 transition-colors">
-            About
-          </Link>
           <Link to="/how-it-works" className="text-gray-700 hover:text-indigo-600 transition-colors">
             How It Works
           </Link>
