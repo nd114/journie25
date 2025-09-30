@@ -14,6 +14,7 @@ export interface IStorage {
   // Paper methods
   getPaper(id: number): Promise<Paper | undefined>;
   getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string, field?: string }): Promise<Paper[]>;
+  advancedSearchPapers(filters: { query?: string; author?: string; field?: string; startDate?: string; endDate?: string; sortBy?: string; order?: 'asc' | 'desc'; page?: number; limit?: number }): Promise<{ papers: Paper[]; total: number; page: number; totalPages: number }>;
   createPaper(insertPaper: InsertPaper): Promise<Paper>;
   updatePaper(id: number, updates: Partial<Paper>): Promise<Paper | undefined>;
   deletePaper(id: number): Promise<void>;
@@ -162,6 +163,98 @@ export class DatabaseStorage implements IStorage {
     }
 
     return query.orderBy(desc(papers.createdAt));
+  }
+
+  async advancedSearchPapers(filters: { 
+    query?: string; 
+    author?: string; 
+    field?: string; 
+    startDate?: string; 
+    endDate?: string; 
+    sortBy?: string; 
+    order?: 'asc' | 'desc'; 
+    page?: number; 
+    limit?: number 
+  }): Promise<{ papers: Paper[]; total: number; page: number; totalPages: number }> {
+    const conditions: any[] = [eq(papers.isPublished, true)];
+    const page = filters.page || 1;
+    const limit = filters.limit || 20;
+    const offset = (page - 1) * limit;
+
+    // Full-text search across title, abstract, and content
+    if (filters.query) {
+      conditions.push(
+        or(
+          like(papers.title, `%${filters.query}%`),
+          like(papers.abstract, `%${filters.query}%`),
+          like(papers.content, `%${filters.query}%`)
+        )
+      );
+    }
+
+    // Author filter
+    if (filters.author) {
+      conditions.push(sql`${papers.authors}::text ILIKE ${'%' + filters.author + '%'}`);
+    }
+
+    // Field filter
+    if (filters.field) {
+      conditions.push(eq(papers.researchField, filters.field));
+    }
+
+    // Date range filter
+    if (filters.startDate) {
+      conditions.push(gte(papers.publishedAt, new Date(filters.startDate)));
+    }
+    if (filters.endDate) {
+      conditions.push(sql`${papers.publishedAt} <= ${new Date(filters.endDate)}`);
+    }
+
+    // Count total results
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(papers)
+      .where(and(...conditions));
+
+    const totalResults = Number(count);
+    const totalPages = Math.ceil(totalResults / limit);
+
+    // Sorting
+    let orderBy;
+    const sortOrder = filters.order === 'asc' ? asc : desc;
+    
+    switch (filters.sortBy) {
+      case 'date':
+        orderBy = sortOrder(papers.publishedAt);
+        break;
+      case 'title':
+        orderBy = sortOrder(papers.title);
+        break;
+      case 'views':
+        orderBy = sortOrder(papers.viewCount);
+        break;
+      case 'engagement':
+        orderBy = sortOrder(papers.engagementScore);
+        break;
+      default: // relevance or default
+        orderBy = desc(papers.createdAt);
+    }
+
+    // Execute paginated query
+    const results = await db
+      .select()
+      .from(papers)
+      .where(and(...conditions))
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset(offset);
+
+    return {
+      papers: results,
+      total: totalResults,
+      page,
+      totalPages
+    };
   }
 
   async createPaper(insertPaper: InsertPaper): Promise<Paper> {

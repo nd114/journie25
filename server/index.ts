@@ -211,6 +211,40 @@ app.get("/api/papers", async (req, res) => {
   }
 });
 
+// Advanced search endpoint
+app.get("/api/papers/search/advanced", async (req, res) => {
+  try {
+    const {
+      query,
+      author,
+      field,
+      startDate,
+      endDate,
+      sortBy = 'relevance',
+      order = 'desc',
+      page = 1,
+      limit = 20
+    } = req.query;
+
+    const papers = await storage.advancedSearchPapers({
+      query: query as string,
+      author: author as string,
+      field: field as string,
+      startDate: startDate as string,
+      endDate: endDate as string,
+      sortBy: sortBy as string,
+      order: order as 'asc' | 'desc',
+      page: parseInt(page as string),
+      limit: parseInt(limit as string),
+    });
+
+    res.json(papers);
+  } catch (error) {
+    console.error("Error in advanced search:", error);
+    res.status(500).json({ error: "Failed to perform advanced search" });
+  }
+});
+
 app.get("/api/papers/:id", async (req, res) => {
   try {
     const { id } = req.params;

@@ -120,6 +120,26 @@ class ApiClient {
     return this.request<any[]>(`/papers${query}`);
   }
 
+  async advancedSearch(filters: {
+    query?: string;
+    author?: string;
+    field?: string;
+    startDate?: string;
+    endDate?: string;
+    sortBy?: string;
+    order?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
+  }) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, String(value));
+    });
+    
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.request<{ papers: any[]; total: number; page: number; totalPages: number }>(`/papers/search/advanced${query}`);
+  }
+
   async getPaper(id: number) {
     return this.request<any>(`/papers/${id}`);
   }
