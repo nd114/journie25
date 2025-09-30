@@ -122,3 +122,4 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
+export { Navbar };
