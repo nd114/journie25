@@ -223,7 +223,11 @@ class ApiClient {
   }
 
   async getUserBookmarks() {
-    return this.request<any[]>('/user/bookmarks');
+    return this.request<any[]>('/bookmarks');
+  }
+  
+  async getBookmarks() {
+    return this.getUserBookmarks();
   }
 
   // Dashboard

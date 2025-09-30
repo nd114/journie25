@@ -519,10 +519,24 @@ app.get("/api/trending-topics", async (req, res) => {
 
 // Communities endpoints
 // Communities API endpoints
-app.get('/api/communities', authenticateToken, async (req, res) => {
+app.get('/api/communities', async (req, res) => {
   try {
     const category = req.query.category as string;
-    const userId = (req as any).user.id;
+    
+    // Get user ID if authenticated
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    let userId = null;
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        userId = decoded.id;
+      } catch (err) {
+        // Not authenticated, continue as anonymous
+      }
+    }
+
     const communitiesData = await storage.getCommunities(userId, category);
     res.json(communitiesData);
   } catch (error) {
@@ -769,6 +783,12 @@ app.post('/api/users/:id/follow', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Cannot follow yourself' });
     }
 
+    // Check if user exists
+    const targetUser = await storage.getUser(followingId);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     await storage.followUser(userId, followingId);
     res.json({ message: 'Successfully followed user' });
   } catch (error) {
@@ -812,12 +832,12 @@ app.get('/api/users/:id/following', async (req, res) => {
   }
 });
 
-app.get('/api/users/:id/is-following/:targetId', authenticateToken, async (req, res) => {
+app.get('/api/users/:targetId/following-status', authenticateToken, async (req, res) => {
   try {
-    const userId = parseInt(req.params.id);
+    const userId = (req as any).user.id;
     const targetId = parseInt(req.params.targetId);
     const isFollowing = await storage.isFollowing(userId, targetId);
-    res.json({ isFollowing });
+    res.json({ following: isFollowing });
   } catch (error) {
     console.error('Error checking follow status:', error);
     res.status(500).json({ error: 'Failed to check follow status' });

@@ -11,7 +11,9 @@ import {
   BookOpen, 
   Users, 
   Share2,
-  Clock
+  Clock,
+  Bookmark,
+  UserPlus
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import CommentThread from "../components/CommentThread";
@@ -27,6 +29,8 @@ interface Paper {
   abstract: string;
   content: string;
   authors?: string[];
+  authorIds?: number[];
+  createdBy?: number;
   createdAt: string;
   field?: string;
 }
@@ -46,11 +50,22 @@ const PaperDetail: React.FC = () => {
   const [paper, setPaper] = useState<Paper | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
     loadPaper();
     loadComments();
   }, [id]);
+
+  useEffect(() => {
+    if (paper && user) {
+      loadBookmarkStatus();
+      loadFollowStatus();
+    }
+  }, [paper, user]);
 
   const loadPaper = async () => {
     if (!id) return;
@@ -66,6 +81,98 @@ const PaperDetail: React.FC = () => {
     const response = await apiClient.getComments(parseInt(id));
     if (response.data) {
       setComments(response.data);
+    }
+  };
+
+  const loadBookmarkStatus = async () => {
+    if (!id || !user) return;
+    try {
+      const response = await fetch(`/api/bookmarks/${id}/check`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsBookmarked(data.isBookmarked);
+      }
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
+    }
+  };
+
+  const loadFollowStatus = async () => {
+    if (!paper?.createdBy || !user) return;
+    try {
+      const response = await fetch(`/api/users/${paper.createdBy}/following-status`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsFollowingAuthor(data.following);
+      }
+    } catch (error) {
+      console.error('Error checking follow status:', error);
+    }
+  };
+
+  const handleToggleBookmark = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
+    setBookmarkLoading(true);
+    try {
+      if (isBookmarked) {
+        await apiClient.removeBookmark(parseInt(id!));
+        setIsBookmarked(false);
+      } else {
+        await apiClient.bookmarkPaper(parseInt(id!));
+        setIsBookmarked(true);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
+
+  const handleToggleFollow = async () => {
+    if (!user || !paper?.createdBy) {
+      navigate('/auth');
+      return;
+    }
+    
+    setFollowLoading(true);
+    try {
+      if (isFollowingAuthor) {
+        const response = await fetch(`/api/users/${paper.createdBy}/follow`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (response.ok) {
+          setIsFollowingAuthor(false);
+        }
+      } else {
+        const response = await fetch(`/api/users/${paper.createdBy}/follow`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (response.ok) {
+          setIsFollowingAuthor(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -184,13 +291,35 @@ const PaperDetail: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex space-x-3 mb-8">
-            <button className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+            <button 
+              onClick={handleToggleBookmark}
+              disabled={bookmarkLoading}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                isBookmarked 
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+                  : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              } disabled:opacity-50`}
+            >
+              <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
+              <span>{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
+            </button>
+            {paper?.createdBy && user?.id !== paper.createdBy && (
+              <button 
+                onClick={handleToggleFollow}
+                disabled={followLoading}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  isFollowingAuthor 
+                    ? 'bg-gray-600 text-white hover:bg-gray-700' 
+                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                } disabled:opacity-50`}
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>{isFollowingAuthor ? 'Following' : 'Follow Author'}</span>
+              </button>
+            )}
+            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
               <Share2 className="w-4 h-4" />
               <span>Share</span>
-            </button>
-            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-              <BookOpen className="w-4 h-4" />
-              <span>Save for Later</span>
             </button>
           </div>
 

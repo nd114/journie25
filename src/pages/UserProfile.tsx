@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, User } from 'lucide-react';
+import { ArrowLeft, Save, User, Users, UserPlus, Bookmark } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +20,10 @@ const UserProfile: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
 
   useEffect(() => {
     loadProfile();
@@ -35,6 +39,28 @@ const UserProfile: React.FC = () => {
       setOrcid(profile.orcid || '');
       setAffiliation(profile.affiliation || '');
       setBio(profile.bio || '');
+      
+      if (user?.id) {
+        const [followersRes, followingRes, bookmarksRes] = await Promise.all([
+          fetch(`/api/users/${user.id}/followers`),
+          fetch(`/api/users/${user.id}/following`),
+          apiClient.getBookmarks()
+        ]);
+        
+        if (followersRes.ok) {
+          const followers = await followersRes.json();
+          setFollowersCount(followers.length);
+        }
+        
+        if (followingRes.ok) {
+          const following = await followingRes.json();
+          setFollowingCount(following.length);
+        }
+        
+        if (bookmarksRes.data) {
+          setBookmarks(bookmarksRes.data);
+        }
+      }
     }
     setLoading(false);
   };
@@ -125,13 +151,39 @@ const UserProfile: React.FC = () => {
         )}
 
         <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+                <p className="text-gray-600">Manage your account information</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-              <p className="text-gray-600">Manage your account information</p>
+            
+            <div className="flex items-center space-x-6">
+              <div className="text-center">
+                <div className="flex items-center space-x-1 text-gray-600">
+                  <Users className="w-4 h-4" />
+                  <span className="text-2xl font-bold text-gray-900">{followersCount}</span>
+                </div>
+                <p className="text-xs text-gray-500">Followers</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center space-x-1 text-gray-600">
+                  <UserPlus className="w-4 h-4" />
+                  <span className="text-2xl font-bold text-gray-900">{followingCount}</span>
+                </div>
+                <p className="text-xs text-gray-500">Following</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center space-x-1 text-gray-600">
+                  <Bookmark className="w-4 h-4" />
+                  <span className="text-2xl font-bold text-gray-900">{bookmarks.length}</span>
+                </div>
+                <p className="text-xs text-gray-500">Bookmarks</p>
+              </div>
             </div>
           </div>
 
