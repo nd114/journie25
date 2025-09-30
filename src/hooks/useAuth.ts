@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react'
 
 interface User {
@@ -41,7 +40,7 @@ export const useAuthState = () => {
 
   const checkUser = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
       if (!token) {
         setLoading(false)
         return
@@ -57,12 +56,12 @@ export const useAuthState = () => {
         const userData = await response.json()
         setUser(userData)
       } else {
-        localStorage.removeItem('token')
+        localStorage.removeItem('auth_token')
         setUser(null)
       }
     } catch (err) {
       console.error('Error checking user:', err)
-      localStorage.removeItem('token')
+      localStorage.removeItem('auth_token')
       setUser(null)
     } finally {
       setLoading(false)
@@ -81,14 +80,13 @@ export const useAuthState = () => {
         body: JSON.stringify({ email, password })
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token)
-        setUser(data.user)
-      } else {
-        setError(data.error || 'Sign in failed')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      const data = await response.json()
+      localStorage.setItem('auth_token', data.token)
+      setUser(data.user)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
     } finally {
@@ -108,14 +106,13 @@ export const useAuthState = () => {
         body: JSON.stringify({ email, password, name })
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token)
-        setUser(data.user)
-      } else {
-        setError(data.error || 'Sign up failed')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      const data = await response.json()
+      localStorage.setItem('auth_token', data.token)
+      setUser(data.user)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed')
     } finally {
@@ -126,7 +123,7 @@ export const useAuthState = () => {
   const signOut = async () => {
     setLoading(true)
     try {
-      localStorage.removeItem('token')
+      localStorage.removeItem('auth_token')
       setUser(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign out failed')
