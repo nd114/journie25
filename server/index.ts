@@ -942,6 +942,40 @@ app.get(
   },
 );
 
+// Author claim endpoints
+app.get("/api/user/potential-claims", authenticateToken, async (req: any, res) => {
+  try {
+    const { getPotentialClaims } = await import("./author-claim");
+    const user = await storage.getUser(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const claims = await getPotentialClaims(req.user.id, user.name);
+    res.json(claims);
+  } catch (error) {
+    console.error("Error fetching potential claims:", error);
+    res.status(500).json({ error: "Failed to fetch potential claims" });
+  }
+});
+
+app.post("/api/user/claim-authorship", authenticateToken, async (req: any, res) => {
+  try {
+    const { claimAuthorshipByName } = await import("./author-claim");
+    const { authorName, orcid } = req.body;
+
+    if (!authorName) {
+      return res.status(400).json({ error: "Author name is required" });
+    }
+
+    const result = await claimAuthorshipByName(req.user.id, authorName, orcid);
+    res.json(result);
+  } catch (error) {
+    console.error("Error claiming authorship:", error);
+    res.status(500).json({ error: "Failed to claim authorship" });
+  }
+});
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });

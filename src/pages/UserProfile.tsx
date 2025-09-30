@@ -4,6 +4,7 @@ import { ArrowLeft, Save, User, Users, UserPlus, Bookmark } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
+import AuthorClaimWidget from "../components/AuthorClaimWidget";
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [orcid, setOrcid] = useState('');
@@ -20,7 +21,7 @@ const UserProfile: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
@@ -39,24 +40,24 @@ const UserProfile: React.FC = () => {
       setOrcid(profile.orcid || '');
       setAffiliation(profile.affiliation || '');
       setBio(profile.bio || '');
-      
+
       if (user?.id) {
         const [followersRes, followingRes, bookmarksRes] = await Promise.all([
           fetch(`/api/users/${user.id}/followers`),
           fetch(`/api/users/${user.id}/following`),
           apiClient.getBookmarks()
         ]);
-        
+
         if (followersRes.ok) {
           const followers = await followersRes.json();
           setFollowersCount(followers.length);
         }
-        
+
         if (followingRes.ok) {
           const following = await followingRes.json();
           setFollowingCount(following.length);
         }
-        
+
         if (bookmarksRes.data) {
           setBookmarks(bookmarksRes.data);
         }
@@ -68,7 +69,7 @@ const UserProfile: React.FC = () => {
   const handleSaveProfile = async () => {
     setSaving(true);
     setMessage('');
-    
+
     const updates: any = {
       name,
       orcid: orcid || null,
@@ -77,9 +78,9 @@ const UserProfile: React.FC = () => {
     };
 
     const response = await apiClient.updateProfile(updates);
-    
+
     setSaving(false);
-    
+
     if (response.data) {
       setMessage('Profile updated successfully!');
       await refreshUser();
@@ -94,7 +95,7 @@ const UserProfile: React.FC = () => {
       setMessage('New passwords do not match');
       return;
     }
-    
+
     if (newPassword.length < 8) {
       setMessage('Password must be at least 8 characters');
       return;
@@ -102,11 +103,11 @@ const UserProfile: React.FC = () => {
 
     setSaving(true);
     setMessage('');
-    
+
     const response = await apiClient.changePassword(currentPassword, newPassword);
-    
+
     setSaving(false);
-    
+
     if (response.data) {
       setMessage('Password changed successfully!');
       setCurrentPassword('');
@@ -134,7 +135,7 @@ const UserProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
           onClick={() => navigate('/workspace')}
@@ -161,7 +162,7 @@ const UserProfile: React.FC = () => {
                 <p className="text-gray-600">Manage your account information</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-6">
               <div className="text-center">
                 <div className="flex items-center space-x-1 text-gray-600">
@@ -267,58 +268,65 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
+        {/* Author Claims Section */}
+          <AuthorClaimWidget onClaimSuccess={() => {
+            // Could refresh user data or show success message
+            console.log('Author claim successful!');
+          }} />
 
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Password
-              </label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter current password"
-              />
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Enter current password"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Enter new password"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Confirm new password"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter new password"
-              />
+            <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={handleChangePassword}
+                disabled={saving || !currentPassword || !newPassword || !confirmPassword}
+                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Changing...' : 'Change Password'}
+              </button>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-            <button
-              onClick={handleChangePassword}
-              disabled={saving || !currentPassword || !newPassword || !confirmPassword}
-              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
-            >
-              {saving ? 'Changing...' : 'Change Password'}
-            </button>
           </div>
         </div>
       </div>

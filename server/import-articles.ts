@@ -222,12 +222,10 @@ async function importArticle(article: ArticleData) {
       article.journal,
       article.issn,
     );
-    const randomUser = await getRandomUser();
-
-    if (!randomUser) {
-      console.log("No users found in database. Please run seed script first.");
-      return;
-    }
+    // Use a default system user for imported articles
+    // In production, this should be the ID of the importing user
+    const SYSTEM_USER_ID = 1; // You can change this to the actual importer's user ID
+    const createdBy = SYSTEM_USER_ID;
 
     // Create paper
     const [paper] = await db
@@ -237,7 +235,7 @@ async function importArticle(article: ArticleData) {
         abstract: article.abstract,
         content: article.content || article.abstract,
         authors: article.authors,
-        authorIds: [randomUser.id],
+        authorIds: [createdBy],
         researchField: article.researchField,
         keywords: article.keywords,
         doi: article.doi,
@@ -249,7 +247,7 @@ async function importArticle(article: ArticleData) {
         journalId: journal?.id || null,
         viewCount: Math.floor(Math.random() * 1000) + 100,
         engagementScore: Math.floor(Math.random() * 100) + 50,
-        createdBy: randomUser.id,
+        createdBy: createdBy,
         pdfUrl: article.pdfUrl,
       })
       .returning();
