@@ -191,6 +191,86 @@ async function seed() {
       }
     }
 
+    // Seed research tools
+    const researchToolsData = [
+      {
+        name: 'Citation Manager',
+        description: 'Organize and format your citations effortlessly',
+        category: 'Writing',
+        icon: '📚'
+      },
+      {
+        name: 'Statistical Analysis',
+        description: 'Perform advanced statistical analysis on your data',
+        category: 'Analysis',
+        icon: '📊'
+      },
+      {
+        name: 'Literature Search',
+        description: 'Comprehensive search across academic databases',
+        category: 'Discovery',
+        icon: '🔍'
+      },
+      {
+        name: 'Collaboration Hub',
+        description: 'Connect with researchers and collaborate on projects',
+        category: 'Collaboration',
+        icon: '🤝'
+      },
+      {
+        name: 'Visual Abstract Creator',
+        description: 'Create compelling visual abstracts for your papers',
+        category: 'Presentation',
+        icon: '🎨'
+      }
+    ];
+
+    for (const tool of researchToolsData) {
+      try {
+        await db.insert(researchTools).values(tool);
+        console.log(`Created research tool: ${tool.name}`);
+      } catch (error) {
+        console.log(`Research tool ${tool.name} already exists`);
+      }
+    }
+
+    // Seed trending topics
+    const trendingData = [
+      {
+        topic: 'Machine Learning',
+        field: 'Computer Science',
+        momentumScore: '95.5',
+        paperCount: 1250
+      },
+      {
+        topic: 'Climate Change',
+        field: 'Environmental Science',
+        momentumScore: '92.3',
+        paperCount: 890
+      },
+      {
+        topic: 'Gene Therapy',
+        field: 'Biotechnology',
+        momentumScore: '89.7',
+        paperCount: 567
+      },
+      {
+        topic: 'Quantum Computing',
+        field: 'Physics',
+        momentumScore: '87.2',
+        paperCount: 423
+      }
+    ];
+
+    for (const trend of trendingData) {
+      try {
+        await db.insert(trendingTopics).values(trend);
+        console.log(`Created trending topic: ${trend.topic}`);
+      } catch (error) {
+        console.log(`Trending topic ${trend.topic} already exists`);
+      }
+    }
+
     console.log("Seeding completed successfully!");
   } catch (error) {
     console.error("Seeding failed:", error);

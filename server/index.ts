@@ -141,12 +141,12 @@ app.put("/api/auth/profile", authenticateToken, async (req: any, res) => {
 app.post("/api/auth/change-password", authenticateToken, async (req: any, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    
+
     // Server-side password validation
     if (!newPassword || newPassword.length < 8) {
       return res.status(400).json({ error: "Password must be at least 8 characters long" });
     }
-    
+
     const user = await storage.getUser(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -246,17 +246,17 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
     // Strip client-provided isPublished/publishedAt to prevent bypass
     delete updates.isPublished;
     delete updates.publishedAt;
-    
+
     const isNewlyPublished = updates.status === 'published' && !existingPaper.isPublished;
-    
+
     if (isNewlyPublished) {
       updates.isPublished = true;
       updates.publishedAt = new Date();
-      
+
       // Increment version number (defensive against undefined)
       const newVersion = (existingPaper.version || 0) + 1;
       updates.version = newVersion;
-      
+
       // Save version snapshot when publishing
       await storage.createPaperVersion({
         paperId: paperId,
@@ -309,7 +309,7 @@ app.get("/api/papers/:id/comments", async (req, res) => {
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     const comments = await storage.getComments(paperId);
     res.json(comments);
   } catch (error) {
@@ -325,7 +325,7 @@ app.post("/api/papers/:id/comments", authenticateToken, async (req: any, res) =>
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     const { content, parentId } = req.body;
     const comment = await storage.createComment({
       paperId,
@@ -348,7 +348,7 @@ app.get("/api/papers/:id/reviews", async (req, res) => {
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     const reviews = await storage.getReviews(paperId);
     res.json(reviews);
   } catch (error) {
@@ -364,7 +364,7 @@ app.post("/api/papers/:id/reviews", authenticateToken, async (req: any, res) => 
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     const { content, rating, recommendation } = req.body;
     const review = await storage.createReview({
       paperId,
@@ -389,7 +389,7 @@ app.get("/api/papers/:id/versions", async (req, res) => {
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     const versions = await storage.getPaperVersions(paperId);
     res.json(versions);
   } catch (error) {
@@ -404,12 +404,12 @@ app.post("/api/papers/:id/view", async (req, res) => {
   try {
     const paperId = parseInt(req.params.id);
     const { sessionId, readTime } = req.body;
-    
+
     // Get user ID if authenticated
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     let userId = null;
-    
+
     if (token) {
       try {
         const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -518,161 +518,153 @@ app.get("/api/trending-topics", async (req, res) => {
 });
 
 // Communities endpoints
-app.get("/api/communities", async (req: any, res) => {
+// Communities API endpoints
+app.get('/api/communities', authenticateToken, async (req, res) => {
   try {
-    const { category } = req.query;
-    
-    // Get user ID if authenticated
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
-    let userId = null;
-    
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        userId = decoded.id;
-      } catch (err) {
-        // Continue without user context
-      }
-    }
-    
-    const communities = await storage.getCommunities(category as string, userId);
-    res.json(communities);
+    const category = req.query.category as string;
+    const userId = (req as any).user.id;
+    const communitiesData = await storage.getCommunities(userId, category);
+    res.json(communitiesData);
   } catch (error) {
-    console.error("Error fetching communities:", error);
-    res.status(500).json({ error: "Failed to fetch communities" });
+    console.error('Error fetching communities:', error);
+    res.status(500).json({ error: 'Failed to fetch communities' });
   }
 });
 
-app.post("/api/communities/:id/join", authenticateToken, async (req: any, res) => {
+app.post('/api/communities', authenticateToken, async (req, res) => {
   try {
-    const communityId = parseInt(req.params.id);
-    await storage.joinCommunity(req.user.id, communityId);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error joining community:", error);
-    res.status(500).json({ error: "Failed to join community" });
-  }
-});
-
-app.post("/api/communities/:id/leave", authenticateToken, async (req: any, res) => {
-  try {
-    const communityId = parseInt(req.params.id);
-    await storage.leaveCommunity(req.user.id, communityId);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error leaving community:", error);
-    res.status(500).json({ error: "Failed to leave community" });
-  }
-});
-
-app.post("/api/communities", authenticateToken, async (req: any, res) => {
-  try {
+    const userId = (req as any).user.id;
     const { name, description, category } = req.body;
+
+    if (!name || !description || !category) {
+      return res.status(400).json({ error: 'Name, description, and category are required' });
+    }
+
     const community = await storage.createCommunity({
       name,
       description,
-      category,
-      memberCount: 1
+      category
     });
-    
-    // Auto-join the creator
-    await storage.joinCommunity(req.user.id, community.id);
-    
-    res.json({ ...community, isJoined: true });
+
+    // Automatically join the creator to the community
+    await storage.joinCommunity(userId, community.id);
+
+    res.status(201).json({ ...community, isJoined: true });
   } catch (error) {
-    console.error("Error creating community:", error);
-    res.status(500).json({ error: "Failed to create community" });
+    console.error('Error creating community:', error);
+    res.status(500).json({ error: 'Failed to create community' });
   }
 });
 
-// Learning paths endpoints
-app.get("/api/learning-paths", async (req, res) => {
+app.post('/api/communities/:id/join', authenticateToken, async (req, res) => {
   try {
-    const paths = await storage.getLearningPaths();
+    const userId = (req as any).user.id;
+    const communityId = parseInt(req.params.id);
+
+    await storage.joinCommunity(userId, communityId);
+    res.json({ message: 'Successfully joined community' });
+  } catch (error) {
+    console.error('Error joining community:', error);
+    res.status(500).json({ error: 'Failed to join community' });
+  }
+});
+
+app.post('/api/communities/:id/leave', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const communityId = parseInt(req.params.id);
+
+    await storage.leaveCommunity(userId, communityId);
+    res.json({ message: 'Successfully left community' });
+  } catch (error) {
+    console.error('Error leaving community:', error);
+    res.status(500).json({ error: 'Failed to leave community' });
+  }
+});
+
+// Trending Research API
+app.get('/api/trending', async (req, res) => {
+  try {
+    const trendingData = await storage.getTrendingTopics();
+    res.json(trendingData);
+  } catch (error) {
+    console.error('Error fetching trending data:', error);
+    res.status(500).json({ error: 'Failed to fetch trending data' });
+  }
+});
+
+// Learning Paths API
+app.get('/api/learning-paths', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const paths = await storage.getLearningPaths(userId);
     res.json(paths);
   } catch (error) {
-    console.error("Error fetching learning paths:", error);
-    res.status(500).json({ error: "Failed to fetch learning paths" });
+    console.error('Error fetching learning paths:', error);
+    res.status(500).json({ error: 'Failed to fetch learning paths' });
   }
 });
 
-app.get("/api/learning-paths/:id/progress", authenticateToken, async (req: any, res) => {
+app.post('/api/learning-paths/:id/complete-step', authenticateToken, async (req, res) => {
   try {
-    const pathId = parseInt(req.params.id);
-    const progress = await storage.getLearningPathProgress(req.user.id, pathId);
-    res.json(progress);
-  } catch (error) {
-    console.error("Error fetching learning path progress:", error);
-    res.status(500).json({ error: "Failed to fetch progress" });
-  }
-});
-
-app.post("/api/learning-paths/:id/complete-step", authenticateToken, async (req: any, res) => {
-  try {
+    const userId = (req as any).user.id;
     const pathId = parseInt(req.params.id);
     const { stepId } = req.body;
-    const progress = await storage.completeLearningStep(req.user.id, pathId, stepId);
-    res.json(progress);
+
+    await storage.completeLearningStep(userId, pathId, stepId);
+    res.json({ message: 'Step completed successfully' });
   } catch (error) {
-    console.error("Error completing learning step:", error);
-    res.status(500).json({ error: "Failed to complete step" });
+    console.error('Error completing step:', error);
+    res.status(500).json({ error: 'Failed to complete step' });
   }
 });
 
-// Research tools endpoints
-app.get("/api/tools", async (req, res) => {
+// Research Tools API
+app.get('/api/research-tools', async (req, res) => {
   try {
     const tools = await storage.getResearchTools();
     res.json(tools);
   } catch (error) {
-    console.error("Error fetching research tools:", error);
-    res.status(500).json({ error: "Failed to fetch research tools" });
+    console.error('Error fetching research tools:', error);
+    res.status(500).json({ error: 'Failed to fetch research tools' });
   }
 });
 
-app.post("/api/tools/:id/use", authenticateToken, async (req: any, res) => {
+// Bookmarks API
+app.get('/api/bookmarks', authenticateToken, async (req, res) => {
   try {
-    const toolId = parseInt(req.params.id);
-    const { input } = req.body;
-    const result = await storage.useResearchTool(toolId, input, req.user.id);
-    res.json(result);
-  } catch (error) {
-    console.error("Error using research tool:", error);
-    res.status(500).json({ error: "Failed to use research tool" });
-  }
-});
-
-// User bookmarks
-app.post("/api/papers/:id/bookmark", authenticateToken, async (req: any, res) => {
-  try {
-    const paperId = parseInt(req.params.id);
-    await storage.bookmarkPaper(req.user.id, paperId);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error bookmarking paper:", error);
-    res.status(500).json({ error: "Failed to bookmark paper" });
-  }
-});
-
-app.delete("/api/papers/:id/bookmark", authenticateToken, async (req: any, res) => {
-  try {
-    const paperId = parseInt(req.params.id);
-    await storage.removeBookmark(req.user.id, paperId);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error removing bookmark:", error);
-    res.status(500).json({ error: "Failed to remove bookmark" });
-  }
-});
-
-app.get("/api/user/bookmarks", authenticateToken, async (req: any, res) => {
-  try {
-    const bookmarks = await storage.getUserBookmarks(req.user.id);
+    const userId = (req as any).user.id;
+    const bookmarks = await storage.getUserBookmarks(userId);
     res.json(bookmarks);
   } catch (error) {
-    console.error("Error fetching bookmarks:", error);
-    res.status(500).json({ error: "Failed to fetch bookmarks" });
+    console.error('Error fetching bookmarks:', error);
+    res.status(500).json({ error: 'Failed to fetch bookmarks' });
+  }
+});
+
+app.post('/api/bookmarks/:paperId', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const paperId = parseInt(req.params.paperId);
+
+    await storage.addBookmark(userId, paperId);
+    res.json({ message: 'Bookmark added successfully' });
+  } catch (error) {
+    console.error('Error adding bookmark:', error);
+    res.status(500).json({ error: 'Failed to add bookmark' });
+  }
+});
+
+app.delete('/api/bookmarks/:paperId', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const paperId = parseInt(req.params.paperId);
+
+    await storage.removeBookmark(userId, paperId);
+    res.json({ message: 'Bookmark removed successfully' });
+  } catch (error) {
+    console.error('Error removing bookmark:', error);
+    res.status(500).json({ error: 'Failed to remove bookmark' });
   }
 });
 
@@ -728,14 +720,14 @@ app.post("/api/papers/:id/visual-abstract", authenticateToken, async (req: any, 
   try {
     const paperId = parseInt(req.params.id);
     const { elements, canvasStyle } = req.body;
-    
+
     const visualAbstract = await storage.saveVisualAbstract({
       paperId,
       userId: req.user.id,
       elements,
       canvasStyle,
     });
-    
+
     res.json(visualAbstract);
   } catch (error) {
     console.error("Error saving visual abstract:", error);

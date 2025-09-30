@@ -729,6 +729,207 @@ export class DatabaseStorage implements IStorage {
       });
 
       if (!progress) {
+        // Create new progress record
+        [progress] = await db.insert(userLearningProgress).values({
+          userId,
+          pathId,
+          completedSteps: [stepId],
+          overallProgress: 1
+        }).returning();
+      } else {
+        // Update existing progress
+        const completedSteps = progress.completedSteps as string[] || [];
+        if (!completedSteps.includes(stepId)) {
+          completedSteps.push(stepId);
+          
+          // Get the learning path to calculate progress
+          const path = await db.query.learningPaths.findFirst({
+            where: eq(learningPaths.id, pathId)
+          });
+          
+          const totalSteps = (path?.steps as any[])?.length || 1;
+          const newProgress = Math.round((completedSteps.length / totalSteps) * 100);
+          
+          await db.update(userLearningProgress)
+            .set({
+              completedSteps,
+              overallProgress: newProgress,
+              lastAccessedAt: new Date()
+            })
+            .where(and(
+              eq(userLearningProgress.userId, userId),
+              eq(userLearningProgress.pathId, pathId)
+            ));
+        }
+      }
+      
+      return progress;
+    } catch (error) {
+      console.error('Error completing learning step:', error);
+      throw error;
+    }
+  }
+
+  async joinCommunity(userId: number, communityId: number) {
+    try {
+      // Check if already a member
+      const existingMembership = await db.query.communityMembers.findFirst({
+        where: and(
+          eq(communityMembers.userId, userId),
+          eq(communityMembers.communityId, communityId)
+        )
+      });
+
+      if (existingMembership) {
+        throw new Error('Already a member of this community');
+      }
+
+      // Add membership
+      await db.insert(communityMembers).values({
+        userId,
+        communityId
+      });
+
+      // Update member count
+      await db.update(communities)
+        .set({ 
+          memberCount: sql`${communities.memberCount} + 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(communities.id, communityId));
+
+    } catch (error) {
+      console.error('Error joining community:', error);
+      throw error;
+    }
+  }
+
+  async leaveCommunity(userId: number, communityId: number) {
+    try {
+      // Remove membership
+      await db.delete(communityMembers)
+        .where(and(
+          eq(communityMembers.userId, userId),
+          eq(communityMembers.communityId, communityId)
+        ));
+
+      // Update member count
+      await db.update(communities)
+        .set({ 
+          memberCount: sql`${communities.memberCount} - 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(communities.id, communityId));
+
+    } catch (error) {
+      console.error('Error leaving community:', error);
+      throw error;
+    }
+  }
+
+  async getTrendingTopics() {
+    try {
+      const trending = await db.query.trendingTopics.findMany({
+        orderBy: [desc(trendingTopics.momentumScore)],
+        limit: 20
+      });
+
+      // Get recent papers for trending topics
+      const trendingWithPapers = await Promise.all(
+        trending.map(async (topic) => {
+          const relatedPapers = await db.query.papers.findMany({
+            where: sql`${papers.keywords}::text ILIKE ${'%' + topic.topic + '%'}`,
+            orderBy: [desc(papers.publishedAt)],
+            limit: 5
+          });
+
+          return {
+            ...topic,
+            papers: relatedPapers
+          };
+        })
+      );
+
+      return trendingWithPapers;
+    } catch (error) {
+      console.error('Error fetching trending topics:', error);
+      return [];
+    }
+  }
+
+  async getResearchTools() {
+    try {
+      const tools = await db.query.researchTools.findMany({
+        where: eq(researchTools.isActive, true),
+        orderBy: [asc(researchTools.category), asc(researchTools.name)]
+      });
+
+      return tools;
+    } catch (error) {
+      console.error('Error fetching research tools:', error);
+      return [];
+    }
+  }
+
+  async getUserBookmarks(userId: number) {
+    try {
+      const bookmarks = await db.query.userBookmarks.findMany({
+        where: eq(userBookmarks.userId, userId),
+        with: {
+          paper: {
+            with: {
+              creator: true
+            }
+          }
+        },
+        orderBy: [desc(userBookmarks.createdAt)]
+      });
+
+      return bookmarks;
+    } catch (error) {
+      console.error('Error fetching user bookmarks:', error);
+      return [];
+    }
+  }
+
+  async addBookmark(userId: number, paperId: number) {
+    try {
+      // Check if bookmark already exists
+      const existing = await db.query.userBookmarks.findFirst({
+        where: and(
+          eq(userBookmarks.userId, userId),
+          eq(userBookmarks.paperId, paperId)
+        )
+      });
+
+      if (existing) {
+        throw new Error('Paper already bookmarked');
+      }
+
+      await db.insert(userBookmarks).values({
+        userId,
+        paperId
+      });
+    } catch (error) {
+      console.error('Error adding bookmark:', error);
+      throw error;
+    }
+  }
+
+  async removeBookmark(userId: number, paperId: number) {
+    try {
+      await db.delete(userBookmarks)
+        .where(and(
+          eq(userBookmarks.userId, userId),
+          eq(userBookmarks.paperId, paperId)
+        ));
+    } catch (error) {
+      console.error('Error removing bookmark:', error);
+      throw error;
+    }
+  }
+
+      if (!progress) {
         const newProgress = await db.insert(userLearningProgress).values({
           userId,
           pathId,

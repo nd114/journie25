@@ -246,8 +246,6 @@ export function ResearchCommunities() {
             </div>
           </div>
         )}
-          </div>
-        </div>
       </div>
     </div>
   );
