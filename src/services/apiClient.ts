@@ -30,14 +30,40 @@ class ApiClient {
         headers,
       });
 
-      const data = await response.json();
+      // Check if response has content
+      const contentType = response.headers.get('content-type');
+      const hasJsonContent = contentType && contentType.includes('application/json');
+      
+      let data;
+      if (hasJsonContent) {
+        const text = await response.text();
+        if (text) {
+          try {
+            data = JSON.parse(text);
+          } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            return { error: 'Invalid response format from server' };
+          }
+        } else {
+          // Empty JSON response
+          data = null;
+        }
+      } else {
+        // Non-JSON response - read as text for error reporting
+        const text = await response.text();
+        if (!response.ok) {
+          return { error: text || `Request failed with status ${response.status}: ${response.statusText}` };
+        }
+        data = null;
+      }
 
       if (!response.ok) {
-        return { error: data.error || 'Request failed' };
+        return { error: data?.error || `Request failed with status ${response.status}: ${response.statusText}` };
       }
 
       return { data };
     } catch (error) {
+      console.error('API request error:', error);
       return { error: error instanceof Error ? error.message : 'Network error' };
     }
   }
