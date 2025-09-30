@@ -951,8 +951,8 @@ app.get("/api/health", (req, res) => {
 app.use(express.static(path.join(__dirname, "..", "dist")));
 
 // Handle SPA routing - serve index.html for all non-API routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "dist", "index.html"));
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
 app.listen(PORT, "0.0.0.0", () => {
