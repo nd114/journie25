@@ -298,8 +298,10 @@ async function importSampleArticles() {
 // Export functions for use in other scripts
 export { importArticle, importFromJSON, importFromCSV, importSampleArticles };
 
-// Main execution if run directly
-if (require.main === module) {
+// Main execution if run directly - ES module compatible check
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMainModule) {
   const command = process.argv[2];
 
   switch (command) {
