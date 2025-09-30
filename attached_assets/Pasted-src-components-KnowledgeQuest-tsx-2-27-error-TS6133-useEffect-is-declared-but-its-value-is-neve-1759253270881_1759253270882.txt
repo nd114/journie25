@@ -1,0 +1,145 @@
+src/components/KnowledgeQuest.tsx:2:27 - error TS6133: 'useEffect' is declared but its value is never read.
+
+2 import React, { useState, useEffect } from "react";
+                            ~~~~~~~~~
+
+src/components/KnowledgeQuest.tsx:9:3 - error TS6133: 'Zap' is declared but its value is never read.
+
+9   Zap,
+    ~~~
+
+src/components/KnowledgeQuest.tsx:10:3 - error TS6133: 'Award' is declared but its value is never read.
+
+10   Award,
+     ~~~~~
+
+src/components/KnowledgeQuest.tsx:39:21 - error TS6133: 'setUserLevel' is declared but its value is never read.
+
+39   const [userLevel, setUserLevel] = useState(5);
+                       ~~~~~~~~~~~~
+
+src/components/KnowledgeQuest.tsx:40:18 - error TS6133: 'setUserXP' is declared but its value is never read.
+
+40   const [userXP, setUserXP] = useState(750);
+                    ~~~~~~~~~
+
+src/components/MultiLevelContent.tsx:8:3 - error TS6133: 'Info' is declared but its value is never read.
+
+8   Info,
+    ~~~~
+
+src/components/MultiLevelContent.tsx:10:3 - error TS6133: 'BookOpen' is declared but its value is never read.
+
+10   BookOpen,
+     ~~~~~~~~
+
+src/components/VisualAbstractBuilder.tsx:6:3 - error TS6133: 'Palette' is declared but its value is never read.
+
+6   Palette,
+    ~~~~~~~
+
+src/components/VisualAbstractBuilder.tsx:10:3 - error TS6133: 'Undo' is declared but its value is never read.
+
+10   Undo,
+     ~~~~
+
+src/components/VisualAbstractBuilder.tsx:11:3 - error TS6133: 'Redo' is declared but its value is never read.
+
+11   Redo,
+     ~~~~
+
+src/components/VisualAbstractBuilder.tsx:14:3 - error TS6133: 'Move' is declared but its value is never read.
+
+14   Move
+     ~~~~
+
+src/components/VisualAbstractBuilder.tsx:42:3 - error TS6133: 'paperId' is declared but its value is never read.
+
+42   paperId,
+     ~~~~~~~
+
+src/hooks/useAuth.ts:3:26 - error TS2307: Cannot find module '../services/database' or its corresponding type declarations.
+
+3 import { database } from '../services/database'
+                           ~~~~~~~~~~~~~~~~~~~~~~
+
+src/pages/BrowsePapers.tsx:7:3 - error TS6133: 'Users' is declared but its value is never read.
+
+7   Users,
+    ~~~~~
+
+src/pages/BrowsePapers.tsx:8:3 - error TS6133: 'Eye' is declared but its value is never read.
+
+8   Eye,
+    ~~~
+
+src/pages/LearningPaths.tsx:1:8 - error TS6133: 'React' is declared but its value is never read.
+
+1 import React, { useState, useEffect } from 'react';
+         ~~~~~
+
+src/pages/LearningPaths.tsx:3:46 - error TS6133: 'Users' is declared but its value is never read.
+
+3 import { BookOpen, Clock, CheckCircle, Play, Users } from 'lucide-react';
+                                               ~~~~~
+
+src/pages/LearningPaths.tsx:23:10 - error TS6133: 'selectedPath' is declared but its value is never read.
+
+23   const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
+            ~~~~~~~~~~~~
+
+src/pages/LearningPaths.tsx:176:42 - error TS6133: 'index' is declared but its value is never read.
+
+176                   {path.steps.map((step, index) => (
+                                             ~~~~~
+
+src/pages/LibraryLanding.tsx:5:3 - error TS6133: 'Search' is declared but its value is never read.
+
+5   Search,
+    ~~~~~~
+
+src/pages/LibraryLanding.tsx:7:3 - error TS6133: 'Sparkles' is declared but its value is never read.
+
+7   Sparkles,
+    ~~~~~~~~
+
+src/pages/LibraryLanding.tsx:40:50 - error TS2353: Object literal may only specify known properties, and 'limit' does not exist in type '{ field?: string | undefined; search?: string | undefined; }'.
+
+40     const response = await apiClient.getPapers({ limit: 3 });
+                                                    ~~~~~
+
+src/pages/PrivacyPolicy.tsx:1:1 - error TS6133: 'React' is declared but its value is never read.
+
+1 import React from 'react';
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/pages/ResearchTools.tsx:119:9 - error TS6133: 'filteredTools' is declared but its value is never read.
+
+119   const filteredTools = selectedCategory === 'all'
+            ~~~~~~~~~~~~~
+
+src/pages/TermsOfService.tsx:1:1 - error TS6133: 'React' is declared but its value is never read.
+
+1 import React from 'react';
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/pages/TrendingResearch.tsx:1:8 - error TS6133: 'React' is declared but its value is never read.
+
+1 import React, { useState, useEffect } from 'react';
+         ~~~~~
+
+
+Found 26 errors in 11 files.
+
+Errors  Files
+     5  src/components/KnowledgeQuest.tsx:2
+     2  src/components/MultiLevelContent.tsx:8
+     5  src/components/VisualAbstractBuilder.tsx:6
+     1  src/hooks/useAuth.ts:3
+     2  src/pages/BrowsePapers.tsx:7
+     4  src/pages/LearningPaths.tsx:1
+     3  src/pages/LibraryLanding.tsx:5
+     1  src/pages/PrivacyPolicy.tsx:1
+     1  src/pages/ResearchTools.tsx:119
+     1  src/pages/TermsOfService.tsx:1
+     1  src/pages/TrendingResearch.tsx:1

@@ -19,6 +19,8 @@ const JWT_SECRET =
 app.use(
   cors({
     origin: [
+      "http://localhost:3000",
+      "http://0.0.0.0:3000",
       "http://localhost:5000",
       "http://0.0.0.0:5000",
       process.env.REPL_SLUG
@@ -949,12 +951,8 @@ app.get("/api/health", (req, res) => {
 app.use(express.static(path.join(__dirname, "..", "dist")));
 
 // Handle SPA routing - serve index.html for all non-API routes
-app.use((req, res, next) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, "..", "dist", "index.html"));
-  } else {
-    next();
-  }
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "dist", "index.html"));
 });
 
 app.listen(PORT, "0.0.0.0", () => {
