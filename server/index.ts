@@ -1,8 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 import { storage } from "./storage";
 import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -11,14 +11,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || "3000", 10);
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-production";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "dev-secret-key-change-in-production";
 
-app.use(cors({
-  origin: ['http://localhost:5000', 'http://0.0.0.0:5000', process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : ''],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5000",
+      "http://0.0.0.0:5000",
+      process.env.REPL_SLUG
+        ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+        : "",
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Middleware to verify JWT token
@@ -46,7 +55,9 @@ app.post("/api/auth/register", async (req, res) => {
 
     // Server-side password validation
     if (!password || password.length < 8) {
-      return res.status(400).json({ error: "Password must be at least 8 characters long" });
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 8 characters long" });
     }
 
     const existingUser = await storage.getUserByEmail(email);
@@ -61,11 +72,13 @@ app.post("/api/auth/register", async (req, res) => {
       name,
     });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-    res.json({ 
+    res.json({
       user: { id: user.id, email: user.email, name: user.name },
-      token 
+      token,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -87,11 +100,13 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-    res.json({ 
+    res.json({
       user: { id: user.id, email: user.email, name: user.name },
-      token 
+      token,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -105,13 +120,13 @@ app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.json({ 
-      id: user.id, 
-      email: user.email, 
+    res.json({
+      id: user.id,
+      email: user.email,
       name: user.name,
       orcid: user.orcid,
       affiliation: user.affiliation,
-      bio: user.bio
+      bio: user.bio,
     });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user" });
@@ -125,51 +140,57 @@ app.put("/api/auth/profile", authenticateToken, async (req: any, res) => {
       name,
       orcid,
       affiliation,
-      bio
+      bio,
     });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.json({ 
-      id: user.id, 
-      email: user.email, 
+    res.json({
+      id: user.id,
+      email: user.email,
       name: user.name,
       orcid: user.orcid,
       affiliation: user.affiliation,
-      bio: user.bio
+      bio: user.bio,
     });
   } catch (error) {
     res.status(500).json({ error: "Failed to update profile" });
   }
 });
 
-app.post("/api/auth/change-password", authenticateToken, async (req: any, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
+app.post(
+  "/api/auth/change-password",
+  authenticateToken,
+  async (req: any, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
 
-    // Server-side password validation
-    if (!newPassword || newPassword.length < 8) {
-      return res.status(400).json({ error: "Password must be at least 8 characters long" });
+      // Server-side password validation
+      if (!newPassword || newPassword.length < 8) {
+        return res
+          .status(400)
+          .json({ error: "Password must be at least 8 characters long" });
+      }
+
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const isValidPassword = await compare(currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+
+      const hashedPassword = await hash(newPassword, 10);
+      await storage.updateUser(req.user.id, { password: hashedPassword });
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to change password" });
     }
-
-    const user = await storage.getUser(req.user.id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const isValidPassword = await compare(currentPassword, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: "Current password is incorrect" });
-    }
-
-    const hashedPassword = await hash(newPassword, 10);
-    await storage.updateUser(req.user.id, { password: hashedPassword });
-
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to change password" });
-  }
-});
+  },
+);
 
 // Paper endpoints
 app.get("/api/papers", async (req, res) => {
@@ -203,22 +224,23 @@ app.get("/api/papers/:id", async (req, res) => {
 
     res.json(paper);
   } catch (error) {
-    console.error('Error fetching paper:', error);
+    console.error("Error fetching paper:", error);
     res.status(500).json({ error: "Failed to fetch paper" });
   }
 });
 
 app.post("/api/papers", authenticateToken, async (req: any, res) => {
   try {
-    const { title, abstract, content, authors, researchField, keywords } = req.body;
+    const { title, abstract, content, authors, researchField, keywords } =
+      req.body;
 
     const paper = await storage.createPaper({
       title,
       abstract,
-      content: content || '',
+      content: content || "",
       authors: authors || [],
       authorIds: [req.user.id],
-      researchField: researchField || '',
+      researchField: researchField || "",
       fieldIds: [],
       keywords: keywords || [],
       createdBy: req.user.id,
@@ -243,7 +265,9 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
 
     // Check authorization: user must be the creator
     if (existingPaper.createdBy !== req.user.id) {
-      return res.status(403).json({ error: "Not authorized to update this paper" });
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this paper" });
     }
 
     // Handle publishing logic: ignore isPublished/publishedAt from client, derive from status
@@ -252,7 +276,8 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
     delete updates.isPublished;
     delete updates.publishedAt;
 
-    const isNewlyPublished = updates.status === 'published' && !existingPaper.isPublished;
+    const isNewlyPublished =
+      updates.status === "published" && !existingPaper.isPublished;
 
     if (isNewlyPublished) {
       updates.isPublished = true;
@@ -272,7 +297,7 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
         pdfUrl: updates.pdfUrl || existingPaper.pdfUrl,
         createdBy: req.user.id,
       });
-    } else if (updates.status === 'draft') {
+    } else if (updates.status === "draft") {
       updates.isPublished = false;
     }
 
@@ -295,7 +320,9 @@ app.delete("/api/papers/:id", authenticateToken, async (req: any, res) => {
 
     // Check authorization: user must be the creator
     if (existingPaper.createdBy !== req.user.id) {
-      return res.status(403).json({ error: "Not authorized to delete this paper" });
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this paper" });
     }
 
     await storage.deletePaper(paperId);
@@ -322,27 +349,31 @@ app.get("/api/papers/:id/comments", async (req, res) => {
   }
 });
 
-app.post("/api/papers/:id/comments", authenticateToken, async (req: any, res) => {
-  try {
-    const paperId = parseInt(req.params.id);
-    // Check if paper is published before allowing comments
-    const paper = await storage.getPaper(paperId);
-    if (!paper || !paper.isPublished) {
-      return res.status(404).json({ error: "Paper not found" });
-    }
+app.post(
+  "/api/papers/:id/comments",
+  authenticateToken,
+  async (req: any, res) => {
+    try {
+      const paperId = parseInt(req.params.id);
+      // Check if paper is published before allowing comments
+      const paper = await storage.getPaper(paperId);
+      if (!paper || !paper.isPublished) {
+        return res.status(404).json({ error: "Paper not found" });
+      }
 
-    const { content, parentId } = req.body;
-    const comment = await storage.createComment({
-      paperId,
-      userId: req.user.id,
-      content,
-      parentId: parentId || null,
-    });
-    res.json(comment);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create comment" });
-  }
-});
+      const { content, parentId } = req.body;
+      const comment = await storage.createComment({
+        paperId,
+        userId: req.user.id,
+        content,
+        parentId: parentId || null,
+      });
+      res.json(comment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create comment" });
+    }
+  },
+);
 
 // Review endpoints
 app.get("/api/papers/:id/reviews", async (req, res) => {
@@ -361,29 +392,33 @@ app.get("/api/papers/:id/reviews", async (req, res) => {
   }
 });
 
-app.post("/api/papers/:id/reviews", authenticateToken, async (req: any, res) => {
-  try {
-    const paperId = parseInt(req.params.id);
-    // Check if paper is published before allowing reviews
-    const paper = await storage.getPaper(paperId);
-    if (!paper || !paper.isPublished) {
-      return res.status(404).json({ error: "Paper not found" });
-    }
+app.post(
+  "/api/papers/:id/reviews",
+  authenticateToken,
+  async (req: any, res) => {
+    try {
+      const paperId = parseInt(req.params.id);
+      // Check if paper is published before allowing reviews
+      const paper = await storage.getPaper(paperId);
+      if (!paper || !paper.isPublished) {
+        return res.status(404).json({ error: "Paper not found" });
+      }
 
-    const { content, rating, recommendation } = req.body;
-    const review = await storage.createReview({
-      paperId,
-      userId: req.user.id,
-      content,
-      rating,
-      recommendation,
-      isPublic: true,
-    });
-    res.json(review);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create review" });
-  }
-});
+      const { content, rating, recommendation } = req.body;
+      const review = await storage.createReview({
+        paperId,
+        userId: req.user.id,
+        content,
+        rating,
+        recommendation,
+        isPublic: true,
+      });
+      res.json(review);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create review" });
+    }
+  },
+);
 
 // Version history endpoint
 app.get("/api/papers/:id/versions", async (req, res) => {
@@ -472,7 +507,7 @@ app.get("/api/recommendations", authenticateToken, async (req: any, res) => {
     const { limit = 5 } = req.query;
     const recommendations = await storage.getUserRecommendations(
       req.user.id,
-      parseInt(limit as string)
+      parseInt(limit as string),
     );
     res.json(recommendations);
   } catch (error) {
@@ -524,7 +559,7 @@ app.get("/api/trending-topics", async (req, res) => {
 
 // Communities endpoints
 // Communities API endpoints
-app.get('/api/communities', async (req, res) => {
+app.get("/api/communities", async (req, res) => {
   try {
     const category = req.query.category as string;
 
@@ -545,24 +580,26 @@ app.get('/api/communities', async (req, res) => {
     const communitiesData = await storage.getCommunities(userId, category);
     res.json(communitiesData);
   } catch (error) {
-    console.error('Error fetching communities:', error);
-    res.status(500).json({ error: 'Failed to fetch communities' });
+    console.error("Error fetching communities:", error);
+    res.status(500).json({ error: "Failed to fetch communities" });
   }
 });
 
-app.post('/api/communities', authenticateToken, async (req, res) => {
+app.post("/api/communities", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const { name, description, category } = req.body;
 
     if (!name || !description || !category) {
-      return res.status(400).json({ error: 'Name, description, and category are required' });
+      return res
+        .status(400)
+        .json({ error: "Name, description, and category are required" });
     }
 
     const community = await storage.createCommunity({
       name,
       description,
-      category
+      category,
     });
 
     // Automatically join the creator to the community
@@ -570,120 +607,124 @@ app.post('/api/communities', authenticateToken, async (req, res) => {
 
     res.status(201).json({ ...community, isJoined: true });
   } catch (error) {
-    console.error('Error creating community:', error);
-    res.status(500).json({ error: 'Failed to create community' });
+    console.error("Error creating community:", error);
+    res.status(500).json({ error: "Failed to create community" });
   }
 });
 
-app.post('/api/communities/:id/join', authenticateToken, async (req, res) => {
+app.post("/api/communities/:id/join", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const communityId = parseInt(req.params.id);
 
     await storage.joinCommunity(userId, communityId);
-    res.json({ message: 'Successfully joined community' });
+    res.json({ message: "Successfully joined community" });
   } catch (error) {
-    console.error('Error joining community:', error);
-    res.status(500).json({ error: 'Failed to join community' });
+    console.error("Error joining community:", error);
+    res.status(500).json({ error: "Failed to join community" });
   }
 });
 
-app.post('/api/communities/:id/leave', authenticateToken, async (req, res) => {
+app.post("/api/communities/:id/leave", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const communityId = parseInt(req.params.id);
 
     await storage.leaveCommunity(userId, communityId);
-    res.json({ message: 'Successfully left community' });
+    res.json({ message: "Successfully left community" });
   } catch (error) {
-    console.error('Error leaving community:', error);
-    res.status(500).json({ error: 'Failed to leave community' });
+    console.error("Error leaving community:", error);
+    res.status(500).json({ error: "Failed to leave community" });
   }
 });
 
 // Trending Research API
-app.get('/api/trending', async (req, res) => {
+app.get("/api/trending", async (req, res) => {
   try {
     const trendingData = await storage.getTrendingTopics();
     res.json(trendingData);
   } catch (error) {
-    console.error('Error fetching trending data:', error);
-    res.status(500).json({ error: 'Failed to fetch trending data' });
+    console.error("Error fetching trending data:", error);
+    res.status(500).json({ error: "Failed to fetch trending data" });
   }
 });
 
 // Learning Paths API
-app.get('/api/learning-paths', authenticateToken, async (req, res) => {
+app.get("/api/learning-paths", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const paths = await storage.getLearningPaths(userId);
     res.json(paths);
   } catch (error) {
-    console.error('Error fetching learning paths:', error);
-    res.status(500).json({ error: 'Failed to fetch learning paths' });
+    console.error("Error fetching learning paths:", error);
+    res.status(500).json({ error: "Failed to fetch learning paths" });
   }
 });
 
-app.post('/api/learning-paths/:id/complete-step', authenticateToken, async (req, res) => {
-  try {
-    const userId = (req as any).user.id;
-    const pathId = parseInt(req.params.id);
-    const { stepId } = req.body;
+app.post(
+  "/api/learning-paths/:id/complete-step",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const pathId = parseInt(req.params.id);
+      const { stepId } = req.body;
 
-    await storage.completeLearningStep(userId, pathId, stepId);
-    res.json({ message: 'Step completed successfully' });
-  } catch (error) {
-    console.error('Error completing step:', error);
-    res.status(500).json({ error: 'Failed to complete step' });
-  }
-});
+      await storage.completeLearningStep(userId, pathId, stepId);
+      res.json({ message: "Step completed successfully" });
+    } catch (error) {
+      console.error("Error completing step:", error);
+      res.status(500).json({ error: "Failed to complete step" });
+    }
+  },
+);
 
 // Research Tools API
-app.get('/api/research-tools', async (req, res) => {
+app.get("/api/research-tools", async (req, res) => {
   try {
     const tools = await storage.getResearchTools();
     res.json(tools);
   } catch (error) {
-    console.error('Error fetching research tools:', error);
-    res.status(500).json({ error: 'Failed to fetch research tools' });
+    console.error("Error fetching research tools:", error);
+    res.status(500).json({ error: "Failed to fetch research tools" });
   }
 });
 
 // Bookmarks API
-app.get('/api/bookmarks', authenticateToken, async (req, res) => {
+app.get("/api/bookmarks", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const bookmarks = await storage.getUserBookmarks(userId);
     res.json(bookmarks);
   } catch (error) {
-    console.error('Error fetching bookmarks:', error);
-    res.status(500).json({ error: 'Failed to fetch bookmarks' });
+    console.error("Error fetching bookmarks:", error);
+    res.status(500).json({ error: "Failed to fetch bookmarks" });
   }
 });
 
-app.post('/api/bookmarks/:paperId', authenticateToken, async (req, res) => {
+app.post("/api/bookmarks/:paperId", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const paperId = parseInt(req.params.paperId);
 
     await storage.addBookmark(userId, paperId);
-    res.json({ message: 'Bookmark added successfully' });
+    res.json({ message: "Bookmark added successfully" });
   } catch (error) {
-    console.error('Error adding bookmark:', error);
-    res.status(500).json({ error: 'Failed to add bookmark' });
+    console.error("Error adding bookmark:", error);
+    res.status(500).json({ error: "Failed to add bookmark" });
   }
 });
 
-app.delete('/api/bookmarks/:paperId', authenticateToken, async (req, res) => {
+app.delete("/api/bookmarks/:paperId", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const paperId = parseInt(req.params.paperId);
 
     await storage.removeBookmark(userId, paperId);
-    res.json({ message: 'Bookmark removed successfully' });
+    res.json({ message: "Bookmark removed successfully" });
   } catch (error) {
-    console.error('Error removing bookmark:', error);
-    res.status(500).json({ error: 'Failed to remove bookmark' });
+    console.error("Error removing bookmark:", error);
+    res.status(500).json({ error: "Failed to remove bookmark" });
   }
 });
 
@@ -712,16 +753,24 @@ app.get("/api/user/progress", authenticateToken, async (req: any, res) => {
 });
 
 // Update quest progress
-app.post("/api/user/quest-progress", authenticateToken, async (req: any, res) => {
-  try {
-    const { questId, action } = req.body;
-    const progress = await storage.updateQuestProgress(req.user.id, questId, action);
-    res.json(progress);
-  } catch (error) {
-    console.error("Error updating quest progress:", error);
-    res.status(500).json({ error: "Failed to update quest progress" });
-  }
-});
+app.post(
+  "/api/user/quest-progress",
+  authenticateToken,
+  async (req: any, res) => {
+    try {
+      const { questId, action } = req.body;
+      const progress = await storage.updateQuestProgress(
+        req.user.id,
+        questId,
+        action,
+      );
+      res.json(progress);
+    } catch (error) {
+      console.error("Error updating quest progress:", error);
+      res.status(500).json({ error: "Failed to update quest progress" });
+    }
+  },
+);
 
 // Get user achievements
 app.get("/api/user/achievements", authenticateToken, async (req: any, res) => {
@@ -735,24 +784,28 @@ app.get("/api/user/achievements", authenticateToken, async (req: any, res) => {
 });
 
 // Save visual abstract
-app.post("/api/papers/:id/visual-abstract", authenticateToken, async (req: any, res) => {
-  try {
-    const paperId = parseInt(req.params.id);
-    const { elements, canvasStyle } = req.body;
+app.post(
+  "/api/papers/:id/visual-abstract",
+  authenticateToken,
+  async (req: any, res) => {
+    try {
+      const paperId = parseInt(req.params.id);
+      const { elements, canvasStyle } = req.body;
 
-    const visualAbstract = await storage.saveVisualAbstract({
-      paperId,
-      userId: req.user.id,
-      elements,
-      canvasStyle,
-    });
+      const visualAbstract = await storage.saveVisualAbstract({
+        paperId,
+        userId: req.user.id,
+        elements,
+        canvasStyle,
+      });
 
-    res.json(visualAbstract);
-  } catch (error) {
-    console.error("Error saving visual abstract:", error);
-    res.status(500).json({ error: "Failed to save visual abstract" });
-  }
-});
+      res.json(visualAbstract);
+    } catch (error) {
+      console.error("Error saving visual abstract:", error);
+      res.status(500).json({ error: "Failed to save visual abstract" });
+    }
+  },
+);
 
 // Get visual abstract
 app.get("/api/papers/:id/visual-abstract", async (req, res) => {
@@ -767,113 +820,125 @@ app.get("/api/papers/:id/visual-abstract", async (req, res) => {
 });
 
 // Generate multi-level content
-app.post("/api/papers/:id/generate-levels", authenticateToken, async (req: any, res) => {
-  try {
-    const paperId = parseInt(req.params.id);
-    const levels = await storage.generateMultiLevelContent(paperId);
-    res.json(levels);
-  } catch (error) {
-    console.error("Error generating multi-level content:", error);
-    res.status(500).json({ error: "Failed to generate multi-level content" });
-  }
-});
+app.post(
+  "/api/papers/:id/generate-levels",
+  authenticateToken,
+  async (req: any, res) => {
+    try {
+      const paperId = parseInt(req.params.id);
+      const levels = await storage.generateMultiLevelContent(paperId);
+      res.json(levels);
+    } catch (error) {
+      console.error("Error generating multi-level content:", error);
+      res.status(500).json({ error: "Failed to generate multi-level content" });
+    }
+  },
+);
 
 // Follow/Unfollow User endpoints
-app.post('/api/users/:id/follow', authenticateToken, async (req, res) => {
+app.post("/api/users/:id/follow", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const followingId = parseInt(req.params.id);
 
     if (userId === followingId) {
-      return res.status(400).json({ error: 'Cannot follow yourself' });
+      return res.status(400).json({ error: "Cannot follow yourself" });
     }
 
     // Check if user exists
     const targetUser = await storage.getUser(followingId);
     if (!targetUser) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     await storage.followUser(userId, followingId);
-    res.json({ message: 'Successfully followed user' });
+    res.json({ message: "Successfully followed user" });
   } catch (error) {
-    console.error('Error following user:', error);
-    res.status(500).json({ error: 'Failed to follow user' });
+    console.error("Error following user:", error);
+    res.status(500).json({ error: "Failed to follow user" });
   }
 });
 
-app.delete('/api/users/:id/follow', authenticateToken, async (req, res) => {
+app.delete("/api/users/:id/follow", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const followingId = parseInt(req.params.id);
 
     await storage.unfollowUser(userId, followingId);
-    res.json({ message: 'Successfully unfollowed user' });
+    res.json({ message: "Successfully unfollowed user" });
   } catch (error) {
-    console.error('Error unfollowing user:', error);
-    res.status(500).json({ error: 'Failed to unfollow user' });
+    console.error("Error unfollowing user:", error);
+    res.status(500).json({ error: "Failed to unfollow user" });
   }
 });
 
-app.get('/api/users/:id/followers', async (req, res) => {
+app.get("/api/users/:id/followers", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
     const followers = await storage.getUserFollowers(userId);
     res.json(followers);
   } catch (error) {
-    console.error('Error fetching followers:', error);
-    res.status(500).json({ error: 'Failed to fetch followers' });
+    console.error("Error fetching followers:", error);
+    res.status(500).json({ error: "Failed to fetch followers" });
   }
 });
 
-app.get('/api/users/:id/following', async (req, res) => {
+app.get("/api/users/:id/following", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
     const following = await storage.getUserFollowing(userId);
     res.json(following);
   } catch (error) {
-    console.error('Error fetching following:', error);
-    res.status(500).json({ error: 'Failed to fetch following' });
+    console.error("Error fetching following:", error);
+    res.status(500).json({ error: "Failed to fetch following" });
   }
 });
 
-app.get('/api/users/:targetId/following-status', authenticateToken, async (req, res) => {
-  try {
-    const userId = (req as any).user.id;
-    const targetId = parseInt(req.params.targetId);
-    const isFollowing = await storage.isFollowing(userId, targetId);
-    res.json({ following: isFollowing });
-  } catch (error) {
-    console.error('Error checking follow status:', error);
-    res.status(500).json({ error: 'Failed to check follow status' });
-  }
-});
+app.get(
+  "/api/users/:targetId/following-status",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const targetId = parseInt(req.params.targetId);
+      const isFollowing = await storage.isFollowing(userId, targetId);
+      res.json({ following: isFollowing });
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+      res.status(500).json({ error: "Failed to check follow status" });
+    }
+  },
+);
 
 // Activity Feed endpoint
-app.get('/api/feed', authenticateToken, async (req, res) => {
+app.get("/api/feed", authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const limit = parseInt(req.query.limit as string) || 20;
     const activities = await storage.getUserActivityFeed(userId, limit);
     res.json(activities);
   } catch (error) {
-    console.error('Error fetching activity feed:', error);
-    res.status(500).json({ error: 'Failed to fetch activity feed' });
+    console.error("Error fetching activity feed:", error);
+    res.status(500).json({ error: "Failed to fetch activity feed" });
   }
 });
 
 // Check if paper is bookmarked
-app.get('/api/bookmarks/:paperId/check', authenticateToken, async (req, res) => {
-  try {
-    const userId = (req as any).user.id;
-    const paperId = parseInt(req.params.paperId);
-    const isBookmarked = await storage.isBookmarked(userId, paperId);
-    res.json({ isBookmarked });
-  } catch (error) {
-    console.error('Error checking bookmark status:', error);
-    res.status(500).json({ error: 'Failed to check bookmark status' });
-  }
-});
+app.get(
+  "/api/bookmarks/:paperId/check",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const paperId = parseInt(req.params.paperId);
+      const isBookmarked = await storage.isBookmarked(userId, paperId);
+      res.json({ isBookmarked });
+    } catch (error) {
+      console.error("Error checking bookmark status:", error);
+      res.status(500).json({ error: "Failed to check bookmark status" });
+    }
+  },
+);
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -881,13 +946,13 @@ app.get("/api/health", (req, res) => {
 });
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, '..', 'dist')));
+app.use(express.static(path.join(__dirname, "..", "dist")));
 
 // Handle SPA routing - catch all routes for SPA
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "dist", "index.html"));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
