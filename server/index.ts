@@ -759,6 +759,97 @@ app.post("/api/papers/:id/generate-levels", authenticateToken, async (req: any, 
   }
 });
 
+// Follow/Unfollow User endpoints
+app.post('/api/users/:id/follow', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const followingId = parseInt(req.params.id);
+
+    if (userId === followingId) {
+      return res.status(400).json({ error: 'Cannot follow yourself' });
+    }
+
+    await storage.followUser(userId, followingId);
+    res.json({ message: 'Successfully followed user' });
+  } catch (error) {
+    console.error('Error following user:', error);
+    res.status(500).json({ error: 'Failed to follow user' });
+  }
+});
+
+app.delete('/api/users/:id/follow', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const followingId = parseInt(req.params.id);
+
+    await storage.unfollowUser(userId, followingId);
+    res.json({ message: 'Successfully unfollowed user' });
+  } catch (error) {
+    console.error('Error unfollowing user:', error);
+    res.status(500).json({ error: 'Failed to unfollow user' });
+  }
+});
+
+app.get('/api/users/:id/followers', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const followers = await storage.getUserFollowers(userId);
+    res.json(followers);
+  } catch (error) {
+    console.error('Error fetching followers:', error);
+    res.status(500).json({ error: 'Failed to fetch followers' });
+  }
+});
+
+app.get('/api/users/:id/following', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const following = await storage.getUserFollowing(userId);
+    res.json(following);
+  } catch (error) {
+    console.error('Error fetching following:', error);
+    res.status(500).json({ error: 'Failed to fetch following' });
+  }
+});
+
+app.get('/api/users/:id/is-following/:targetId', authenticateToken, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const targetId = parseInt(req.params.targetId);
+    const isFollowing = await storage.isFollowing(userId, targetId);
+    res.json({ isFollowing });
+  } catch (error) {
+    console.error('Error checking follow status:', error);
+    res.status(500).json({ error: 'Failed to check follow status' });
+  }
+});
+
+// Activity Feed endpoint
+app.get('/api/feed', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const activities = await storage.getUserActivityFeed(userId, limit);
+    res.json(activities);
+  } catch (error) {
+    console.error('Error fetching activity feed:', error);
+    res.status(500).json({ error: 'Failed to fetch activity feed' });
+  }
+});
+
+// Check if paper is bookmarked
+app.get('/api/bookmarks/:paperId/check', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const paperId = parseInt(req.params.paperId);
+    const isBookmarked = await storage.isBookmarked(userId, paperId);
+    res.json({ isBookmarked });
+  } catch (error) {
+    console.error('Error checking bookmark status:', error);
+    res.status(500).json({ error: 'Failed to check bookmark status' });
+  }
+});
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
