@@ -244,23 +244,23 @@ const LibraryLanding: React.FC = () => {
                 Explore
               </Link>
               <Link
+                to="/about"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                About
+              </Link>
+              <Link
+                to="/how-it-works"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                How It Works
+              </Link>
+              <Link
                 to="/auth"
                 className="hover:text-indigo-600 transition-colors"
               >
                 Join
               </Link>
-              <a
-                href="#about"
-                className="hover:text-indigo-600 transition-colors"
-              >
-                About
-              </a>
-              <a
-                href="#contact"
-                className="hover:text-indigo-600 transition-colors"
-              >
-                Contact
-              </a>
             </div>
           </div>
         </div>
