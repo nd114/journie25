@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, LogIn, LogOut, User } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
-export const Navbar: React.FC = () => {
+const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
