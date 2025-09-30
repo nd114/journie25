@@ -30,6 +30,10 @@ localPort = 5173
 localPort = 5174
 
 [[ports]]
+localPort = 39079
+externalPort = 3002
+
+[[ports]]
 localPort = 41787
 
 [workflows]
