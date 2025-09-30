@@ -1,0 +1,66 @@
+CRITICAL - App-Breaking Issues
+❌ REACT SYNTAX ERROR - App Won't Load
+
+File: src/pages/ResearchCommunities.tsx (lines 249-250)
+Issue: Two extra closing </div> tags causing "Adjacent JSX elements must be wrapped in an enclosing tag" error
+Impact: The entire app crashes on load with a white screen
+Fix Needed: Remove the duplicate closing tags on lines 249-250
+❌ Missing API Endpoints - 500/404 Errors
+
+Issue: Routes defined in App.tsx but backend endpoints don't exist:
+/api/communities (GET, POST)
+/api/communities/:id/join (POST)
+/api/communities/:id/leave (POST)
+Impact: All community features fail, console shows 500/404 errors
+Files Affected: ResearchCommunities.tsx, TrendingResearch.tsx, LearningPaths.tsx, ResearchTools.tsx
+❌ Missing Page Components
+
+Issue: App.tsx imports pages that likely don't exist or are incomplete:
+TrendingResearch.tsx
+LearningPaths.tsx
+ResearchTools.tsx
+PrivacyPolicy.tsx
+TermsOfService.tsx
+About.tsx, HowItWorks.tsx, Contact.tsx, FAQ.tsx
+Impact: Navigation to these routes will fail
+HIGH PRIORITY - Functional Issues
+⚠️ Backend Not Persistent
+
+Issue: Backend workflow keeps failing/dying (status: FAILED in logs)
+Impact: Registration and all API calls intermittently fail
+Root Cause: Process management issue with workflow system
+⚠️ No Error Boundaries
+
+Issue: When React errors occur, entire app crashes with no recovery
+Impact: Poor user experience, no graceful degradation
+⚠️ Database Schema Mismatch
+
+Issue: Frontend expects features (communities, trending, learning paths) that aren't in the database schema
+Impact: Features can't work without proper data models
+MEDIUM PRIORITY - UX/Design Issues
+📱 Incomplete Homepage
+
+Footer links navigate to non-existent or incomplete pages
+Missing "Communities", "Trending", "Learning Paths", "Research Tools" functionality
+🔍 No Loading States
+
+Pages don't show loading indicators during API calls
+Creates confusion when data is being fetched
+❗ Poor Error Handling
+
+API errors only logged to console
+No user-facing error messages for failed operations
+LOW PRIORITY - Technical Debt
+📝 Incomplete User Profile
+
+ORCID integration not fully implemented
+No profile picture support
+Missing research interests/expertise tags
+🔐 No Email Verification
+
+Users can register with any email
+No password reset mechanism
+📊 No Analytics/Metrics
+
+Can't track paper views, downloads, or engagement
+Missing citation metrics
