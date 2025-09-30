@@ -1,22 +1,21 @@
-
 import React, { useState } from "react";
-import { 
-  Image, 
-  Type, 
-  Palette, 
-  Layout, 
-  Download, 
-  Eye, 
-  Undo, 
+import {
+  Image,
+  Type,
+  Palette,
+  Layout,
+  Download,
+  Eye,
+  Undo,
   Redo,
   Plus,
   Trash2,
-  Move
+  Move,
 } from "lucide-react";
 
 interface VisualElement {
   id: string;
-  type: 'text' | 'image' | 'shape' | 'icon';
+  type: "text" | "image" | "shape" | "icon";
   content: string;
   position: { x: number; y: number };
   style: {
@@ -40,50 +39,50 @@ interface VisualAbstractBuilderProps {
 
 export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
   paperId,
-  initialData
+  initialData,
 }) => {
   const [elements, setElements] = useState<VisualElement[]>([]);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [canvasStyle, setCanvasStyle] = useState({
-    backgroundColor: '#ffffff',
-    template: 'modern'
+    backgroundColor: "#ffffff",
+    template: "modern",
   });
 
   const templates = [
-    { id: 'modern', name: 'Modern', preview: '🎨' },
-    { id: 'academic', name: 'Academic', preview: '📚' },
-    { id: 'minimalist', name: 'Minimalist', preview: '⚪' },
-    { id: 'colorful', name: 'Colorful', preview: '🌈' }
+    { id: "modern", name: "Modern", preview: "🎨" },
+    { id: "academic", name: "Academic", preview: "📚" },
+    { id: "minimalist", name: "Minimalist", preview: "⚪" },
+    { id: "colorful", name: "Colorful", preview: "🌈" },
   ];
 
-  const addElement = (type: VisualElement['type']) => {
+  const addElement = (type: VisualElement["type"]) => {
     const newElement: VisualElement = {
       id: `element-${Date.now()}`,
       type,
-      content: type === 'text' ? 'Your text here' : '',
+      content: type === "text" ? "Your text here" : "",
       position: { x: 100, y: 100 },
       style: {
         fontSize: 16,
-        color: '#000000',
-        backgroundColor: type === 'shape' ? '#3b82f6' : 'transparent',
-        width: type === 'shape' ? 100 : undefined,
-        height: type === 'shape' ? 50 : undefined,
-        borderRadius: type === 'shape' ? 8 : 0
-      }
+        color: "#000000",
+        backgroundColor: type === "shape" ? "#3b82f6" : "transparent",
+        width: type === "shape" ? 100 : undefined,
+        height: type === "shape" ? 50 : undefined,
+        borderRadius: type === "shape" ? 8 : 0,
+      },
     };
     setElements([...elements, newElement]);
     setSelectedElement(newElement.id);
   };
 
   const updateElement = (id: string, updates: Partial<VisualElement>) => {
-    setElements(elements.map(el => 
-      el.id === id ? { ...el, ...updates } : el
-    ));
+    setElements(
+      elements.map((el) => (el.id === id ? { ...el, ...updates } : el)),
+    );
   };
 
   const deleteElement = (id: string) => {
-    setElements(elements.filter(el => el.id !== id));
+    setElements(elements.filter((el) => el.id !== id));
     if (selectedElement === id) {
       setSelectedElement(null);
     }
@@ -93,29 +92,31 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
     if (!initialData) return;
 
     const titleElement: VisualElement = {
-      id: 'title-auto',
-      type: 'text',
+      id: "title-auto",
+      type: "text",
       content: initialData.title,
       position: { x: 50, y: 30 },
       style: {
         fontSize: 24,
-        color: '#1f2937',
-        backgroundColor: 'transparent'
-      }
+        color: "#1f2937",
+        backgroundColor: "transparent",
+      },
     };
 
-    const keyFindingElements: VisualElement[] = initialData.keyFindings.map((finding, index) => ({
-      id: `finding-${index}`,
-      type: 'text',
-      content: `💡 ${finding}`,
-      position: { x: 50, y: 120 + (index * 80) },
-      style: {
-        fontSize: 14,
-        color: '#374151',
-        backgroundColor: '#fef3c7',
-        borderRadius: 8
-      }
-    }));
+    const keyFindingElements: VisualElement[] = initialData.keyFindings.map(
+      (finding, index) => ({
+        id: `finding-${index}`,
+        type: "text",
+        content: `💡 ${finding}`,
+        position: { x: 50, y: 120 + index * 80 },
+        style: {
+          fontSize: 14,
+          color: "#374151",
+          backgroundColor: "#fef3c7",
+          borderRadius: 8,
+        },
+      }),
+    );
 
     setElements([titleElement, ...keyFindingElements]);
   };
@@ -125,19 +126,33 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <Image className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-xl font-bold text-gray-900">Visual Abstract Builder</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Visual Abstract Builder
+          </h2>
         </div>
         <div className="flex items-center space-x-2">
           <button
+            className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            disabled={true}
+          >
+            <Undo className="w-4 h-4" />
+          </button>
+          <button
+            className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            disabled={true}
+          >
+            <Redo className="w-4 h-4" />
+          </button>
+          <button
             onClick={() => setPreviewMode(!previewMode)}
             className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
-              previewMode 
-                ? 'bg-indigo-600 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              previewMode
+                ? "bg-indigo-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             <Eye className="w-4 h-4" />
-            <span>{previewMode ? 'Edit' : 'Preview'}</span>
+            <span>{previewMode ? "Edit" : "Preview"}</span>
           </button>
           <button className="flex items-center space-x-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
             <Download className="w-4 h-4" />
@@ -157,11 +172,13 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
                 {templates.map((template) => (
                   <button
                     key={template.id}
-                    onClick={() => setCanvasStyle({ ...canvasStyle, template: template.id })}
+                    onClick={() =>
+                      setCanvasStyle({ ...canvasStyle, template: template.id })
+                    }
                     className={`p-3 rounded-lg border text-center transition-all ${
                       canvasStyle.template === template.id
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <div className="text-2xl mb-1">{template.preview}</div>
@@ -175,10 +192,14 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="font-semibold text-gray-900 mb-3">Add Elements</h3>
               <div className="space-y-2">
+                <button className="w-full flex items-center space-x-2 px-3 py-2 bg-blue-100 border border-blue-200 rounded-lg text-blue-700">
+                  <Move className="w-4 h-4" />
+                  <span>Move Tool</span>
+                </button>
                 {[
-                  { type: 'text' as const, label: 'Text', icon: Type },
-                  { type: 'image' as const, label: 'Image', icon: Image },
-                  { type: 'shape' as const, label: 'Shape', icon: Layout }
+                  { type: "text" as const, label: "Text", icon: Type },
+                  { type: "image" as const, label: "Image", icon: Image },
+                  { type: "shape" as const, label: "Shape", icon: Layout },
                 ].map(({ type, label, icon: Icon }) => (
                   <button
                     key={type}
@@ -192,10 +213,50 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
               </div>
             </div>
 
+            {/* Color Palette */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-3">
+                <div className="flex items-center space-x-2">
+                  <Palette className="w-4 h-4" />
+                  <span>Color Palette</span>
+                </div>
+              </h3>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  "#3b82f6",
+                  "#ef4444",
+                  "#10b981",
+                  "#f59e0b",
+                  "#8b5cf6",
+                  "#ec4899",
+                ].map((color) => (
+                  <button
+                    key={color}
+                    className="w-8 h-8 rounded border-2 border-gray-300"
+                    style={{ backgroundColor: color }}
+                    onClick={() => {
+                      if (selectedElement) {
+                        const element = elements.find(
+                          (el) => el.id === selectedElement,
+                        );
+                        if (element) {
+                          updateElement(selectedElement, {
+                            style: { ...element.style, color },
+                          });
+                        }
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
             {/* Auto-generate */}
             {initialData && (
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-3">Quick Start</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  Quick Start
+                </h3>
                 <button
                   onClick={generateFromAbstract}
                   className="w-full flex items-center space-x-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -221,10 +282,15 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
                       max="48"
                       className="w-full"
                       onChange={(e) => {
-                        const element = elements.find(el => el.id === selectedElement);
+                        const element = elements.find(
+                          (el) => el.id === selectedElement,
+                        );
                         if (element) {
                           updateElement(selectedElement, {
-                            style: { ...element.style, fontSize: parseInt(e.target.value) }
+                            style: {
+                              ...element.style,
+                              fontSize: parseInt(e.target.value),
+                            },
                           });
                         }
                       }}
@@ -238,10 +304,12 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
                       type="color"
                       className="w-full h-8 rounded border border-gray-300"
                       onChange={(e) => {
-                        const element = elements.find(el => el.id === selectedElement);
+                        const element = elements.find(
+                          (el) => el.id === selectedElement,
+                        );
                         if (element) {
                           updateElement(selectedElement, {
-                            style: { ...element.style, color: e.target.value }
+                            style: { ...element.style, color: e.target.value },
                           });
                         }
                       }}
@@ -261,13 +329,13 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
         )}
 
         {/* Canvas */}
-        <div className={previewMode ? 'lg:col-span-4' : 'lg:col-span-3'}>
-          <div 
+        <div className={previewMode ? "lg:col-span-4" : "lg:col-span-3"}>
+          <div
             className="relative border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
-            style={{ 
+            style={{
               backgroundColor: canvasStyle.backgroundColor,
-              minHeight: '500px',
-              aspectRatio: '16/9'
+              minHeight: "500px",
+              aspectRatio: "16/9",
             }}
           >
             {elements.map((element) => (
@@ -275,36 +343,39 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
                 key={element.id}
                 className={`absolute cursor-pointer border-2 transition-all ${
                   selectedElement === element.id && !previewMode
-                    ? 'border-indigo-500 border-solid'
-                    : 'border-transparent'
+                    ? "border-indigo-500 border-solid"
+                    : "border-transparent"
                 }`}
                 style={{
                   left: element.position.x,
                   top: element.position.y,
-                  ...element.style
+                  ...element.style,
                 }}
                 onClick={() => !previewMode && setSelectedElement(element.id)}
               >
-                {element.type === 'text' && (
+                {element.type === "text" && (
                   <div
                     style={{
                       fontSize: element.style.fontSize,
                       color: element.style.color,
                       backgroundColor: element.style.backgroundColor,
-                      padding: element.style.backgroundColor !== 'transparent' ? '8px' : '0',
-                      borderRadius: element.style.borderRadius
+                      padding:
+                        element.style.backgroundColor !== "transparent"
+                          ? "8px"
+                          : "0",
+                      borderRadius: element.style.borderRadius,
                     }}
                   >
                     {element.content}
                   </div>
                 )}
-                {element.type === 'shape' && (
+                {element.type === "shape" && (
                   <div
                     style={{
                       width: element.style.width,
                       height: element.style.height,
                       backgroundColor: element.style.backgroundColor,
-                      borderRadius: element.style.borderRadius
+                      borderRadius: element.style.borderRadius,
                     }}
                   />
                 )}
@@ -315,8 +386,13 @@ export const VisualAbstractBuilder: React.FC<VisualAbstractBuilderProps> = ({
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <Layout className="w-12 h-12 mx-auto mb-4" />
-                  <p className="text-lg font-medium">Start building your visual abstract</p>
-                  <p className="text-sm">Add elements from the toolbar or auto-generate from your paper</p>
+                  <p className="text-lg font-medium">
+                    Start building your visual abstract
+                  </p>
+                  <p className="text-sm">
+                    Add elements from the toolbar or auto-generate from your
+                    paper
+                  </p>
                 </div>
               </div>
             )}

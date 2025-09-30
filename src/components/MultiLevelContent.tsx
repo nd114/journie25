@@ -1,14 +1,13 @@
-
 import React, { useState } from "react";
-import { 
-  Users, 
-  GraduationCap, 
-  Microscope, 
-  ArrowUpDown, 
-  Info, 
+import {
+  Users,
+  GraduationCap,
+  Microscope,
+  ArrowUpDown,
+  Info,
   Lightbulb,
   BookOpen,
-  Zap
+  Zap,
 } from "lucide-react";
 
 interface MultiLevelContentProps {
@@ -21,36 +20,40 @@ interface MultiLevelContentProps {
   };
 }
 
-export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) => {
-  const [currentLevel, setCurrentLevel] = useState<'general' | 'intermediate' | 'expert'>('general');
+export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({
+  paper,
+}) => {
+  const [currentLevel, setCurrentLevel] = useState<
+    "general" | "intermediate" | "expert"
+  >("general");
 
   const levels = [
     {
-      key: 'general' as const,
-      label: 'General Audience',
+      key: "general" as const,
+      label: "General Audience",
       icon: Users,
-      color: 'bg-green-100 text-green-700',
-      description: 'Easy to understand for everyone'
+      color: "bg-green-100 text-green-700",
+      description: "Easy to understand for everyone",
     },
     {
-      key: 'intermediate' as const,
-      label: 'Academic',
+      key: "intermediate" as const,
+      label: "Academic",
       icon: GraduationCap,
-      color: 'bg-blue-100 text-blue-700',
-      description: 'For students and educated readers'
+      color: "bg-blue-100 text-blue-700",
+      description: "For students and educated readers",
     },
     {
-      key: 'expert' as const,
-      label: 'Expert',
+      key: "expert" as const,
+      label: "Expert",
       icon: Microscope,
-      color: 'bg-purple-100 text-purple-700',
-      description: 'Full technical detail'
-    }
+      color: "bg-purple-100 text-purple-700",
+      description: "Full technical detail",
+    },
   ];
 
   const generateGeneralSummary = (abstract: string) => {
     // Simplified version for general audience
-    const sentences = abstract.split('.').filter(s => s.trim().length > 20);
+    const sentences = abstract.split(".").filter((s) => s.trim().length > 20);
     return `Scientists discovered something important: ${sentences[0]}. This could help us in everyday life by making things better and solving problems we face.`;
   };
 
@@ -58,9 +61,9 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) =
     // Academic level with some technical terms but explained
     return abstract.replace(/\b(methodology|paradigm|efficacy)\b/g, (match) => {
       const explanations = {
-        'methodology': 'research method',
-        'paradigm': 'approach or model',
-        'efficacy': 'effectiveness'
+        methodology: "research method",
+        paradigm: "approach or model",
+        efficacy: "effectiveness",
       };
       return explanations[match as keyof typeof explanations] || match;
     });
@@ -68,31 +71,31 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) =
 
   const getContentForLevel = () => {
     switch (currentLevel) {
-      case 'general':
+      case "general":
         return {
           title: `What This Research Means for You`,
           content: generateGeneralSummary(paper.abstract),
           examples: [
             "Imagine if this technology was in your smartphone...",
             "This could help doctors treat patients better",
-            "This might make everyday tasks easier and faster"
-          ]
+            "This might make everyday tasks easier and faster",
+          ],
         };
-      case 'intermediate':
+      case "intermediate":
         return {
           title: `Academic Summary`,
           content: generateIntermediateSummary(paper.abstract),
           examples: [
             "Key methodology: Advanced research techniques",
             "Potential applications in the field",
-            "Comparison with existing research approaches"
-          ]
+            "Comparison with existing research approaches",
+          ],
         };
-      case 'expert':
+      case "expert":
         return {
           title: `Technical Abstract`,
           content: paper.abstract,
-          examples: []
+          examples: [],
         };
     }
   };
@@ -103,7 +106,9 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) =
     <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
       <div className="flex items-center space-x-2 mb-6">
         <ArrowUpDown className="w-5 h-5 text-indigo-600" />
-        <h2 className="text-xl font-bold text-gray-900">Choose Your Reading Level</h2>
+        <h2 className="text-xl font-bold text-gray-900">
+          Choose Your Reading Level
+        </h2>
       </div>
 
       {/* Level Selector */}
@@ -116,8 +121,8 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) =
               onClick={() => setCurrentLevel(level.key)}
               className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all ${
                 currentLevel === level.key
-                  ? level.color + ' border-2 border-current'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? level.color + " border-2 border-current"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -132,8 +137,10 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) =
 
       {/* Content Display */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">{contentData.title}</h3>
-        
+        <h3 className="text-lg font-semibold text-gray-900">
+          {contentData.title}
+        </h3>
+
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-gray-700 leading-relaxed">{contentData.content}</p>
         </div>
@@ -143,10 +150,15 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) =
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
               <Lightbulb className="w-4 h-4 text-yellow-500" />
-              <span className="font-medium text-gray-700">Real-World Examples</span>
+              <span className="font-medium text-gray-700">
+                Real-World Examples
+              </span>
             </div>
             {contentData.examples.map((example, index) => (
-              <div key={index} className="bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-300">
+              <div
+                key={index}
+                className="bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-300"
+              >
                 <p className="text-gray-700">{example}</p>
               </div>
             ))}
@@ -157,12 +169,32 @@ export const MultiLevelContent: React.FC<MultiLevelContentProps> = ({ paper }) =
         <div className="mt-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
           <div className="flex items-center space-x-2 mb-3">
             <Zap className="w-4 h-4 text-indigo-600" />
-            <span className="font-semibold text-indigo-900">Connect the Dots</span>
+            <span className="font-semibold text-indigo-900">
+              Connect the Dots
+            </span>
           </div>
           <p className="text-indigo-800 text-sm">
-            This research builds on previous work in {paper.field} and could lead to breakthroughs in 
-            related fields like artificial intelligence, healthcare, and technology development.
+            This research builds on previous work in {paper.field} and could
+            lead to breakthroughs in related fields like artificial
+            intelligence, healthcare, and technology development.
           </p>
+        </div>
+
+        {/* Additional Reading */}
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center space-x-2 mb-3">
+            <BookOpen className="w-4 h-4 text-blue-600" />
+            <span className="font-semibold text-blue-900">
+              Recommended Reading
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 text-blue-800 text-sm">
+            <Info className="w-4 h-4" />
+            <span>
+              Explore related papers in {paper.field} to deepen your
+              understanding
+            </span>
+          </div>
         </div>
       </div>
     </div>
