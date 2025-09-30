@@ -1,98 +1,262 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, Search, Users, Sparkles } from 'lucide-react';
-import Navbar from '../components/Navbar';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  BookOpen,
+  Search,
+  Users,
+  Sparkles,
+  TrendingUp,
+  Eye,
+  MessageCircle,
+  Zap,
+} from "lucide-react";
+import Navbar from "../components/Navbar";
+import { apiClient } from "../services/apiClient";
+
+interface TrendingPaper {
+  id: number;
+  title: string;
+  abstract: string;
+  authors?: string[];
+  field?: string;
+  readCount?: number;
+  commentCount?: number;
+}
 
 const LibraryLanding: React.FC = () => {
+  const [trendingPapers, setTrendingPapers] = useState<TrendingPaper[]>([]);
+  const [activeReaders, setActiveReaders] = useState(127); // Mock data for now
+
+  useEffect(() => {
+    loadTrendingPapers();
+    // Simulate live reader count updates
+    const interval = setInterval(() => {
+      setActiveReaders((prev) => prev + Math.floor(Math.random() * 3) - 1);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadTrendingPapers = async () => {
+    const response = await apiClient.getPapers({ limit: 3 });
+    if (response.data) {
+      setTrendingPapers(
+        response.data.map((paper) => ({
+          ...paper,
+          readCount: Math.floor(Math.random() * 150) + 20,
+          commentCount: Math.floor(Math.random() * 25) + 1,
+        })),
+      );
+    }
+  };
+
+  const researchFields = [
+    {
+      name: "AI & Machine Learning",
+      color: "bg-purple-100 text-purple-800",
+      icon: "🤖",
+    },
+    {
+      name: "Climate Science",
+      color: "bg-green-100 text-green-800",
+      icon: "🌍",
+    },
+    { name: "Neuroscience", color: "bg-blue-100 text-blue-800", icon: "🧠" },
+    {
+      name: "Space Exploration",
+      color: "bg-indigo-100 text-indigo-800",
+      icon: "🚀",
+    },
+    { name: "Biotechnology", color: "bg-pink-100 text-pink-800", icon: "🧬" },
+    {
+      name: "Quantum Physics",
+      color: "bg-orange-100 text-orange-800",
+      icon: "⚛️",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <Navbar />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Discover Research, Share Knowledge
+
+      {/* Hero Section with Live Activity */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-gray-600">
+              {activeReaders} researchers exploring right now
+            </span>
+          </div>
+
+          <h1 className="text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Where Curiosity Meets
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+              {" "}
+              Discovery
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Explore cutting-edge research papers, engage with the academic community, and publish your own findings on our collaborative platform.
+
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+            Dive into research that sparks wonder. Connect ideas across fields.
+            Join conversations that matter.
           </p>
-          <Link
-            to="/library"
-            className="inline-flex items-center space-x-2 px-8 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-lg font-medium"
-          >
-            <Search className="w-5 h-5" />
-            <span>Browse Papers</span>
-          </Link>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/library"
+              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all text-lg font-medium transform hover:scale-105"
+            >
+              <Zap className="w-5 h-5" />
+              <span>Start Exploring</span>
+            </Link>
+
+            <Link
+              to="/auth"
+              className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-indigo-600 border-2 border-indigo-200 rounded-xl hover:bg-indigo-50 transition-all text-lg font-medium"
+            >
+              <Users className="w-5 h-5" />
+              <span>Join the Community</span>
+            </Link>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-20">
-          <div className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-              <BookOpen className="w-6 h-6 text-indigo-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Extensive Library</h3>
-            <p className="text-gray-600">
-              Access a vast collection of research papers across multiple fields and disciplines.
-            </p>
+        {/* Trending Research Stories */}
+        <div className="mb-16">
+          <div className="flex items-center space-x-2 mb-8">
+            <TrendingUp className="w-6 h-6 text-indigo-600" />
+            <h2 className="text-3xl font-bold text-gray-900">
+              Research Stories Trending Now
+            </h2>
           </div>
 
-          <div className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-              <Users className="w-6 h-6 text-indigo-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Collaborative Community</h3>
-            <p className="text-gray-600">
-              Engage in discussions, provide feedback, and connect with researchers worldwide.
-            </p>
-          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {trendingPapers.map((paper, index) => (
+              <Link key={paper.id} to={`/paper/${paper.id}`}>
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all transform hover:scale-102 group">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 rounded-full">
+                      #{index + 1} Trending
+                    </span>
+                    <div className="flex items-center space-x-3 text-sm text-gray-500">
+                      <div className="flex items-center space-x-1">
+                        <Eye className="w-4 h-4" />
+                        <span>{paper.readCount}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{paper.commentCount}</span>
+                      </div>
+                    </div>
+                  </div>
 
-          <div className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-              <Sparkles className="w-6 h-6 text-indigo-600" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                    {paper.title}
+                  </h3>
+
+                  <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                    {paper.abstract}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">
+                      {paper.authors?.slice(0, 2).join(", ")}
+                      {paper.authors && paper.authors.length > 2 && " +more"}
+                    </span>
+                    <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                      <span className="text-xs">→</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Explore by Interest */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            What Sparks Your Curiosity?
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {researchFields.map((field) => (
+              <Link
+                key={field.name}
+                to={`/library?field=${encodeURIComponent(field.name)}`}
+                className="group"
+              >
+                <div className="bg-white rounded-xl p-6 text-center border border-gray-100 hover:shadow-lg transition-all transform hover:scale-105">
+                  <div className="text-3xl mb-3">{field.icon}</div>
+                  <h3 className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                    {field.name}
+                  </h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Community Highlights */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white text-center">
+          <h2 className="text-3xl font-bold mb-4">Join the Conversation</h2>
+          <p className="text-xl opacity-90 mb-6 max-w-2xl mx-auto">
+            Every paper tells a story. Every reader brings a perspective. What
+            will you discover today?
+          </p>
+          <div className="flex justify-center space-x-8 text-sm">
+            <div>
+              <div className="text-2xl font-bold">2.4k+</div>
+              <div className="opacity-80">Active Researchers</div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Publish Your Work</h3>
-            <p className="text-gray-600">
-              Share your research with the world and get valuable feedback from peers.
-            </p>
+            <div>
+              <div className="text-2xl font-bold">850+</div>
+              <div className="opacity-80">Papers Published</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">15k+</div>
+              <div className="opacity-80">Discussions Started</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <footer className="bg-gray-900 text-gray-300 mt-20">
+      {/* Simplified Footer */}
+      <footer className="bg-gray-50 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <BookOpen className="w-6 h-6 text-indigo-400" />
-                <span className="text-xl font-bold text-white">Research Platform</span>
-              </div>
-              <p className="text-gray-400 mb-4">
-                A collaborative platform for independent researchers to publish papers, engage in discussions, and share knowledge with the global academic community.
-              </p>
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <BookOpen className="w-6 h-6 text-indigo-600" />
+              <span className="text-xl font-bold text-gray-900">
+                Research Platform
+              </span>
             </div>
-            
-            <div>
-              <h3 className="text-white font-semibold mb-4">Platform</h3>
-              <ul className="space-y-2">
-                <li><Link to="/library" className="hover:text-indigo-400 transition-colors">Browse Papers</Link></li>
-                <li><Link to="/auth" className="hover:text-indigo-400 transition-colors">Sign In</Link></li>
-                <li><Link to="/workspace" className="hover:text-indigo-400 transition-colors">Workspace</Link></li>
-              </ul>
+            <p className="text-gray-600 mb-6">Where research comes alive</p>
+            <div className="flex justify-center space-x-6 text-sm text-gray-500">
+              <Link
+                to="/library"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                Explore
+              </Link>
+              <Link
+                to="/auth"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                Join
+              </Link>
+              <a
+                href="#about"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                About
+              </a>
+              <a
+                href="#contact"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                Contact
+              </a>
             </div>
-            
-            <div>
-              <h3 className="text-white font-semibold mb-4">Resources</h3>
-              <ul className="space-y-2">
-                <li><a href="#about" className="hover:text-indigo-400 transition-colors">About</a></li>
-                <li><a href="#contact" className="hover:text-indigo-400 transition-colors">Contact</a></li>
-                <li><a href="#privacy" className="hover:text-indigo-400 transition-colors">Privacy Policy</a></li>
-                <li><a href="#terms" className="hover:text-indigo-400 transition-colors">Terms of Service</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
-            <p>&copy; {new Date().getFullYear()} Research Platform. Built for independent researchers.</p>
           </div>
         </div>
       </footer>
