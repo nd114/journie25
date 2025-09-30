@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from 'path';
 import { storage } from "./storage";
 import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -13,7 +14,10 @@ if (!process.env.JWT_SECRET) {
 }
 const JWT_SECRET = process.env.JWT_SECRET;
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5000', 'http://0.0.0.0:5000', process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : ''],
+  credentials: true
+}));
 app.use(express.json());
 
 // Middleware to verify JWT token
@@ -522,7 +526,7 @@ app.get("/api/trending-topics", async (req, res) => {
 app.get('/api/communities', async (req, res) => {
   try {
     const category = req.query.category as string;
-    
+
     // Get user ID if authenticated
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
@@ -873,6 +877,14 @@ app.get('/api/bookmarks/:paperId/check', authenticateToken, async (req, res) => 
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+
+// Handle SPA routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
