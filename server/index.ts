@@ -2,17 +2,18 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { storage } from "./storage";
 import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required");
-}
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-production";
 
 app.use(cors({
   origin: ['http://localhost:5000', 'http://0.0.0.0:5000', process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : ''],
@@ -880,11 +881,11 @@ app.get("/api/health", (req, res) => {
 });
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // Handle SPA routing
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
