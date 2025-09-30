@@ -245,6 +245,14 @@ export const userBookmarks = pgTable('user_bookmarks', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// User follows (followers/following relationships)
+export const userFollows = pgTable('user_follows', {
+  id: serial('id').primaryKey(),
+  followerId: integer('follower_id').references(() => users.id).notNull(),
+  followingId: integer('following_id').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Quests
 export const quests = pgTable("quests", {
   id: serial("id").primaryKey(),
@@ -436,6 +444,17 @@ export const userBookmarksRelations = relations(userBookmarks, ({ one }) => ({
   }),
 }));
 
+export const userFollowsRelations = relations(userFollows, ({ one }) => ({
+  follower: one(users, {
+    fields: [userFollows.followerId],
+    references: [users.id],
+  }),
+  following: one(users, {
+    fields: [userFollows.followingId],
+    references: [users.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -491,3 +510,5 @@ export type ResearchTool = typeof researchTools.$inferSelect;
 export type InsertResearchTool = typeof researchTools.$inferInsert;
 export type UserBookmark = typeof userBookmarks.$inferSelect;
 export type InsertUserBookmark = typeof userBookmarks.$inferInsert;
+export type UserFollow = typeof userFollows.$inferSelect;
+export type InsertUserFollow = typeof userFollows.$inferInsert;
