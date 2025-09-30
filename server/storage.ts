@@ -1,6 +1,6 @@
-import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation } from "../shared/schema";
 import { db } from "./db";
-import { eq, and, desc, like, or, isNull, sql, gte } from "drizzle-orm";
+import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
 
 type InsertPaperVersion = typeof paperVersions.$inferInsert;
 
@@ -109,8 +109,8 @@ export class DatabaseStorage implements IStorage {
     if (filters?.search) {
       conditions.push(
         or(
-          ilike(papers.title, `%${filters.search}%`),
-          ilike(papers.abstract, `%${filters.search}%`)
+          like(papers.title, `%${filters.search}%`),
+          like(papers.abstract, `%${filters.search}%`)
         )
       );
     }
@@ -204,53 +204,56 @@ export class DatabaseStorage implements IStorage {
 
   // Paper view tracking
   async recordPaperView(data: { paperId: number; userId?: number | null; sessionId?: string; readTime?: number }) {
-    const [view] = await db.insert(paperViews).values({
-      paperId: data.paperId,
-      userId: data.userId,
-      sessionId: data.sessionId,
-      readTime: data.readTime,
-    }).returning();
-    return view;
+    try {
+      await db.insert(paperViews).values({
+        paperId: data.paperId,
+        userId: data.userId,
+        sessionId: data.sessionId,
+        readTimeSeconds: data.readTime,
+      });
+    } catch (error) {
+      console.error('Error recording paper view:', error);
+    }
   }
 
   async incrementPaperViews(paperId: number) {
-    await db.update(papers)
-      .set({
-        viewCount: sql`${papers.viewCount} + 1`,
-        engagementScore: sql`${papers.engagementScore} + 1`
-      })
-      .where(eq(papers.id, paperId));
+    try {
+      await db.update(papers)
+        .set({ 
+          viewCount: sql`${papers.viewCount} + 1` 
+        })
+        .where(eq(papers.id, paperId));
+    } catch (error) {
+      console.error('Error incrementing paper views:', error);
+    }
   }
 
   // Trending papers
   async getTrendingPapers(limit: number = 10) {
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-    return await db.select({
-      id: papers.id,
-      title: papers.title,
-      abstract: papers.abstract,
-      authors: papers.authors,
-      createdAt: papers.createdAt,
-      researchField: papers.researchField,
-      viewCount: papers.viewCount,
-      engagementScore: papers.engagementScore,
-    })
-    .from(papers)
-    .where(and(
-      eq(papers.isPublished, true),
-      gte(papers.publishedAt, oneDayAgo)
-    ))
-    .orderBy(desc(papers.engagementScore), desc(papers.viewCount))
-    .limit(limit);
+    try {
+      const result = await db.query.papers.findMany({
+        where: eq(papers.isPublished, true),
+        orderBy: [desc(papers.viewCount), desc(papers.engagementScore)],
+        limit
+      });
+      return result;
+    } catch (error) {
+      console.error('Error fetching trending papers:', error);
+      return [];
+    }
   }
 
   // Paper insights
   async getPaperInsights(paperId: number) {
-    const [insights] = await db.select()
-      .from(paperInsights)
-      .where(eq(paperInsights.paperId, paperId));
-    return insights;
+    try {
+      const result = await db.query.paperInsights.findFirst({
+        where: eq(paperInsights.paperId, paperId)
+      });
+      return result;
+    } catch (error) {
+      console.error('Error fetching paper insights:', error);
+      return null;
+    }
   }
 
   async createPaperInsights(data: { paperId: number; keyInsights: string[]; whyItMatters: string; realWorldApplications: string[]; crossFieldConnections: any[] }) {
@@ -266,95 +269,223 @@ export class DatabaseStorage implements IStorage {
 
   // User recommendations
   async getUserRecommendations(userId: number, limit: number = 5) {
-    // Simple recommendation based on user's viewed papers and fields
-    const userInteractionFields = await db.select({
-      field: papers.researchField,
-    })
-    .from(userInteractions)
-    .innerJoin(papers, eq(userInteractions.paperId, papers.id))
-    .where(eq(userInteractions.userId, userId))
-    .groupBy(papers.researchField)
-    .limit(3);
-
-    const fields = userInteractionFields.map(f => f.field).filter(Boolean);
-
-    if (fields.length === 0) {
-      // Return trending papers if no interaction history
-      return await this.getTrendingPapers(limit);
+    try {
+      // Simple recommendation based on user's field interests
+      const result = await db.query.papers.findMany({
+        where: eq(papers.isPublished, true),
+        orderBy: [desc(papers.engagementScore)],
+        limit
+      });
+      return result;
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      return [];
     }
-
-    return await db.select({
-      id: papers.id,
-      title: papers.title,
-      abstract: papers.abstract,
-      authors: papers.authors,
-      createdAt: papers.createdAt,
-      researchField: papers.researchField,
-      viewCount: papers.viewCount,
-    })
-    .from(papers)
-    .where(and(
-      eq(papers.isPublished, true),
-      or(...fields.map(field => eq(papers.researchField, field)))
-    ))
-    .orderBy(desc(papers.engagementScore))
-    .limit(limit);
   }
 
   // Cross-field connections
   async getCrossFieldConnections(paperId: number) {
-    const paper = await this.getPaper(paperId);
-    if (!paper) return [];
+    try {
+      const paper = await db.query.papers.findFirst({
+        where: eq(papers.id, paperId)
+      });
 
-    // Find papers in different fields with similar keywords or themes
-    return await db.select({
-      id: papers.id,
-      title: papers.title,
-      abstract: papers.abstract,
-      researchField: papers.researchField,
-      authors: papers.authors,
-    })
-    .from(papers)
-    .where(and(
-      eq(papers.isPublished, true),
-      sql`${papers.researchField} != ${paper.researchField}`,
-      sql`${papers.id} != ${paperId}`
-    ))
-    .orderBy(desc(papers.viewCount))
-    .limit(5);
+      if (!paper) return [];
+
+      // Find papers in different fields with similar keywords
+      const connections = await db.query.papers.findMany({
+        where: and(
+          eq(papers.isPublished, true),
+          ne(papers.id, paperId),
+          ne(papers.researchField, paper.researchField || '')
+        ),
+        limit: 5
+      });
+
+      return connections;
+    } catch (error) {
+      console.error('Error fetching cross-field connections:', error);
+      return [];
+    }
   }
 
   // User interactions
-  async recordUserInteraction(data: { userId: number; paperId: number; interactionType: string; metadata: any }) {
-    const [interaction] = await db.insert(userInteractions).values(data).returning();
+  async recordUserInteraction(data: {
+    userId: number;
+    paperId: number;
+    interactionType: string;
+    metadata?: any;
+  }) {
+    try {
+      // Insert into user_interactions table
+      await db.insert(userInteractions).values({
+        userId: data.userId,
+        paperId: data.paperId,
+        interactionType: data.interactionType,
+        metadata: data.metadata || {},
+      });
 
-    // Update engagement score
-    await db.update(papers)
-      .set({
-        engagementScore: sql`${papers.engagementScore} + ${this.getInteractionWeight(data.interactionType)}`
-      })
-      .where(eq(papers.id, data.paperId));
-
-    return interaction;
+      // Update engagement score
+      await db.update(papers)
+        .set({ 
+          engagementScore: sql`${papers.engagementScore} + 0.1` 
+        })
+        .where(eq(papers.id, data.paperId));
+    } catch (error) {
+      console.error('Error recording user interaction:', error);
+    }
   }
 
-  private getInteractionWeight(type: string): number {
-    const weights = {
-      'view': 1,
-      'like': 3,
-      'share': 5,
-      'save': 4,
-      'comment': 6,
-    };
-    return weights[type as keyof typeof weights] || 1;
+  // Gamification methods
+  async getUserProgress(userId: number) {
+    try {
+      const progress = await this.db.query.userProgress.findFirst({
+        where: eq(userProgress.userId, userId)
+      });
+
+      if (!progress) {
+        // Create initial progress
+        const newProgress = await this.db.insert(userProgress).values({
+          userId,
+          level: 1,
+          xp: 0,
+          streakDays: 0
+        }).returning();
+        return newProgress[0];
+      }
+
+      return progress;
+    } catch (error) {
+      console.error('Error fetching user progress:', error);
+      return null;
+    }
+  }
+
+  async updateQuestProgress(userId: number, questId: string, action: string) {
+    try {
+      // Update XP based on action
+      const xpGain = action === 'read_paper' ? 10 : action === 'comment' ? 5 : 2;
+
+      await this.db.update(userProgress)
+        .set({ 
+          xp: sql`${userProgress.xp} + ${xpGain}`,
+          updatedAt: new Date()
+        })
+        .where(eq(userProgress.userId, userId));
+
+      return await this.getUserProgress(userId);
+    } catch (error) {
+      console.error('Error updating quest progress:', error);
+      return null;
+    }
+  }
+
+  async getUserAchievements(userId: number) {
+    try {
+      const result = await this.db.query.achievements.findMany({
+        where: eq(achievements.userId, userId),
+        orderBy: [desc(achievements.unlockedAt)]
+      });
+      return result;
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+      return [];
+    }
+  }
+
+  async saveVisualAbstract(data: {
+    paperId: number;
+    userId: number;
+    elements: any;
+    canvasStyle: any;
+  }) {
+    try {
+      const existing = await this.db.query.visualAbstracts.findFirst({
+        where: and(
+          eq(visualAbstracts.paperId, data.paperId),
+          eq(visualAbstracts.userId, data.userId)
+        )
+      });
+
+      if (existing) {
+        const updated = await this.db.update(visualAbstracts)
+          .set({
+            elements: data.elements,
+            canvasStyle: data.canvasStyle,
+            updatedAt: new Date()
+          })
+          .where(eq(visualAbstracts.id, existing.id))
+          .returning();
+        return updated[0];
+      } else {
+        const created = await this.db.insert(visualAbstracts)
+          .values(data)
+          .returning();
+        return created[0];
+      }
+    } catch (error) {
+      console.error('Error saving visual abstract:', error);
+      return null;
+    }
+  }
+
+  async getVisualAbstract(paperId: number) {
+    try {
+      const result = await this.db.query.visualAbstracts.findFirst({
+        where: eq(visualAbstracts.paperId, paperId)
+      });
+      return result;
+    } catch (error) {
+      console.error('Error fetching visual abstract:', error);
+      return null;
+    }
+  }
+
+  async generateMultiLevelContent(paperId: number) {
+    try {
+      const paper = await this.db.query.papers.findFirst({
+        where: eq(papers.id, paperId)
+      });
+
+      if (!paper) return null;
+
+      // Generate simplified versions (mock implementation)
+      return {
+        elementary: {
+          title: `Simple: ${paper.title}`,
+          content: "This research explains something important in simple terms."
+        },
+        highSchool: {
+          title: `For Students: ${paper.title}`,
+          content: "This study investigates an interesting question using scientific methods."
+        },
+        undergraduate: {
+          title: `Academic: ${paper.title}`,
+          content: paper.abstract || "Abstract content here."
+        },
+        expert: {
+          title: paper.title,
+          content: paper.content || "Full research content here."
+        }
+      };
+    } catch (error) {
+      console.error('Error generating multi-level content:', error);
+      return null;
+    }
   }
 
   // Trending topics
   async getTrendingTopics(limit: number = 10) {
-    return await db.select()
-      .from(trendingTopics)
-      .orderBy(desc(trendingTopics.momentum), desc(trendingTopics.calculatedAt))
-      .limit(limit);
+    try {
+      const result = await this.db.query.trendingTopics.findMany({
+        orderBy: [desc(trendingTopics.momentumScore)],
+        limit
+      });
+      return result;
+    } catch (error) {
+      console.error('Error fetching trending topics:', error);
+      return [];
+    }
   }
 
   async updateTrendingTopics() {

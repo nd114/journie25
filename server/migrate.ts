@@ -32,14 +32,72 @@ async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS trending_topics (
         id SERIAL PRIMARY KEY,
-        topic VARCHAR(255) NOT NULL,
-        field VARCHAR(100),
+        topic TEXT NOT NULL,
+        field TEXT,
         momentum_score DECIMAL(5,2) DEFAULT 0.0,
         paper_count INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       )
     `;
+
+    // Create user_interactions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_interactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        paper_id INTEGER REFERENCES papers(id) ON DELETE CASCADE,
+        interaction_type TEXT NOT NULL,
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create user_progress table
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_progress (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        level INTEGER DEFAULT 1,
+        xp INTEGER DEFAULT 0,
+        streak_days INTEGER DEFAULT 0,
+        last_active_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create achievements table
+    await sql`
+      CREATE TABLE IF NOT EXISTS achievements (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        achievement_type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        rarity TEXT NOT NULL,
+        unlocked_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Create visual_abstracts table
+    await sql`
+      CREATE TABLE IF NOT EXISTS visual_abstracts (
+        id SERIAL PRIMARY KEY,
+        paper_id INTEGER REFERENCES papers(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        elements JSONB NOT NULL,
+        canvas_style JSONB NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Fix paper_views table column name
+    await sql`
+      ALTER TABLE paper_views 
+      RENAME COLUMN read_time_seconds TO read_time_seconds
+    ` ;
     
     console.log('Migration completed successfully!');
   } catch (error) {

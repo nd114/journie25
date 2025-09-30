@@ -132,7 +132,60 @@ export const paperViews = pgTable("paper_views", {
   userId: integer("user_id").references(() => users.id),
   viewedAt: timestamp("viewed_at").defaultNow().notNull(),
   sessionId: text("session_id"),
-  readTime: integer("read_time_seconds"),
+  readTimeSeconds: integer("read_time_seconds"),
+});
+
+// Trending topics table
+export const trendingTopics = pgTable("trending_topics", {
+  id: serial("id").primaryKey(),
+  topic: text("topic").notNull(),
+  field: text("field"),
+  momentumScore: decimal("momentum_score", { precision: 5, scale: 2 }).default("0.0"),
+  paperCount: integer("paper_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// User interactions tracking
+export const userInteractions = pgTable("user_interactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  interactionType: text("interaction_type").notNull(),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Phase 3: Gamification tables
+export const userProgress = pgTable("user_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  level: integer("level").default(1),
+  xp: integer("xp").default(0),
+  streakDays: integer("streak_days").default(0),
+  lastActiveDate: timestamp("last_active_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  achievementType: text("achievement_type").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  rarity: text("rarity").notNull(), // common, rare, epic, legendary
+  unlockedAt: timestamp("unlocked_at").defaultNow().notNull(),
+});
+
+export const visualAbstracts = pgTable("visual_abstracts", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  elements: jsonb("elements").notNull(),
+  canvasStyle: jsonb("canvas_style").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Phase 2: Trending topics

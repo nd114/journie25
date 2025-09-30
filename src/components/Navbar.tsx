@@ -26,6 +26,19 @@ const Navbar: React.FC = () => {
               Browse Papers
             </Link>
 
+            <Link to="/about" className="text-gray-700 hover:text-indigo-600 transition-colors">
+            About
+          </Link>
+          <Link to="/how-it-works" className="text-gray-700 hover:text-indigo-600 transition-colors">
+            How It Works
+          </Link>
+          <Link to="/contact" className="text-gray-700 hover:text-indigo-600 transition-colors">
+            Contact
+          </Link>
+          <Link to="/faq" className="text-gray-700 hover:text-indigo-600 transition-colors">
+            FAQ
+          </Link>
+
             {user ? (
               <>
                 <Link to="/workspace" className="text-gray-700 hover:text-indigo-600 transition-colors">

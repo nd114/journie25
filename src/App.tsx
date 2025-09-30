@@ -10,6 +10,8 @@ import PaperEditor from './pages/PaperEditor';
 import UserProfile from './pages/UserProfile';
 import About from './pages/About';
 import HowItWorks from './pages/HowItWorks';
+import Contact from './pages/Contact';
+import FAQ from './pages/FAQ';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -38,6 +40,8 @@ function AppRoutes() {
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/about" element={<About />} />
       <Route path="/how-it-works" element={<HowItWorks />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/faq" element={<FAQ />} />
       <Route
         path="/workspace"
         element={
