@@ -1,15 +1,15 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogIn, LogOut, User } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { BookOpen, LogIn, LogOut, User } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
-const Navbar: React.FC = () => {
+export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -18,46 +18,78 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2">
             <BookOpen className="w-8 h-8 text-indigo-600" />
-            <span className="text-xl font-bold text-gray-900">Research Platform</span>
+            <span className="text-xl font-bold text-gray-900">
+              Research Platform
+            </span>
           </Link>
 
           <div className="flex items-center space-x-6">
-            <Link to="/browse" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                Browse Papers
-              </Link>
-              <Link to="/trending" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                Trending
-              </Link>
-              <Link to="/communities" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                Communities
-              </Link>
-              <Link to="/learning-paths" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                Learning Paths
-              </Link>
-              <Link to="/tools" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                Tools
-              </Link>
-              <Link to="/about" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                About
-              </Link>
+            <Link
+              to="/browse"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Browse Papers
+            </Link>
+            <Link
+              to="/trending"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Trending
+            </Link>
+            <Link
+              to="/communities"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Communities
+            </Link>
+            <Link
+              to="/learning-paths"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Learning Paths
+            </Link>
+            <Link
+              to="/tools"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Tools
+            </Link>
+            <Link
+              to="/about"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              About
+            </Link>
 
-          <Link to="/how-it-works" className="text-gray-700 hover:text-indigo-600 transition-colors">
-            How It Works
-          </Link>
-          <Link to="/contact" className="text-gray-700 hover:text-indigo-600 transition-colors">
-            Contact
-          </Link>
-          <Link to="/faq" className="text-gray-700 hover:text-indigo-600 transition-colors">
-            FAQ
-          </Link>
+            <Link
+              to="/how-it-works"
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              How It Works
+            </Link>
+            <Link
+              to="/contact"
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              Contact
+            </Link>
+            <Link
+              to="/faq"
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              FAQ
+            </Link>
 
             {user ? (
               <>
-                <Link to="/workspace" className="text-gray-700 hover:text-indigo-600 transition-colors">
+                <Link
+                  to="/workspace"
+                  className="text-gray-700 hover:text-indigo-600 transition-colors"
+                >
                   My Workspace
                 </Link>
                 <div className="flex items-center space-x-3">
-                  <Link 
+                  <Link
                     to="/profile"
                     className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 transition-colors"
                   >
