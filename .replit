@@ -69,5 +69,14 @@ waitForPort = 3000
 [workflows.workflow.metadata]
 outputType = "console"
 
+[[workflows.workflow]]
+name = "Backend Server"
+author = 37399832
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run server"
+
 [agent]
 expertMode = true

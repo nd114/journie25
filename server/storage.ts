@@ -339,13 +339,13 @@ export class DatabaseStorage implements IStorage {
   // Gamification methods
   async getUserProgress(userId: number) {
     try {
-      const progress = await this.db.query.userProgress.findFirst({
+      const progress = await db.query.userProgress.findFirst({
         where: eq(userProgress.userId, userId)
       });
 
       if (!progress) {
         // Create initial progress
-        const newProgress = await this.db.insert(userProgress).values({
+        const newProgress = await db.insert(userProgress).values({
           userId,
           level: 1,
           xp: 0,
@@ -366,7 +366,7 @@ export class DatabaseStorage implements IStorage {
       // Update XP based on action
       const xpGain = action === 'read_paper' ? 10 : action === 'comment' ? 5 : 2;
 
-      await this.db.update(userProgress)
+      await db.update(userProgress)
         .set({ 
           xp: sql`${userProgress.xp} + ${xpGain}`,
           updatedAt: new Date()
@@ -382,7 +382,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUserAchievements(userId: number) {
     try {
-      const result = await this.db.query.achievements.findMany({
+      const result = await db.query.achievements.findMany({
         where: eq(achievements.userId, userId),
         orderBy: [desc(achievements.unlockedAt)]
       });
@@ -400,7 +400,7 @@ export class DatabaseStorage implements IStorage {
     canvasStyle: any;
   }) {
     try {
-      const existing = await this.db.query.visualAbstracts.findFirst({
+      const existing = await db.query.visualAbstracts.findFirst({
         where: and(
           eq(visualAbstracts.paperId, data.paperId),
           eq(visualAbstracts.userId, data.userId)
@@ -408,7 +408,7 @@ export class DatabaseStorage implements IStorage {
       });
 
       if (existing) {
-        const updated = await this.db.update(visualAbstracts)
+        const updated = await db.update(visualAbstracts)
           .set({
             elements: data.elements,
             canvasStyle: data.canvasStyle,
@@ -418,7 +418,7 @@ export class DatabaseStorage implements IStorage {
           .returning();
         return updated[0];
       } else {
-        const created = await this.db.insert(visualAbstracts)
+        const created = await db.insert(visualAbstracts)
           .values(data)
           .returning();
         return created[0];
@@ -431,7 +431,7 @@ export class DatabaseStorage implements IStorage {
 
   async getVisualAbstract(paperId: number) {
     try {
-      const result = await this.db.query.visualAbstracts.findFirst({
+      const result = await db.query.visualAbstracts.findFirst({
         where: eq(visualAbstracts.paperId, paperId)
       });
       return result;
@@ -443,7 +443,7 @@ export class DatabaseStorage implements IStorage {
 
   async generateMultiLevelContent(paperId: number) {
     try {
-      const paper = await this.db.query.papers.findFirst({
+      const paper = await db.query.papers.findFirst({
         where: eq(papers.id, paperId)
       });
 
@@ -477,7 +477,7 @@ export class DatabaseStorage implements IStorage {
   // Trending topics
   async getTrendingTopics(limit: number = 10) {
     try {
-      const result = await this.db.query.trendingTopics.findMany({
+      const result = await db.query.trendingTopics.findMany({
         orderBy: [desc(trendingTopics.momentumScore)],
         limit
       });

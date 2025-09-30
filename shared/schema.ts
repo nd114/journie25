@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // Users table
@@ -188,42 +188,6 @@ export const visualAbstracts = pgTable("visual_abstracts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Phase 2: Trending topics
-export const trendingTopics = pgTable("trending_topics", {
-  id: serial("id").primaryKey(),
-  topic: text("topic").notNull(),
-  field: text("field"),
-  momentum: integer("momentum").notNull().default(0),
-  relatedPaperIds: jsonb("related_paper_ids").default([]),
-  calculatedAt: timestamp("calculated_at").defaultNow().notNull(),
-});
-
-// Phase 2: User interactions for recommendations
-export const userInteractions = pgTable("user_interactions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  paperId: integer("paper_id").notNull().references(() => papers.id),
-  interactionType: text("interaction_type").notNull(), // view, like, share, save, comment
-  metadata: jsonb("metadata").default({}),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Phase 3: Gamification tables
-
-// User progress and levels
-export const userProgress = pgTable("user_progress", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  level: integer("level").notNull().default(1),
-  experience: integer("experience").notNull().default(0),
-  totalPapersRead: integer("total_papers_read").notNull().default(0),
-  totalCommentsCreated: integer("total_comments_created").notNull().default(0),
-  totalFieldsExplored: integer("total_fields_explored").notNull().default(0),
-  streakDays: integer("streak_days").notNull().default(0),
-  lastActiveDate: timestamp("last_active_date").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
 // Quests
 export const quests = pgTable("quests", {
   id: serial("id").primaryKey(),
@@ -248,38 +212,12 @@ export const userQuestProgress = pgTable("user_quest_progress", {
   startedAt: timestamp("started_at").defaultNow().notNull(),
 });
 
-// Achievements
-export const achievements = pgTable("achievements", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  icon: text("icon").notNull(),
-  rarity: text("rarity").notNull(), // common, rare, epic, legendary
-  condition: jsonb("condition").notNull(), // criteria for earning
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 // User achievements
 export const userAchievements = pgTable("user_achievements", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   achievementId: integer("achievement_id").notNull().references(() => achievements.id),
   earnedAt: timestamp("earned_at").defaultNow().notNull(),
-});
-
-// Phase 3: Creator tools tables
-
-// Visual abstracts
-export const visualAbstracts = pgTable("visual_abstracts", {
-  id: serial("id").primaryKey(),
-  paperId: integer("paper_id").notNull().references(() => papers.id),
-  userId: integer("user_id").notNull().references(() => users.id),
-  elements: jsonb("elements").notNull().default([]),
-  canvasStyle: jsonb("canvas_style").notNull().default({}),
-  isPublished: boolean("is_published").notNull().default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Multi-level content
