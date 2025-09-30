@@ -128,6 +128,11 @@ const LibraryLanding: React.FC = () => {
               Research Stories Trending Now
             </h2>
           </div>
+          <p className="text-gray-600 mb-6 text-center max-w-2xl mx-auto">
+            Each research paper is transformed into an engaging story
+            highlighting key insights, real-world impact, and why it matters to
+            you.
+          </p>
 
           <div className="grid md:grid-cols-3 gap-6">
             {trendingPapers.map((paper, index) => (
@@ -265,3 +270,25 @@ const LibraryLanding: React.FC = () => {
 };
 
 export default LibraryLanding;
+
+/*
+Phase 2 Plan: Enhancements and New Features
+
+Frontend:
+- Implement user profiles with customizable avatars and bios.
+- Develop a "Saved Papers" feature for users to bookmark articles.
+- Enhance search functionality with advanced filtering options (date, author, journal).
+- Add a "Recommended Papers" section based on user's reading history and interests.
+- Implement real-time collaboration features for group discussions on papers.
+- Improve UI/UX with more dynamic animations and smoother transitions.
+
+Backend:
+- Develop robust user authentication and authorization system.
+- Create APIs for managing user profiles, saved papers, and search queries.
+- Implement a recommendation engine for personalized paper suggestions.
+- Set up a system for tracking paper reads, comments, and user engagement.
+- Optimize database performance for faster data retrieval.
+- Integrate with external research databases (e.g., PubMed, arXiv) for broader content access.
+- Implement a notification system for new papers or discussions relevant to user interests.
+- Develop a content moderation system for user-generated content.
+*/

@@ -8,6 +8,7 @@ import {
   Eye,
   MessageCircle,
   Shuffle,
+  Lightbulb,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import PaperCard from "../components/PaperCard";
@@ -106,12 +107,16 @@ const BrowsePapers: React.FC = () => {
         {/* Header with Discovery Focus */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Discover Research
+            Discover Research Stories
           </h1>
           <p className="text-gray-600 text-lg">
-            What will spark your curiosity today?
-          </p>
-        </div>
+            Every breakthrough has a story. What will inspire you today?
+              </p>
+              <div className="flex items-center space-x-2 mt-3 text-sm text-indigo-600">
+                <Lightbulb className="w-4 h-4" />
+                <span>Each paper is presented as an engaging story with key insights and real-world impact</span>
+              </div>
+          </div>
 
         {/* Search and Filters */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
