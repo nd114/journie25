@@ -1,11 +1,13 @@
 
 import { useState, useEffect, createContext, useContext } from 'react'
-import { database } from '../services/database'
 
 interface User {
   id: string
   email: string
   name: string
+  orcid?: string
+  affiliation?: string
+  bio?: string
 }
 
 interface AuthContextType {
@@ -39,10 +41,29 @@ export const useAuthState = () => {
 
   const checkUser = async () => {
     try {
-      const currentUser = await database.getCurrentUser()
-      setUser(currentUser)
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+      } else {
+        localStorage.removeItem('token')
+        setUser(null)
+      }
     } catch (err) {
       console.error('Error checking user:', err)
+      localStorage.removeItem('token')
+      setUser(null)
     } finally {
       setLoading(false)
     }
@@ -52,11 +73,21 @@ export const useAuthState = () => {
     setLoading(true)
     setError(null)
     try {
-      const { user: authUser, error: authError } = await database.signIn(email, password)
-      if (authError) {
-        setError(authError)
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token)
+        setUser(data.user)
       } else {
-        setUser(authUser)
+        setError(data.error || 'Sign in failed')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
@@ -69,12 +100,21 @@ export const useAuthState = () => {
     setLoading(true)
     setError(null)
     try {
-      const { user: authUser, error: authError } = await database.signUp(email, password)
-      if (authError) {
-        setError(authError)
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password, name })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token)
+        setUser(data.user)
       } else {
-        // Update user profile with name
-        setUser({ ...authUser, name })
+        setError(data.error || 'Sign up failed')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed')
@@ -86,7 +126,7 @@ export const useAuthState = () => {
   const signOut = async () => {
     setLoading(true)
     try {
-      await database.signOut()
+      localStorage.removeItem('token')
       setUser(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign out failed')
