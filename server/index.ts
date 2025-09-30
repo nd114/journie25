@@ -884,7 +884,7 @@ app.get("/api/health", (req, res) => {
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // Handle SPA routing
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
