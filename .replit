@@ -9,10 +9,7 @@ run = ["sh", "-c", "npm run dev"]
 
 [[ports]]
 localPort = 3000
-
-[[ports]]
-localPort = 5000
-externalPort = 80
+externalPort = 3000
 
 [[ports]]
 localPort = 5173
@@ -46,23 +43,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Backend API"
+args = "Frontend"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Frontend"
-
-[[workflows.workflow]]
-name = "Backend API"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run server"
-waitForPort = 3000
-
-[workflows.workflow.metadata]
-outputType = "console"
+args = "Backend API"
 
 [[workflows.workflow]]
 name = "Frontend"
@@ -75,6 +60,18 @@ outputType = "webview"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Backend API"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run server"
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [agent]
 expertMode = true
