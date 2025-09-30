@@ -31,7 +31,7 @@ export function TrendingResearch() {
       // Construct API URL with filters
       const apiUrl = `/api/papers/trending?time=${timeFilter}&field=${fieldFilter}&limit=10`;
       const response = await fetch(apiUrl);
-      
+
       if (response.ok) {
         const data = await response.json();
         const formattedPapers = data.map((paper: any) => ({
@@ -307,7 +307,7 @@ export function TrendingResearch() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Trending Research</h1>
@@ -362,7 +362,7 @@ export function TrendingResearch() {
                     <div key={paper.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{paper.title}</h3>
                       <p className="text-gray-600 text-sm mb-3 line-clamp-2">{paper.abstract}</p>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-500">
                           By {paper.authors.join(', ')}

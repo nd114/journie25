@@ -354,7 +354,7 @@ export function LearningPaths() {
             );
             const completedSteps = updatedSteps.filter(step => step.completed).length;
             const newProgress = Math.round((completedSteps / updatedSteps.length) * 100);
-            
+
             return { ...path, steps: updatedSteps, userProgress: newProgress };
           }
           return path;
@@ -377,7 +377,7 @@ export function LearningPaths() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Learning Paths</h1>
@@ -403,7 +403,7 @@ export function LearningPaths() {
                     </span>
                   </div>
                   <p className="text-gray-600 mb-4">{path.description}</p>
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
                     <div className="flex items-center space-x-1">
                       <Clock className="w-4 h-4" />
