@@ -883,8 +883,8 @@ app.get("/api/health", (req, res) => {
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
-// Handle SPA routing
-app.get('*', (req, res) => {
+// Handle SPA routing - catch all routes for SPA
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
