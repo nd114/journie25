@@ -145,7 +145,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
         )}
 
         {/* Author & Date */}
-        <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100"><div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100">
           <div className="flex items-center space-x-2">
             <User className="w-4 h-4" />
             <span className="truncate">
@@ -158,15 +158,15 @@ const PaperCard: React.FC<PaperCardProps> = ({
           </div>
         </div>
 
-          {/* Story Continuation Hint */}
-          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-              <span className="text-indigo-600 font-bold">→</span>
-            </div>
+        {/* Story Continuation Hint */}
+        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+            <span className="text-indigo-600 font-bold">→</span>
           </div>
+        </div>
 
-          {/* Hover Effect Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none"></div>
+        {/* Hover Effect Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none"></div>
       </div>
     </Link>
   );

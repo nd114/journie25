@@ -51,6 +51,10 @@ export const papers = pgTable("papers", {
   isPublished: boolean("is_published").notNull().default(false),
   publishedAt: timestamp("published_at"),
   journalId: integer("journal_id").references(() => journals.id),
+  // Phase 2: Research Stories data
+  storyData: jsonb("story_data").default({}),
+  viewCount: integer("view_count").notNull().default(0),
+  engagementScore: integer("engagement_score").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdBy: integer("created_by").notNull().references(() => users.id),
@@ -105,6 +109,49 @@ export const citations = pgTable("citations", {
   isbn: text("isbn"),
   citationType: text("citation_type").notNull(),
   metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Phase 2: Paper insights for research stories
+export const paperInsights = pgTable("paper_insights", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  keyInsights: jsonb("key_insights").notNull().default([]),
+  whyItMatters: text("why_it_matters"),
+  realWorldApplications: jsonb("real_world_applications").default([]),
+  crossFieldConnections: jsonb("cross_field_connections").default([]),
+  impactScore: integer("impact_score").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Phase 2: Paper views tracking
+export const paperViews = pgTable("paper_views", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  userId: integer("user_id").references(() => users.id),
+  viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+  sessionId: text("session_id"),
+  readTime: integer("read_time_seconds"),
+});
+
+// Phase 2: Trending topics
+export const trendingTopics = pgTable("trending_topics", {
+  id: serial("id").primaryKey(),
+  topic: text("topic").notNull(),
+  field: text("field"),
+  momentum: integer("momentum").notNull().default(0),
+  relatedPaperIds: jsonb("related_paper_ids").default([]),
+  calculatedAt: timestamp("calculated_at").defaultNow().notNull(),
+});
+
+// Phase 2: User interactions for recommendations
+export const userInteractions = pgTable("user_interactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  interactionType: text("interaction_type").notNull(), // view, like, share, save, comment
+  metadata: jsonb("metadata").default({}),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -167,6 +214,36 @@ export const citationsRelations = relations(citations, ({ one }) => ({
   }),
 }));
 
+// Phase 2 relations
+export const paperInsightsRelations = relations(paperInsights, ({ one }) => ({
+  paper: one(papers, {
+    fields: [paperInsights.paperId],
+    references: [papers.id],
+  }),
+}));
+
+export const paperViewsRelations = relations(paperViews, ({ one }) => ({
+  paper: one(papers, {
+    fields: [paperViews.paperId],
+    references: [papers.id],
+  }),
+  user: one(users, {
+    fields: [paperViews.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userInteractionsRelations = relations(userInteractions, ({ one }) => ({
+  user: one(users, {
+    fields: [userInteractions.userId],
+    references: [users.id],
+  }),
+  paper: one(papers, {
+    fields: [userInteractions.paperId],
+    references: [papers.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -180,3 +257,13 @@ export type Review = typeof reviews.$inferSelect;
 export type InsertReview = typeof reviews.$inferInsert;
 export type Citation = typeof citations.$inferSelect;
 export type InsertCitation = typeof citations.$inferInsert;
+
+// Phase 2 types
+export type PaperInsight = typeof paperInsights.$inferSelect;
+export type InsertPaperInsight = typeof paperInsights.$inferInsert;
+export type PaperView = typeof paperViews.$inferSelect;
+export type InsertPaperView = typeof paperViews.$inferInsert;
+export type TrendingTopic = typeof trendingTopics.$inferSelect;
+export type InsertTrendingTopic = typeof trendingTopics.$inferInsert;
+export type UserInteraction = typeof userInteractions.$inferSelect;
+export type InsertUserInteraction = typeof userInteractions.$inferInsert;

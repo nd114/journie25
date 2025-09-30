@@ -397,6 +397,126 @@ app.get("/api/papers/:id/versions", async (req, res) => {
   }
 });
 
+// Phase 2: Analytics and Research Stories endpoints
+
+// Track paper views
+app.post("/api/papers/:id/view", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const { sessionId, readTime } = req.body;
+    
+    // Get user ID if authenticated
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    let userId = null;
+    
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        userId = decoded.id;
+      } catch (err) {
+        // Anonymous view
+      }
+    }
+
+    // Record view
+    await storage.recordPaperView({
+      paperId,
+      userId,
+      sessionId,
+      readTime,
+    });
+
+    // Update view count
+    await storage.incrementPaperViews(paperId);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error recording view:", error);
+    res.status(500).json({ error: "Failed to record view" });
+  }
+});
+
+// Get trending papers
+app.get("/api/papers/trending", async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    const papers = await storage.getTrendingPapers(parseInt(limit as string));
+    res.json(papers);
+  } catch (error) {
+    console.error("Error fetching trending papers:", error);
+    res.status(500).json({ error: "Failed to fetch trending papers" });
+  }
+});
+
+// Get paper insights
+app.get("/api/papers/:id/insights", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const insights = await storage.getPaperInsights(paperId);
+    res.json(insights);
+  } catch (error) {
+    console.error("Error fetching insights:", error);
+    res.status(500).json({ error: "Failed to fetch insights" });
+  }
+});
+
+// Get recommendations for user
+app.get("/api/recommendations", authenticateToken, async (req: any, res) => {
+  try {
+    const { limit = 5 } = req.query;
+    const recommendations = await storage.getUserRecommendations(
+      req.user.id,
+      parseInt(limit as string)
+    );
+    res.json(recommendations);
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    res.status(500).json({ error: "Failed to fetch recommendations" });
+  }
+});
+
+// Get cross-field connections
+app.get("/api/papers/:id/connections", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const connections = await storage.getCrossFieldConnections(paperId);
+    res.json(connections);
+  } catch (error) {
+    console.error("Error fetching connections:", error);
+    res.status(500).json({ error: "Failed to fetch connections" });
+  }
+});
+
+// Record user interaction
+app.post("/api/interactions", authenticateToken, async (req: any, res) => {
+  try {
+    const { paperId, interactionType, metadata } = req.body;
+    await storage.recordUserInteraction({
+      userId: req.user.id,
+      paperId,
+      interactionType,
+      metadata: metadata || {},
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error recording interaction:", error);
+    res.status(500).json({ error: "Failed to record interaction" });
+  }
+});
+
+// Get trending topics
+app.get("/api/trending-topics", async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    const topics = await storage.getTrendingTopics(parseInt(limit as string));
+    res.json(topics);
+  } catch (error) {
+    console.error("Error fetching trending topics:", error);
+    res.status(500).json({ error: "Failed to fetch trending topics" });
+  }
+});
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
