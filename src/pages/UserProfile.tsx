@@ -269,64 +269,64 @@ const UserProfile: React.FC = () => {
         </div>
 
         {/* Author Claims Section */}
-          <AuthorClaimWidget onClaimSuccess={() => {
-            // Could refresh user data or show success message
-            console.log('Author claim successful!');
-          }} />
+        <AuthorClaimWidget onClaimSuccess={() => {
+          // Could refresh user data or show success message
+          console.log('Author claim successful!');
+        }} />
 
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
+        {/* Change Password Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-8 mt-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter current password"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter new password"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Confirm new password"
-                />
-              </div>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Password
+              </label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter current password"
+              />
             </div>
 
-            <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-              <button
-                onClick={handleChangePassword}
-                disabled={saving || !currentPassword || !newPassword || !confirmPassword}
-                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
-              >
-                {saving ? 'Changing...' : 'Change Password'}
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter new password"
+              />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+            <button
+              onClick={handleChangePassword}
+              disabled={saving || !currentPassword || !newPassword || !confirmPassword}
+              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Changing...' : 'Change Password'}
+            </button>
           </div>
         </div>
       </div>
