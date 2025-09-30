@@ -1,4 +1,4 @@
-import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
 
@@ -63,8 +63,26 @@ export interface IStorage {
 
   // Communities
   getCommunities(category?: string): Promise<any[]>;
+  createCommunity(data: { name: string; description: string; category: string; createdBy: number }): Promise<any>;
   joinCommunity(userId: number, communityId: number): Promise<void>;
   leaveCommunity(userId: number, communityId: number): Promise<void>;
+  getUserCommunities(userId: number): Promise<any[]>;
+
+  // User follows
+  followUser(followerId: number, followingId: number): Promise<void>;
+  unfollowUser(followerId: number, followingId: number): Promise<void>;
+  getUserFollowers(userId: number): Promise<any[]>;
+  getUserFollowing(userId: number): Promise<any[]>;
+  isFollowing(followerId: number, followingId: number): Promise<boolean>;
+
+  // User bookmarks
+  addBookmark(userId: number, paperId: number): Promise<void>;
+  removeBookmark(userId: number, paperId: number): Promise<void>;
+  getUserBookmarks(userId: number): Promise<any[]>;
+  isBookmarked(userId: number, paperId: number): Promise<boolean>;
+
+  // Activity feed
+  getUserActivityFeed(userId: number, limit?: number): Promise<any[]>;
 
   // Learning paths
   getLearningPaths(): Promise<any[]>;
@@ -928,9 +946,249 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // Community methods
+  async getCommunities(category?: string) {
+    try {
+      if (category) {
+        return await db.query.communities.findMany({
+          where: eq(communities.category, category),
+          orderBy: [desc(communities.memberCount)]
+        });
+      }
+      return await db.query.communities.findMany({
+        orderBy: [desc(communities.memberCount)]
+      });
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+      return [];
+    }
+  }
+
+  async createCommunity(data: { name: string; description: string; category: string; createdBy: number }) {
+    try {
+      const [community] = await db.insert(communities).values({
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        memberCount: 1
+      }).returning();
+
+      await db.insert(communityMembers).values({
+        userId: data.createdBy,
+        communityId: community.id,
+        role: 'admin'
+      });
+
+      return community;
+    } catch (error) {
+      console.error('Error creating community:', error);
+      throw error;
+    }
+  }
+
+  async joinCommunity(userId: number, communityId: number) {
+    try {
+      await db.insert(communityMembers).values({
+        userId,
+        communityId
+      });
+
+      await db.update(communities)
+        .set({ 
+          memberCount: sql`${communities.memberCount} + 1` 
+        })
+        .where(eq(communities.id, communityId));
+    } catch (error) {
+      console.error('Error joining community:', error);
+      throw error;
+    }
+  }
+
+  async leaveCommunity(userId: number, communityId: number) {
+    try {
+      await db.delete(communityMembers)
+        .where(and(
+          eq(communityMembers.userId, userId),
+          eq(communityMembers.communityId, communityId)
+        ));
+
+      await db.update(communities)
+        .set({ 
+          memberCount: sql`${communities.memberCount} - 1` 
+        })
+        .where(eq(communities.id, communityId));
+    } catch (error) {
+      console.error('Error leaving community:', error);
+      throw error;
+    }
+  }
+
+  async getUserCommunities(userId: number) {
+    try {
+      const memberships = await db.query.communityMembers.findMany({
+        where: eq(communityMembers.userId, userId),
+        with: {
+          community: true
+        }
+      });
+      return memberships.map(m => m.community);
+    } catch (error) {
+      console.error('Error fetching user communities:', error);
+      return [];
+    }
+  }
+
+  // User follow methods
+  async followUser(followerId: number, followingId: number) {
+    try {
+      if (followerId === followingId) {
+        throw new Error('Cannot follow yourself');
+      }
+      await db.insert(userFollows).values({
+        followerId,
+        followingId
+      });
+    } catch (error) {
+      console.error('Error following user:', error);
+      throw error;
+    }
+  }
+
+  async unfollowUser(followerId: number, followingId: number) {
+    try {
+      await db.delete(userFollows)
+        .where(and(
+          eq(userFollows.followerId, followerId),
+          eq(userFollows.followingId, followingId)
+        ));
+    } catch (error) {
+      console.error('Error unfollowing user:', error);
+      throw error;
+    }
+  }
+
+  async getUserFollowers(userId: number) {
+    try {
+      const followers = await db.query.userFollows.findMany({
+        where: eq(userFollows.followingId, userId),
+        with: {
+          follower: true
+        }
+      });
+      return followers.map(f => ({
+        id: f.follower.id,
+        name: f.follower.name,
+        email: f.follower.email,
+        affiliation: f.follower.affiliation,
+        followedAt: f.createdAt
+      }));
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+      return [];
+    }
+  }
+
+  async getUserFollowing(userId: number) {
+    try {
+      const following = await db.query.userFollows.findMany({
+        where: eq(userFollows.followerId, userId),
+        with: {
+          following: true
+        }
+      });
+      return following.map(f => ({
+        id: f.following.id,
+        name: f.following.name,
+        email: f.following.email,
+        affiliation: f.following.affiliation,
+        followedAt: f.createdAt
+      }));
+    } catch (error) {
+      console.error('Error fetching following:', error);
+      return [];
+    }
+  }
+
+  async isFollowing(followerId: number, followingId: number) {
+    try {
+      const follow = await db.query.userFollows.findFirst({
+        where: and(
+          eq(userFollows.followerId, followerId),
+          eq(userFollows.followingId, followingId)
+        )
+      });
+      return !!follow;
+    } catch (error) {
+      console.error('Error checking follow status:', error);
+      return false;
+    }
+  }
+
+  async getUserBookmarks(userId: number) {
+    try {
+      const bookmarks = await db.query.userBookmarks.findMany({
+        where: eq(userBookmarks.userId, userId),
+        with: {
+          paper: true
+        },
+        orderBy: [desc(userBookmarks.createdAt)]
+      });
+      return bookmarks.map(b => b.paper);
+    } catch (error) {
+      console.error('Error fetching bookmarks:', error);
+      return [];
+    }
+  }
+
+  async isBookmarked(userId: number, paperId: number) {
+    try {
+      const bookmark = await db.query.userBookmarks.findFirst({
+        where: and(
+          eq(userBookmarks.userId, userId),
+          eq(userBookmarks.paperId, paperId)
+        )
+      });
+      return !!bookmark;
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
+      return false;
+    }
+  }
+
+  // Activity feed
+  async getUserActivityFeed(userId: number, limit: number = 20) {
+    try {
+      const following = await this.getUserFollowing(userId);
+      const followingIds = following.map(f => f.id);
+
+      if (followingIds.length === 0) {
+        return [];
+      }
+
+      const activities = await db.query.papers.findMany({
+        where: and(
+          sql`${papers.createdBy} = ANY(${followingIds})`,
+          eq(papers.isPublished, true)
+        ),
+        limit,
+        orderBy: [desc(papers.publishedAt)],
+        with: {
+          creator: true
+        }
+      });
+
+      return activities.map(paper => ({
+        type: 'paper_published',
+        paper,
+        user: paper.creator,
+        createdAt: paper.publishedAt
+      }));
+    } catch (error) {
+      console.error('Error fetching activity feed:', error);
+      return [];
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
-        const newProgress = await db.insert(userLearningProgress).values({
-          userId,
-          pathId,
