@@ -118,6 +118,8 @@ export interface IStorage {
   calculateHIndex(userId: number): Promise<number>;
   getDashboardAnalytics(): Promise<any>;
   getTrendingAnalytics(limit?: number): Promise<any>;
+  getPaperAnalyticsTimeline(paperId: number, period: 'daily' | 'weekly' | 'monthly'): Promise<any[]>;
+  getTopPapers(metric: 'views' | 'citations' | 'downloads' | 'engagement', limit?: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1712,6 +1714,140 @@ export class DatabaseStorage implements IStorage {
         trendingTopics: [],
         topAuthors: [],
       };
+    }
+  }
+
+  async getPaperAnalyticsTimeline(paperId: number, period: 'daily' | 'weekly' | 'monthly'): Promise<any[]> {
+    try {
+      let dateFormat: string;
+      let intervalSql: any;
+
+      switch (period) {
+        case 'daily':
+          dateFormat = 'YYYY-MM-DD';
+          intervalSql = sql`NOW() - INTERVAL '30 days'`;
+          break;
+        case 'weekly':
+          dateFormat = 'IYYY-IW';
+          intervalSql = sql`NOW() - INTERVAL '12 weeks'`;
+          break;
+        case 'monthly':
+          dateFormat = 'YYYY-MM';
+          intervalSql = sql`NOW() - INTERVAL '12 months'`;
+          break;
+        default:
+          dateFormat = 'YYYY-MM-DD';
+          intervalSql = sql`NOW() - INTERVAL '30 days'`;
+      }
+
+      const timelineData = await db.execute(sql`
+        SELECT 
+          TO_CHAR(viewed_at, ${dateFormat}) as period,
+          COUNT(DISTINCT CASE WHEN user_id IS NOT NULL THEN user_id::text ELSE session_id END) as unique_visitors,
+          COUNT(*) as total_views,
+          COALESCE(AVG(read_time_seconds), 0) as avg_read_time
+        FROM ${paperViews}
+        WHERE paper_id = ${paperId}
+          AND viewed_at >= ${intervalSql}
+        GROUP BY period
+        ORDER BY period ASC
+      `);
+
+      const eventData = await db.execute(sql`
+        SELECT 
+          TO_CHAR(created_at, ${dateFormat}) as period,
+          event_type,
+          COUNT(*) as count
+        FROM ${analyticsEvents}
+        WHERE entity_id = ${paperId}
+          AND entity_type = 'paper'
+          AND created_at >= ${intervalSql}
+        GROUP BY period, event_type
+        ORDER BY period ASC
+      `);
+
+      const timelineMap = new Map();
+
+      for (const row of timelineData.rows as any[]) {
+        timelineMap.set(row.period, {
+          period: row.period,
+          views: parseInt(row.total_views),
+          uniqueVisitors: parseInt(row.unique_visitors),
+          avgReadTime: parseFloat(row.avg_read_time),
+          downloads: 0,
+          shares: 0,
+          exports: 0,
+        });
+      }
+
+      for (const row of eventData.rows as any[]) {
+        const existing = timelineMap.get(row.period) || {
+          period: row.period,
+          views: 0,
+          uniqueVisitors: 0,
+          avgReadTime: 0,
+          downloads: 0,
+          shares: 0,
+          exports: 0,
+        };
+
+        if (row.event_type === 'paper_download') {
+          existing.downloads = parseInt(row.count);
+        } else if (row.event_type === 'paper_share') {
+          existing.shares = parseInt(row.count);
+        } else if (row.event_type === 'paper_export') {
+          existing.exports = parseInt(row.count);
+        }
+
+        timelineMap.set(row.period, existing);
+      }
+
+      return Array.from(timelineMap.values());
+    } catch (error) {
+      console.error('Error fetching paper analytics timeline:', error);
+      return [];
+    }
+  }
+
+  async getTopPapers(metric: 'views' | 'citations' | 'downloads' | 'engagement', limit: number = 10): Promise<any[]> {
+    try {
+      let orderByColumn;
+      
+      switch (metric) {
+        case 'views':
+          orderByColumn = paperAnalytics.totalViews;
+          break;
+        case 'citations':
+          orderByColumn = paperAnalytics.citationCount;
+          break;
+        case 'downloads':
+          orderByColumn = paperAnalytics.downloadCount;
+          break;
+        case 'engagement':
+          orderByColumn = paperAnalytics.engagementScore;
+          break;
+        default:
+          orderByColumn = paperAnalytics.totalViews;
+      }
+
+      const topPapers = await db
+        .select({
+          paper: papers,
+          analytics: paperAnalytics,
+        })
+        .from(papers)
+        .innerJoin(paperAnalytics, eq(papers.id, paperAnalytics.paperId))
+        .where(eq(papers.isPublished, true))
+        .orderBy(desc(orderByColumn))
+        .limit(limit);
+
+      return topPapers.map(tp => ({
+        ...tp.paper,
+        analytics: tp.analytics,
+      }));
+    } catch (error) {
+      console.error('Error fetching top papers:', error);
+      return [];
     }
   }
 }

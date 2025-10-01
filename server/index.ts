@@ -1371,6 +1371,95 @@ app.get("/api/analytics/trends", async (req, res) => {
   }
 });
 
+app.get("/api/analytics/trending", async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const trendsData = await storage.getTrendingAnalytics(limit);
+    res.json(trendsData);
+  } catch (error) {
+    console.error("Error fetching trending analytics:", error);
+    res.status(500).json({ error: "Failed to fetch trending analytics" });
+  }
+});
+
+app.get("/api/analytics/papers/:id", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const paper = await storage.getPaper(paperId);
+    
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    const analytics = await storage.getPaperAnalytics(paperId);
+    const engagementScore = await storage.calculateEngagementScore(paperId);
+    
+    await storage.updatePaperAnalytics(paperId, {
+      engagementScore: engagementScore.toString(),
+    });
+
+    const updatedAnalytics = await storage.getPaperAnalytics(paperId);
+    res.json(updatedAnalytics);
+  } catch (error) {
+    console.error("Error fetching paper analytics:", error);
+    res.status(500).json({ error: "Failed to fetch paper analytics" });
+  }
+});
+
+app.get("/api/analytics/papers/:id/timeline", async (req, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const period = (req.query.period as 'daily' | 'weekly' | 'monthly') || 'daily';
+    
+    const paper = await storage.getPaper(paperId);
+    if (!paper || !paper.isPublished) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    const timeline = await storage.getPaperAnalyticsTimeline(paperId, period);
+    res.json(timeline);
+  } catch (error) {
+    console.error("Error fetching paper analytics timeline:", error);
+    res.status(500).json({ error: "Failed to fetch paper analytics timeline" });
+  }
+});
+
+app.post("/api/analytics/event", async (req, res) => {
+  try {
+    const { eventType, entityId, entityType, userId, metadata } = req.body;
+
+    if (!eventType || !entityId || !entityType) {
+      return res.status(400).json({ error: "eventType, entityId, and entityType are required" });
+    }
+
+    const event = await storage.trackAnalyticsEvent(
+      eventType,
+      parseInt(entityId),
+      entityType,
+      userId ? parseInt(userId) : null,
+      metadata || {}
+    );
+
+    res.json(event);
+  } catch (error) {
+    console.error("Error tracking analytics event:", error);
+    res.status(500).json({ error: "Failed to track analytics event" });
+  }
+});
+
+app.get("/api/analytics/top-papers", async (req, res) => {
+  try {
+    const metric = (req.query.metric as 'views' | 'citations' | 'downloads' | 'engagement') || 'views';
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    
+    const topPapers = await storage.getTopPapers(metric, limit);
+    res.json(topPapers);
+  } catch (error) {
+    console.error("Error fetching top papers:", error);
+    res.status(500).json({ error: "Failed to fetch top papers" });
+  }
+});
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
