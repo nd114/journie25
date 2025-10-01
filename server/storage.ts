@@ -1,4 +1,4 @@
-import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
 
@@ -13,7 +13,7 @@ export interface IStorage {
 
   // Paper methods
   getPaper(id: number): Promise<Paper | undefined>;
-  getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string, field?: string }): Promise<Paper[]>;
+  getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string, field?: string, page?: number, limit?: number }): Promise<{ papers: Paper[]; total: number; page: number; totalPages: number }>;
   advancedSearchPapers(filters: { query?: string; author?: string; field?: string; startDate?: string; endDate?: string; sortBy?: string; order?: 'asc' | 'desc'; page?: number; limit?: number }): Promise<{ papers: Paper[]; total: number; page: number; totalPages: number }>;
   createPaper(insertPaper: InsertPaper): Promise<Paper>;
   updatePaper(id: number, updates: Partial<Paper>): Promise<Paper | undefined>;
@@ -120,6 +120,23 @@ export interface IStorage {
   getTrendingAnalytics(limit?: number): Promise<any>;
   getPaperAnalyticsTimeline(paperId: number, period: 'daily' | 'weekly' | 'monthly'): Promise<any[]>;
   getTopPapers(metric: 'views' | 'citations' | 'downloads' | 'engagement', limit?: number): Promise<any[]>;
+
+  // Collaborative editing methods
+  lockSection(data: { paperId: number; sectionId: string; userId: number; userName: string; expiresAt: Date }): Promise<any>;
+  unlockSection(paperId: number, sectionId: string, userId: number): Promise<void>;
+  getActiveLocks(paperId: number): Promise<any[]>;
+  savePaperDraft(data: { paperId: number; userId: number; content: string; version: number }): Promise<any>;
+  getLatestDraft(paperId: number, userId: number): Promise<any>;
+
+  // Notification methods
+  createNotification(data: InsertNotification): Promise<Notification>;
+  getUserNotifications(userId: number, options?: { page?: number; limit?: number; unreadOnly?: boolean }): Promise<{ notifications: Notification[]; total: number; unread: number }>;
+  markNotificationAsRead(id: number): Promise<Notification | undefined>;
+  markAllNotificationsAsRead(userId: number): Promise<void>;
+  deleteNotification(id: number): Promise<void>;
+  getNotificationPreferences(userId: number): Promise<NotificationPreference | undefined>;
+  updateNotificationPreferences(userId: number, prefs: Partial<NotificationPreference>): Promise<NotificationPreference | undefined>;
+  createDefaultNotificationPreferences(userId: number): Promise<NotificationPreference>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -153,12 +170,14 @@ export class DatabaseStorage implements IStorage {
 
   // Paper methods
   async getPaper(id: number): Promise<Paper | undefined> {
-    const [paper] = await db.select().from(papers).where(eq(papers.id, id));
+    const [paper] = await db.select().from(papers).where(eq(papers.id, id)).limit(1);
     return paper || undefined;
   }
 
-  async getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string, field?: string }): Promise<Paper[]> {
-    let query = db.select().from(papers);
+  async getPapers(filters?: { fieldIds?: number[], isPublished?: boolean, search?: string, field?: string, page?: number, limit?: number }): Promise<{ papers: Paper[]; total: number; page: number; totalPages: number }> {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 20;
+    const offset = (page - 1) * limit;
 
     const conditions: any[] = [];
 
@@ -170,7 +189,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(
         or(
           like(papers.title, `%${filters.search}%`),
-          like(papers.abstract, `%${filters.search}%`)
+          like(papers.abstract, `%${filters.abstract}%`)
         )
       );
     }
@@ -179,11 +198,49 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(papers.researchField, filters.field));
     }
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
+    // Count total results
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(papers)
+      .where(whereClause);
+
+    const totalResults = Number(count);
+    const totalPages = Math.ceil(totalResults / limit);
+
+    // Get paginated results with field limiting
+    let query = db
+      .select({
+        id: papers.id,
+        title: papers.title,
+        abstract: papers.abstract,
+        authors: papers.authors,
+        researchField: papers.researchField,
+        keywords: papers.keywords,
+        viewCount: papers.viewCount,
+        engagementScore: papers.engagementScore,
+        isPublished: papers.isPublished,
+        publishedAt: papers.publishedAt,
+        createdAt: papers.createdAt,
+        createdBy: papers.createdBy,
+      })
+      .from(papers);
+
+    if (whereClause) {
+      query = query.where(whereClause) as any;
     }
 
-    return query.orderBy(desc(papers.createdAt));
+    const results = await query
+      .orderBy(desc(papers.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return {
+      papers: results as any,
+      total: totalResults,
+      page,
+      totalPages
+    };
   }
 
   async advancedSearchPapers(filters: { 
@@ -301,7 +358,20 @@ export class DatabaseStorage implements IStorage {
 
   // Comment methods
   async getComments(paperId: number): Promise<Comment[]> {
-    return db.select().from(comments).where(eq(comments.paperId, paperId)).orderBy(comments.createdAt);
+    return db
+      .select({
+        id: comments.id,
+        paperId: comments.paperId,
+        userId: comments.userId,
+        content: comments.content,
+        parentId: comments.parentId,
+        createdAt: comments.createdAt,
+        updatedAt: comments.updatedAt,
+      })
+      .from(comments)
+      .where(eq(comments.paperId, paperId))
+      .orderBy(comments.createdAt)
+      .limit(100);
   }
 
   async createComment(insertComment: InsertComment): Promise<Comment> {
@@ -318,7 +388,22 @@ export class DatabaseStorage implements IStorage {
 
   // Review methods
   async getReviews(paperId: number): Promise<Review[]> {
-    return db.select().from(reviews).where(eq(reviews.paperId, paperId)).orderBy(desc(reviews.createdAt));
+    return db
+      .select({
+        id: reviews.id,
+        paperId: reviews.paperId,
+        userId: reviews.userId,
+        rating: reviews.rating,
+        content: reviews.content,
+        recommendation: reviews.recommendation,
+        isPublic: reviews.isPublic,
+        createdAt: reviews.createdAt,
+        updatedAt: reviews.updatedAt,
+      })
+      .from(reviews)
+      .where(eq(reviews.paperId, paperId))
+      .orderBy(desc(reviews.createdAt))
+      .limit(50);
   }
 
   async createReview(insertReview: InsertReview): Promise<Review> {
@@ -339,7 +424,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPaperVersions(paperId: number): Promise<any[]> {
-    return db.select().from(paperVersions).where(eq(paperVersions.paperId, paperId)).orderBy(desc(paperVersions.version));
+    return db
+      .select()
+      .from(paperVersions)
+      .where(eq(paperVersions.paperId, paperId))
+      .orderBy(desc(paperVersions.version))
+      .limit(20);
   }
 
   // Citation methods
@@ -349,7 +439,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCitations(userId: number) {
-    return await db.select().from(citations).where(eq(citations.userId, userId));
+    return await db
+      .select()
+      .from(citations)
+      .where(eq(citations.userId, userId))
+      .orderBy(desc(citations.createdAt))
+      .limit(100);
   }
 
   // Phase 2: Analytics and Research Stories methods
@@ -383,12 +478,24 @@ export class DatabaseStorage implements IStorage {
   // Trending papers
   async getTrendingPapers(limit: number = 10) {
     try {
-      const result = await db.query.papers.findMany({
-        where: eq(papers.isPublished, true),
-        orderBy: [desc(papers.viewCount), desc(papers.engagementScore)],
-        limit
-      });
-      return result;
+      const result = await db
+        .select({
+          id: papers.id,
+          title: papers.title,
+          abstract: papers.abstract,
+          authors: papers.authors,
+          researchField: papers.researchField,
+          keywords: papers.keywords,
+          viewCount: papers.viewCount,
+          engagementScore: papers.engagementScore,
+          publishedAt: papers.publishedAt,
+          createdAt: papers.createdAt,
+        })
+        .from(papers)
+        .where(eq(papers.isPublished, true))
+        .orderBy(desc(papers.viewCount), desc(papers.engagementScore))
+        .limit(limit);
+      return result as any;
     } catch (error) {
       console.error('Error fetching trending papers:', error);
       return [];
@@ -1848,6 +1955,317 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error fetching top papers:', error);
       return [];
+    }
+  }
+
+  // Collaborative editing methods
+  async lockSection(data: { paperId: number; sectionId: string; userId: number; userName: string; expiresAt: Date }): Promise<any> {
+    try {
+      // First, check if there's an existing active lock for this section
+      const existingLocks = await db
+        .select()
+        .from(sectionLocks)
+        .where(
+          and(
+            eq(sectionLocks.paperId, data.paperId),
+            eq(sectionLocks.sectionId, data.sectionId),
+            gte(sectionLocks.expiresAt, new Date())
+          )
+        );
+
+      // If there's an active lock by someone else, throw error
+      if (existingLocks.length > 0 && existingLocks[0].userId !== data.userId) {
+        throw new Error(`Section is already locked by ${existingLocks[0].userName}`);
+      }
+
+      // Delete any existing locks for this section by this user (to update expiry)
+      await db
+        .delete(sectionLocks)
+        .where(
+          and(
+            eq(sectionLocks.paperId, data.paperId),
+            eq(sectionLocks.sectionId, data.sectionId),
+            eq(sectionLocks.userId, data.userId)
+          )
+        );
+
+      // Create new lock
+      const [lock] = await db
+        .insert(sectionLocks)
+        .values({
+          paperId: data.paperId,
+          sectionId: data.sectionId,
+          userId: data.userId,
+          userName: data.userName,
+          expiresAt: data.expiresAt,
+        })
+        .returning();
+
+      return lock;
+    } catch (error) {
+      console.error('Error locking section:', error);
+      throw error;
+    }
+  }
+
+  async unlockSection(paperId: number, sectionId: string, userId: number): Promise<void> {
+    try {
+      await db
+        .delete(sectionLocks)
+        .where(
+          and(
+            eq(sectionLocks.paperId, paperId),
+            eq(sectionLocks.sectionId, sectionId),
+            eq(sectionLocks.userId, userId)
+          )
+        );
+    } catch (error) {
+      console.error('Error unlocking section:', error);
+      throw error;
+    }
+  }
+
+  async getActiveLocks(paperId: number): Promise<any[]> {
+    try {
+      // Get all locks that haven't expired yet
+      const locks = await db
+        .select()
+        .from(sectionLocks)
+        .where(
+          and(
+            eq(sectionLocks.paperId, paperId),
+            gte(sectionLocks.expiresAt, new Date())
+          )
+        )
+        .orderBy(desc(sectionLocks.lockedAt));
+
+      return locks;
+    } catch (error) {
+      console.error('Error fetching active locks:', error);
+      return [];
+    }
+  }
+
+  async savePaperDraft(data: { paperId: number; userId: number; content: string; version: number }): Promise<any> {
+    try {
+      // Check if a draft already exists for this user and paper
+      const existingDrafts = await db
+        .select()
+        .from(paperDrafts)
+        .where(
+          and(
+            eq(paperDrafts.paperId, data.paperId),
+            eq(paperDrafts.userId, data.userId)
+          )
+        )
+        .orderBy(desc(paperDrafts.version))
+        .limit(1);
+
+      let draft;
+      if (existingDrafts.length > 0) {
+        // Update existing draft
+        const [updated] = await db
+          .update(paperDrafts)
+          .set({
+            content: data.content,
+            version: data.version,
+            updatedAt: new Date(),
+          })
+          .where(eq(paperDrafts.id, existingDrafts[0].id))
+          .returning();
+        draft = updated;
+      } else {
+        // Create new draft
+        const [created] = await db
+          .insert(paperDrafts)
+          .values({
+            paperId: data.paperId,
+            userId: data.userId,
+            content: data.content,
+            version: data.version,
+          })
+          .returning();
+        draft = created;
+      }
+
+      return draft;
+    } catch (error) {
+      console.error('Error saving paper draft:', error);
+      throw error;
+    }
+  }
+
+  async getLatestDraft(paperId: number, userId: number): Promise<any> {
+    try {
+      const [draft] = await db
+        .select()
+        .from(paperDrafts)
+        .where(
+          and(
+            eq(paperDrafts.paperId, paperId),
+            eq(paperDrafts.userId, userId)
+          )
+        )
+        .orderBy(desc(paperDrafts.updatedAt))
+        .limit(1);
+
+      return draft || null;
+    } catch (error) {
+      console.error('Error fetching latest draft:', error);
+      return null;
+    }
+  }
+
+  // Notification methods
+  async createNotification(data: InsertNotification): Promise<Notification> {
+    try {
+      const [notification] = await db
+        .insert(notifications)
+        .values(data)
+        .returning();
+      return notification;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      throw error;
+    }
+  }
+
+  async getUserNotifications(userId: number, options?: { page?: number; limit?: number; unreadOnly?: boolean }): Promise<{ notifications: Notification[]; total: number; unread: number }> {
+    try {
+      const page = options?.page || 1;
+      const limit = options?.limit || 20;
+      const offset = (page - 1) * limit;
+
+      const conditions: any[] = [eq(notifications.userId, userId)];
+      
+      if (options?.unreadOnly) {
+        conditions.push(eq(notifications.isRead, false));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      // Get total count
+      const [{ count }] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(notifications)
+        .where(whereClause);
+
+      // Get unread count
+      const [{ unreadCount }] = await db
+        .select({ unreadCount: sql<number>`count(*)` })
+        .from(notifications)
+        .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+
+      // Get notifications
+      let query = db.select().from(notifications);
+      
+      if (whereClause) {
+        query = query.where(whereClause) as any;
+      }
+
+      const results = await query
+        .orderBy(desc(notifications.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      return {
+        notifications: results,
+        total: Number(count),
+        unread: Number(unreadCount),
+      };
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      throw error;
+    }
+  }
+
+  async markNotificationAsRead(id: number): Promise<Notification | undefined> {
+    try {
+      const [notification] = await db
+        .update(notifications)
+        .set({ isRead: true })
+        .where(eq(notifications.id, id))
+        .returning();
+      return notification || undefined;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  }
+
+  async markAllNotificationsAsRead(userId: number): Promise<void> {
+    try {
+      await db
+        .update(notifications)
+        .set({ isRead: true })
+        .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      throw error;
+    }
+  }
+
+  async deleteNotification(id: number): Promise<void> {
+    try {
+      await db.delete(notifications).where(eq(notifications.id, id));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      throw error;
+    }
+  }
+
+  async getNotificationPreferences(userId: number): Promise<NotificationPreference | undefined> {
+    try {
+      const [prefs] = await db
+        .select()
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, userId));
+      
+      // Create default preferences if they don't exist
+      if (!prefs) {
+        return await this.createDefaultNotificationPreferences(userId);
+      }
+      
+      return prefs || undefined;
+    } catch (error) {
+      console.error('Error fetching notification preferences:', error);
+      throw error;
+    }
+  }
+
+  async updateNotificationPreferences(userId: number, prefs: Partial<NotificationPreference>): Promise<NotificationPreference | undefined> {
+    try {
+      const [updated] = await db
+        .update(notificationPreferences)
+        .set({ ...prefs, updatedAt: new Date() })
+        .where(eq(notificationPreferences.userId, userId))
+        .returning();
+      return updated || undefined;
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
+      throw error;
+    }
+  }
+
+  async createDefaultNotificationPreferences(userId: number): Promise<NotificationPreference> {
+    try {
+      const [prefs] = await db
+        .insert(notificationPreferences)
+        .values({
+          userId,
+          emailOnComment: true,
+          emailOnFollow: true,
+          emailOnCitation: true,
+          pushNotifications: true,
+          emailOnReviewAssignment: true,
+          emailOnReviewCompleted: true,
+          emailOnPaperStatus: true,
+        })
+        .returning();
+      return prefs;
+    } catch (error) {
+      console.error('Error creating default notification preferences:', error);
+      throw error;
     }
   }
 }

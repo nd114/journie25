@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, boolean, jsonb, decimal, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { varchar } from "drizzle-orm/pg-core";
 
@@ -60,7 +60,14 @@ export const papers = pgTable("papers", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdBy: integer("created_by").notNull().references(() => users.id),
-});
+}, (table) => ({
+  isPublishedIdx: index("papers_is_published_idx").on(table.isPublished),
+  createdAtIdx: index("papers_created_at_idx").on(table.createdAt),
+  viewCountIdx: index("papers_view_count_idx").on(table.viewCount),
+  engagementScoreIdx: index("papers_engagement_score_idx").on(table.engagementScore),
+  publishedCreatedIdx: index("papers_published_created_idx").on(table.isPublished, table.createdAt),
+  publishedEngagementIdx: index("papers_published_engagement_idx").on(table.isPublished, table.engagementScore),
+}));
 
 // Paper versions
 export const paperVersions = pgTable("paper_versions", {
@@ -84,7 +91,13 @@ export const comments = pgTable("comments", {
   parentId: integer("parent_id").references((): any => comments.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  paperIdIdx: index("comments_paper_id_idx").on(table.paperId),
+  userIdIdx: index("comments_user_id_idx").on(table.userId),
+  createdAtIdx: index("comments_created_at_idx").on(table.createdAt),
+  paperUserIdx: index("comments_paper_user_idx").on(table.paperId, table.userId),
+  paperCreatedIdx: index("comments_paper_created_idx").on(table.paperId, table.createdAt),
+}));
 
 // Reviews
 export const reviews = pgTable("reviews", {
@@ -97,7 +110,11 @@ export const reviews = pgTable("reviews", {
   isPublic: boolean("is_public").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  paperIdIdx: index("reviews_paper_id_idx").on(table.paperId),
+  userIdIdx: index("reviews_user_id_idx").on(table.userId),
+  paperUserIdx: index("reviews_paper_user_idx").on(table.paperId, table.userId),
+}));
 
 // Peer Review Assignments
 export const peerReviewAssignments = pgTable("peer_review_assignments", {
@@ -135,7 +152,10 @@ export const citations = pgTable("citations", {
   citationType: text("citation_type").notNull(),
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  userIdIdx: index("citations_user_id_idx").on(table.userId),
+  createdAtIdx: index("citations_created_at_idx").on(table.createdAt),
+}));
 
 // Phase 2: Paper insights for research stories
 export const paperInsights = pgTable("paper_insights", {
@@ -158,7 +178,13 @@ export const paperViews = pgTable("paper_views", {
   viewedAt: timestamp("viewed_at").defaultNow().notNull(),
   sessionId: text("session_id"),
   readTimeSeconds: integer("read_time_seconds"),
-});
+}, (table) => ({
+  paperIdIdx: index("paper_views_paper_id_idx").on(table.paperId),
+  userIdIdx: index("paper_views_user_id_idx").on(table.userId),
+  viewedAtIdx: index("paper_views_viewed_at_idx").on(table.viewedAt),
+  paperUserIdx: index("paper_views_paper_user_idx").on(table.paperId, table.userId),
+  paperViewedIdx: index("paper_views_paper_viewed_idx").on(table.paperId, table.viewedAt),
+}));
 
 // Trending topics table
 export const trendingTopics = pgTable("trending_topics", {
@@ -334,6 +360,27 @@ export const researchTimelines = pgTable("research_timelines", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Collaborative editing tables
+export const sectionLocks = pgTable("section_locks", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  sectionId: text("section_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  userName: text("user_name").notNull(),
+  lockedAt: timestamp("locked_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const paperDrafts = pgTable("paper_drafts", {
+  id: serial("id").primaryKey(),
+  paperId: integer("paper_id").notNull().references(() => papers.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  version: integer("version").notNull().default(1),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Analytics tables
 export const paperAnalytics = pgTable("paper_analytics", {
   id: serial("id").primaryKey(),
@@ -366,6 +413,39 @@ export const analyticsEvents = pgTable("analytics_events", {
   userId: integer("user_id").references(() => users.id),
   metadata: jsonb("metadata").default({}),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Notifications system
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  entityType: text("entity_type"),
+  entityId: integer("entity_id"),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("notifications_user_id_idx").on(table.userId),
+  isReadIdx: index("notifications_is_read_idx").on(table.isRead),
+  createdAtIdx: index("notifications_created_at_idx").on(table.createdAt),
+  userReadIdx: index("notifications_user_read_idx").on(table.userId, table.isRead),
+  userCreatedIdx: index("notifications_user_created_idx").on(table.userId, table.createdAt),
+}));
+
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id).unique(),
+  emailOnComment: boolean("email_on_comment").notNull().default(true),
+  emailOnFollow: boolean("email_on_follow").notNull().default(true),
+  emailOnCitation: boolean("email_on_citation").notNull().default(true),
+  pushNotifications: boolean("push_notifications").notNull().default(true),
+  emailOnReviewAssignment: boolean("email_on_review_assignment").notNull().default(true),
+  emailOnReviewCompleted: boolean("email_on_review_completed").notNull().default(true),
+  emailOnPaperStatus: boolean("email_on_paper_status").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Relations
@@ -557,6 +637,42 @@ export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => 
   }),
 }));
 
+export const sectionLocksRelations = relations(sectionLocks, ({ one }) => ({
+  paper: one(papers, {
+    fields: [sectionLocks.paperId],
+    references: [papers.id],
+  }),
+  user: one(users, {
+    fields: [sectionLocks.userId],
+    references: [users.id],
+  }),
+}));
+
+export const paperDraftsRelations = relations(paperDrafts, ({ one }) => ({
+  paper: one(papers, {
+    fields: [paperDrafts.paperId],
+    references: [papers.id],
+  }),
+  user: one(users, {
+    fields: [paperDrafts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
+export const notificationPreferencesRelations = relations(notificationPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [notificationPreferences.userId],
+    references: [users.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -626,3 +742,15 @@ export type UserAnalytics = typeof userAnalytics.$inferSelect;
 export type InsertUserAnalytics = typeof userAnalytics.$inferInsert;
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type InsertAnalyticsEvent = typeof analyticsEvents.$inferInsert;
+
+// Collaborative editing types
+export type SectionLock = typeof sectionLocks.$inferSelect;
+export type InsertSectionLock = typeof sectionLocks.$inferInsert;
+export type PaperDraft = typeof paperDrafts.$inferSelect;
+export type InsertPaperDraft = typeof paperDrafts.$inferInsert;
+
+// Notification types
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+export type NotificationPreference = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
