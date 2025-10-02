@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import compression from "compression";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
@@ -17,6 +18,9 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "dev-secret-key-change-in-production";
+
+// Enable gzip compression for all responses
+app.use(compression());
 
 app.use(
   cors({
@@ -478,6 +482,34 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
 
     const paper = await storage.updatePaper(paperId, updates);
     
+    // Create notification for paper published
+    if (isNewlyPublished) {
+      const user = await storage.getUser(req.user.id);
+      if (user) {
+        await createAndBroadcastNotification({
+          userId: req.user.id,
+          type: 'paper_published',
+          title: 'Paper Published',
+          message: `Your paper "${updates.title || existingPaper.title}" has been published successfully`,
+          entityType: 'paper',
+          entityId: paperId,
+        });
+        
+        // Notify followers about the new publication
+        const followers = await storage.getUserFollowers(req.user.id);
+        for (const follower of followers) {
+          await createAndBroadcastNotification({
+            userId: follower.id,
+            type: 'paper_published',
+            title: 'New Publication',
+            message: `${user.name} published a new paper: "${updates.title || existingPaper.title}"`,
+            entityType: 'paper',
+            entityId: paperId,
+          });
+        }
+      }
+    }
+    
     // Invalidate cache after update
     invalidatePaperCache(paperId);
     
@@ -612,6 +644,22 @@ app.post(
         recommendation,
         isPublic: true,
       });
+      
+      // Create notification for paper author if not reviewing own paper
+      if (paper.createdBy !== req.user.id) {
+        const reviewerUser = await storage.getUser(req.user.id);
+        if (reviewerUser) {
+          await createAndBroadcastNotification({
+            userId: paper.createdBy,
+            type: 'new_review',
+            title: 'New Review',
+            message: `${reviewerUser.name} reviewed your paper "${paper.title}"`,
+            entityType: 'paper',
+            entityId: paperId,
+          });
+        }
+      }
+      
       res.json(review);
     } catch (error) {
       res.status(500).json({ error: "Failed to create review" });
