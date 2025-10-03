@@ -103,24 +103,24 @@ const BrowsePapers: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header with Discovery Focus */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
             Discover Research Stories
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-base sm:text-lg">
             Every breakthrough has a story. What will inspire you today?
               </p>
-              <div className="flex items-center space-x-2 mt-3 text-sm text-indigo-600">
-                <Lightbulb className="w-4 h-4" />
-                <span>Each paper is presented as an engaging story with key insights and real-world impact</span>
+              <div className="flex items-center space-x-2 mt-3 text-xs sm:text-sm text-indigo-600">
+                <Lightbulb className="w-4 h-4 flex-shrink-0" />
+                <span className="line-clamp-2">Each paper is presented as an engaging story with key insights and real-world impact</span>
               </div>
           </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -128,17 +128,17 @@ const BrowsePapers: React.FC = () => {
                 placeholder="Search by keywords, topics, or questions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base min-h-[44px]"
               />
             </div>
 
             <div className="flex gap-3">
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <div className="relative flex-1 sm:flex-initial">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 <select
                   value={selectedField}
                   onChange={(e) => setSelectedField(e.target.value)}
-                  className="pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white min-w-[160px]"
+                  className="w-full sm:min-w-[160px] pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white text-base min-h-[44px]"
                 >
                   <option value="">All Fields</option>
                   {researchFields.map((field) => (
@@ -151,20 +151,21 @@ const BrowsePapers: React.FC = () => {
 
               <button
                 onClick={handleSurpriseMe}
-                className="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105"
+                className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all sm:transform sm:hover:scale-105 min-h-[44px] whitespace-nowrap"
               >
                 <Shuffle
                   className={`w-5 h-5 ${showSurpriseMe ? "animate-spin" : ""}`}
                 />
-                <span>Surprise Me!</span>
+                <span className="hidden sm:inline">Surprise Me!</span>
+                <span className="sm:hidden">Surprise</span>
               </button>
             </div>
           </div>
 
           {/* Sort Options */}
-          <div className="flex items-center space-x-4 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-4 pt-4 border-t border-gray-100 gap-3 sm:gap-0">
             <span className="text-sm text-gray-600 font-medium">Sort by:</span>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 { key: "trending", label: "Trending", icon: TrendingUp },
                 {
@@ -177,7 +178,7 @@ const BrowsePapers: React.FC = () => {
                 <button
                   key={key}
                   onClick={() => setSortBy(key as typeof sortBy)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] ${
                     sortBy === key
                       ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
                       : "text-gray-600 hover:bg-gray-100"
@@ -218,27 +219,27 @@ const BrowsePapers: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                 {searchQuery
                   ? `Results for "${searchQuery}"`
                   : selectedField
                     ? `${selectedField} Research`
                     : "All Research"}
-                <span className="text-gray-500 font-normal ml-2">
+                <span className="text-gray-500 font-normal ml-2 text-sm sm:text-base">
                   ({papers.length} papers)
                 </span>
               </h2>
 
               {sortBy === "trending" && (
-                <div className="flex items-center space-x-2 text-sm text-indigo-600">
+                <div className="flex items-center space-x-2 text-xs sm:text-sm text-indigo-600">
                   <TrendingUp className="w-4 h-4" />
                   <span>Hottest topics right now</span>
                 </div>
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {papers.map((paper, index) => (
                 <PaperCard
                   key={paper.id}

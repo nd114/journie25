@@ -1,4 +1,4 @@
-import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, apiKeys, apiUsage, subscriptions, paymentHistory, institutions, institutionMembers, institutionInvites, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference, type ApiKey, type InsertApiKey, type ApiUsage, type InsertApiUsage, type Subscription, type InsertSubscription, type PaymentHistory, type InsertPaymentHistory, type Institution, type InsertInstitution, type InstitutionMember, type InsertInstitutionMember, type InstitutionInvite, type InsertInstitutionInvite } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
 
@@ -137,6 +137,38 @@ export interface IStorage {
   getNotificationPreferences(userId: number): Promise<NotificationPreference | undefined>;
   updateNotificationPreferences(userId: number, prefs: Partial<NotificationPreference>): Promise<NotificationPreference | undefined>;
   createDefaultNotificationPreferences(userId: number): Promise<NotificationPreference>;
+
+  // API Key methods
+  createApiKey(data: { userId: number; name: string; permissions: any; expiresAt?: Date }): Promise<{ apiKey: any; plainKey: string }>;
+  getApiKey(id: number): Promise<any | undefined>;
+  getApiKeyByHash(keyHash: string): Promise<any | undefined>;
+  getUserApiKeys(userId: number): Promise<any[]>;
+  deleteApiKey(id: number): Promise<void>;
+  updateApiKeyLastUsed(id: number): Promise<void>;
+  recordApiUsage(data: { apiKeyId: number; endpoint: string; method: string; statusCode: number; responseTime?: number }): Promise<any>;
+  getApiKeyUsage(apiKeyId: number, options?: { startDate?: Date; endDate?: Date; limit?: number }): Promise<any[]>;
+  getApiKeyUsageStats(apiKeyId: number, period?: 'hour' | 'day' | 'week'): Promise<{ total: number; period: string; breakdown: any[] }>;
+
+  // Subscription methods
+  createSubscription(data: InsertSubscription): Promise<Subscription>;
+  updateSubscription(userId: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
+  getSubscription(userId: number): Promise<Subscription | undefined>;
+  recordPayment(data: InsertPaymentHistory): Promise<PaymentHistory>;
+  getPaymentHistory(userId: number, limit?: number): Promise<PaymentHistory[]>;
+
+  // Institution methods
+  createInstitution(data: InsertInstitution): Promise<Institution>;
+  getInstitution(id: number): Promise<Institution | undefined>;
+  updateInstitution(id: number, data: Partial<Institution>): Promise<Institution | undefined>;
+  createInvite(data: { institutionId: number; email: string; role: string }): Promise<InstitutionInvite>;
+  acceptInvite(token: string, userId: number): Promise<InstitutionMember | undefined>;
+  getInstitutionMembers(institutionId: number): Promise<any[]>;
+  removeMember(institutionId: number, userId: number): Promise<void>;
+  getInstitutionPapers(institutionId: number): Promise<Paper[]>;
+  getInstitutionAnalytics(institutionId: number): Promise<any>;
+  getUserInstitutions(userId: number): Promise<any[]>;
+  isInstitutionAdmin(userId: number, institutionId: number): Promise<boolean>;
+  isInstitutionMember(userId: number, institutionId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2266,6 +2298,545 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error creating default notification preferences:', error);
       throw error;
+    }
+  }
+
+  // API Key methods
+  async createApiKey(data: { userId: number; name: string; permissions: any; expiresAt?: Date }): Promise<{ apiKey: any; plainKey: string }> {
+    try {
+      const crypto = await import('crypto');
+      const plainKey = `sk_${crypto.randomBytes(32).toString('hex')}`;
+      const keyHash = crypto.createHash('sha256').update(plainKey).digest('hex');
+
+      const [apiKey] = await db
+        .insert(apiKeys)
+        .values({
+          userId: data.userId,
+          keyHash,
+          name: data.name,
+          permissions: data.permissions,
+          expiresAt: data.expiresAt,
+        })
+        .returning();
+
+      return { apiKey, plainKey };
+    } catch (error) {
+      console.error('Error creating API key:', error);
+      throw error;
+    }
+  }
+
+  async getApiKey(id: number): Promise<ApiKey | undefined> {
+    try {
+      const [apiKey] = await db.select().from(apiKeys).where(eq(apiKeys.id, id));
+      return apiKey || undefined;
+    } catch (error) {
+      console.error('Error fetching API key:', error);
+      throw error;
+    }
+  }
+
+  async getApiKeyByHash(keyHash: string): Promise<ApiKey | undefined> {
+    try {
+      const [apiKey] = await db.select().from(apiKeys).where(eq(apiKeys.keyHash, keyHash));
+      return apiKey || undefined;
+    } catch (error) {
+      console.error('Error fetching API key by hash:', error);
+      throw error;
+    }
+  }
+
+  async getUserApiKeys(userId: number): Promise<ApiKey[]> {
+    try {
+      const keys = await db
+        .select()
+        .from(apiKeys)
+        .where(eq(apiKeys.userId, userId))
+        .orderBy(desc(apiKeys.createdAt));
+      return keys;
+    } catch (error) {
+      console.error('Error fetching user API keys:', error);
+      throw error;
+    }
+  }
+
+  async deleteApiKey(id: number): Promise<void> {
+    try {
+      await db.delete(apiKeys).where(eq(apiKeys.id, id));
+    } catch (error) {
+      console.error('Error deleting API key:', error);
+      throw error;
+    }
+  }
+
+  async updateApiKeyLastUsed(id: number): Promise<void> {
+    try {
+      await db
+        .update(apiKeys)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(apiKeys.id, id));
+    } catch (error) {
+      console.error('Error updating API key last used:', error);
+      throw error;
+    }
+  }
+
+  async recordApiUsage(data: { apiKeyId: number; endpoint: string; method: string; statusCode: number; responseTime?: number }): Promise<ApiUsage> {
+    try {
+      const [usage] = await db
+        .insert(apiUsage)
+        .values({
+          apiKeyId: data.apiKeyId,
+          endpoint: data.endpoint,
+          method: data.method,
+          statusCode: data.statusCode,
+          responseTime: data.responseTime,
+        })
+        .returning();
+      return usage;
+    } catch (error) {
+      console.error('Error recording API usage:', error);
+      throw error;
+    }
+  }
+
+  async getApiKeyUsage(apiKeyId: number, options?: { startDate?: Date; endDate?: Date; limit?: number }): Promise<ApiUsage[]> {
+    try {
+      const conditions: any[] = [eq(apiUsage.apiKeyId, apiKeyId)];
+
+      if (options?.startDate) {
+        conditions.push(gte(apiUsage.createdAt, options.startDate));
+      }
+
+      if (options?.endDate) {
+        conditions.push(sql`${apiUsage.createdAt} <= ${options.endDate}`);
+      }
+
+      let query = db
+        .select()
+        .from(apiUsage)
+        .where(and(...conditions))
+        .orderBy(desc(apiUsage.createdAt));
+
+      if (options?.limit) {
+        query = query.limit(options.limit) as any;
+      }
+
+      return await query;
+    } catch (error) {
+      console.error('Error fetching API key usage:', error);
+      throw error;
+    }
+  }
+
+  async getApiKeyUsageStats(apiKeyId: number, period: 'hour' | 'day' | 'week' = 'hour'): Promise<{ total: number; period: string; breakdown: any[] }> {
+    try {
+      const now = new Date();
+      let startDate = new Date();
+
+      switch (period) {
+        case 'hour':
+          startDate = new Date(now.getTime() - 60 * 60 * 1000);
+          break;
+        case 'day':
+          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          break;
+        case 'week':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+      }
+
+      const usage = await this.getApiKeyUsage(apiKeyId, { startDate });
+
+      const breakdown = usage.reduce((acc: any, record: any) => {
+        const endpoint = record.endpoint;
+        if (!acc[endpoint]) {
+          acc[endpoint] = { endpoint, count: 0, avgResponseTime: 0, totalResponseTime: 0 };
+        }
+        acc[endpoint].count += 1;
+        if (record.responseTime) {
+          acc[endpoint].totalResponseTime += record.responseTime;
+          acc[endpoint].avgResponseTime = acc[endpoint].totalResponseTime / acc[endpoint].count;
+        }
+        return acc;
+      }, {});
+
+      return {
+        total: usage.length,
+        period,
+        breakdown: Object.values(breakdown),
+      };
+    } catch (error) {
+      console.error('Error fetching API key usage stats:', error);
+      throw error;
+    }
+  }
+
+  async createSubscription(data: InsertSubscription): Promise<Subscription> {
+    try {
+      const [subscription] = await db
+        .insert(subscriptions)
+        .values(data)
+        .returning();
+      return subscription;
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      throw error;
+    }
+  }
+
+  async updateSubscription(userId: number, data: Partial<Subscription>): Promise<Subscription | undefined> {
+    try {
+      const [subscription] = await db
+        .update(subscriptions)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(subscriptions.userId, userId))
+        .returning();
+      return subscription || undefined;
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      throw error;
+    }
+  }
+
+  async getSubscription(userId: number): Promise<Subscription | undefined> {
+    try {
+      const [subscription] = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.userId, userId))
+        .limit(1);
+      return subscription || undefined;
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      throw error;
+    }
+  }
+
+  async recordPayment(data: InsertPaymentHistory): Promise<PaymentHistory> {
+    try {
+      const [payment] = await db
+        .insert(paymentHistory)
+        .values(data)
+        .returning();
+      return payment;
+    } catch (error) {
+      console.error('Error recording payment:', error);
+      throw error;
+    }
+  }
+
+  async getPaymentHistory(userId: number, limit: number = 50): Promise<PaymentHistory[]> {
+    try {
+      const payments = await db
+        .select()
+        .from(paymentHistory)
+        .where(eq(paymentHistory.userId, userId))
+        .orderBy(desc(paymentHistory.createdAt))
+        .limit(limit);
+      return payments;
+    } catch (error) {
+      console.error('Error fetching payment history:', error);
+      throw error;
+    }
+  }
+
+  async createInstitution(data: InsertInstitution): Promise<Institution> {
+    try {
+      const [institution] = await db
+        .insert(institutions)
+        .values(data)
+        .returning();
+      return institution;
+    } catch (error) {
+      console.error('Error creating institution:', error);
+      throw error;
+    }
+  }
+
+  async getInstitution(id: number): Promise<Institution | undefined> {
+    try {
+      const [institution] = await db
+        .select()
+        .from(institutions)
+        .where(eq(institutions.id, id))
+        .limit(1);
+      return institution || undefined;
+    } catch (error) {
+      console.error('Error fetching institution:', error);
+      throw error;
+    }
+  }
+
+  async updateInstitution(id: number, data: Partial<Institution>): Promise<Institution | undefined> {
+    try {
+      const [institution] = await db
+        .update(institutions)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(institutions.id, id))
+        .returning();
+      return institution || undefined;
+    } catch (error) {
+      console.error('Error updating institution:', error);
+      throw error;
+    }
+  }
+
+  async createInvite(data: { institutionId: number; email: string; role: string }): Promise<InstitutionInvite> {
+    try {
+      const crypto = await import('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      const [invite] = await db
+        .insert(institutionInvites)
+        .values({
+          institutionId: data.institutionId,
+          email: data.email,
+          role: data.role,
+          token,
+          expiresAt,
+        })
+        .returning();
+      return invite;
+    } catch (error) {
+      console.error('Error creating invite:', error);
+      throw error;
+    }
+  }
+
+  async acceptInvite(token: string, userId: number): Promise<InstitutionMember | undefined> {
+    try {
+      const [invite] = await db
+        .select()
+        .from(institutionInvites)
+        .where(eq(institutionInvites.token, token))
+        .limit(1);
+
+      if (!invite) {
+        throw new Error('Invite not found');
+      }
+
+      if (new Date() > invite.expiresAt) {
+        throw new Error('Invite has expired');
+      }
+
+      const existingMember = await db
+        .select()
+        .from(institutionMembers)
+        .where(
+          and(
+            eq(institutionMembers.institutionId, invite.institutionId),
+            eq(institutionMembers.userId, userId)
+          )
+        )
+        .limit(1);
+
+      if (existingMember.length > 0) {
+        throw new Error('User is already a member');
+      }
+
+      const [member] = await db
+        .insert(institutionMembers)
+        .values({
+          institutionId: invite.institutionId,
+          userId,
+          role: invite.role,
+        })
+        .returning();
+
+      await db
+        .delete(institutionInvites)
+        .where(eq(institutionInvites.id, invite.id));
+
+      return member;
+    } catch (error) {
+      console.error('Error accepting invite:', error);
+      throw error;
+    }
+  }
+
+  async getInstitutionMembers(institutionId: number): Promise<any[]> {
+    try {
+      const members = await db
+        .select({
+          id: institutionMembers.id,
+          userId: institutionMembers.userId,
+          role: institutionMembers.role,
+          joinedAt: institutionMembers.joinedAt,
+          userName: users.name,
+          userEmail: users.email,
+          userAffiliation: users.affiliation,
+        })
+        .from(institutionMembers)
+        .innerJoin(users, eq(institutionMembers.userId, users.id))
+        .where(eq(institutionMembers.institutionId, institutionId))
+        .orderBy(institutionMembers.joinedAt);
+
+      return members;
+    } catch (error) {
+      console.error('Error fetching institution members:', error);
+      throw error;
+    }
+  }
+
+  async removeMember(institutionId: number, userId: number): Promise<void> {
+    try {
+      await db
+        .delete(institutionMembers)
+        .where(
+          and(
+            eq(institutionMembers.institutionId, institutionId),
+            eq(institutionMembers.userId, userId)
+          )
+        );
+    } catch (error) {
+      console.error('Error removing member:', error);
+      throw error;
+    }
+  }
+
+  async getInstitutionPapers(institutionId: number): Promise<Paper[]> {
+    try {
+      const memberIds = await db
+        .select({ userId: institutionMembers.userId })
+        .from(institutionMembers)
+        .where(eq(institutionMembers.institutionId, institutionId));
+
+      if (memberIds.length === 0) {
+        return [];
+      }
+
+      const userIdList = memberIds.map(m => m.userId);
+
+      const institutionPapers = await db
+        .select()
+        .from(papers)
+        .where(
+          and(
+            eq(papers.isPublished, true),
+            sql`${papers.createdBy} IN (${sql.join(userIdList.map(id => sql`${id}`), sql`, `)})`
+          )
+        )
+        .orderBy(desc(papers.publishedAt))
+        .limit(100);
+
+      return institutionPapers;
+    } catch (error) {
+      console.error('Error fetching institution papers:', error);
+      throw error;
+    }
+  }
+
+  async getInstitutionAnalytics(institutionId: number): Promise<any> {
+    try {
+      const members = await this.getInstitutionMembers(institutionId);
+      const memberIds = members.map(m => m.userId);
+
+      if (memberIds.length === 0) {
+        return {
+          totalMembers: 0,
+          totalPapers: 0,
+          totalViews: 0,
+          totalCitations: 0,
+          avgEngagementScore: 0,
+        };
+      }
+
+      const institutionPapers = await db
+        .select({
+          id: papers.id,
+          viewCount: papers.viewCount,
+          engagementScore: papers.engagementScore,
+        })
+        .from(papers)
+        .where(
+          and(
+            eq(papers.isPublished, true),
+            sql`${papers.createdBy} IN (${sql.join(memberIds.map(id => sql`${id}`), sql`, `)})`
+          )
+        );
+
+      const totalPapers = institutionPapers.length;
+      const totalViews = institutionPapers.reduce((sum, p) => sum + p.viewCount, 0);
+      const totalEngagement = institutionPapers.reduce((sum, p) => sum + p.engagementScore, 0);
+      const avgEngagementScore = totalPapers > 0 ? totalEngagement / totalPapers : 0;
+
+      return {
+        totalMembers: members.length,
+        totalPapers,
+        totalViews,
+        totalCitations: 0,
+        avgEngagementScore: Math.round(avgEngagementScore * 100) / 100,
+      };
+    } catch (error) {
+      console.error('Error fetching institution analytics:', error);
+      throw error;
+    }
+  }
+
+  async getUserInstitutions(userId: number): Promise<any[]> {
+    try {
+      const userInstitutions = await db
+        .select({
+          id: institutions.id,
+          name: institutions.name,
+          domain: institutions.domain,
+          type: institutions.type,
+          logoUrl: institutions.logoUrl,
+          role: institutionMembers.role,
+          joinedAt: institutionMembers.joinedAt,
+        })
+        .from(institutionMembers)
+        .innerJoin(institutions, eq(institutionMembers.institutionId, institutions.id))
+        .where(eq(institutionMembers.userId, userId))
+        .orderBy(institutionMembers.joinedAt);
+
+      return userInstitutions;
+    } catch (error) {
+      console.error('Error fetching user institutions:', error);
+      throw error;
+    }
+  }
+
+  async isInstitutionAdmin(userId: number, institutionId: number): Promise<boolean> {
+    try {
+      const [member] = await db
+        .select()
+        .from(institutionMembers)
+        .where(
+          and(
+            eq(institutionMembers.institutionId, institutionId),
+            eq(institutionMembers.userId, userId),
+            eq(institutionMembers.role, 'admin')
+          )
+        )
+        .limit(1);
+
+      return !!member;
+    } catch (error) {
+      console.error('Error checking institution admin:', error);
+      return false;
+    }
+  }
+
+  async isInstitutionMember(userId: number, institutionId: number): Promise<boolean> {
+    try {
+      const [member] = await db
+        .select()
+        .from(institutionMembers)
+        .where(
+          and(
+            eq(institutionMembers.institutionId, institutionId),
+            eq(institutionMembers.userId, userId)
+          )
+        )
+        .limit(1);
+
+      return !!member;
+    } catch (error) {
+      console.error('Error checking institution membership:', error);
+      return false;
     }
   }
 }

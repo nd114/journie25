@@ -448,6 +448,114 @@ export const notificationPreferences = pgTable("notification_preferences", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// API Keys for third-party integrations
+export const apiKeys = pgTable("api_keys", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  keyHash: text("key_hash").notNull().unique(),
+  name: text("name").notNull(),
+  permissions: jsonb("permissions").notNull().default('{"read": true, "write": false}'),
+  lastUsedAt: timestamp("last_used_at"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("api_keys_user_id_idx").on(table.userId),
+  keyHashIdx: index("api_keys_key_hash_idx").on(table.keyHash),
+}));
+
+// API Usage tracking
+export const apiUsage = pgTable("api_usage", {
+  id: serial("id").primaryKey(),
+  apiKeyId: integer("api_key_id").notNull().references(() => apiKeys.id),
+  endpoint: text("endpoint").notNull(),
+  method: text("method").notNull(),
+  statusCode: integer("status_code").notNull(),
+  responseTime: integer("response_time"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  apiKeyIdIdx: index("api_usage_api_key_id_idx").on(table.apiKeyId),
+  createdAtIdx: index("api_usage_created_at_idx").on(table.createdAt),
+  apiKeyCreatedIdx: index("api_usage_api_key_created_idx").on(table.apiKeyId, table.createdAt),
+}));
+
+// Subscriptions for premium tiers
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id).unique(),
+  stripeCustomerId: text("stripe_customer_id").unique(),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  plan: text("plan").notNull().default("free"),
+  status: text("status").notNull().default("active"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("subscriptions_user_id_idx").on(table.userId),
+  stripeCustomerIdIdx: index("subscriptions_stripe_customer_id_idx").on(table.stripeCustomerId),
+  planIdx: index("subscriptions_plan_idx").on(table.plan),
+  statusIdx: index("subscriptions_status_idx").on(table.status),
+}));
+
+// Payment history
+export const paymentHistory = pgTable("payment_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  stripePaymentId: text("stripe_payment_id").notNull().unique(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").notNull().default("usd"),
+  status: text("status").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("payment_history_user_id_idx").on(table.userId),
+  stripePaymentIdIdx: index("payment_history_stripe_payment_id_idx").on(table.stripePaymentId),
+  createdAtIdx: index("payment_history_created_at_idx").on(table.createdAt),
+  userCreatedIdx: index("payment_history_user_created_idx").on(table.userId, table.createdAt),
+}));
+
+// Institutional accounts
+export const institutions = pgTable("institutions", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  domain: text("domain"),
+  type: text("type").notNull(),
+  logoUrl: text("logo_url"),
+  settings: jsonb("settings").default({}),
+  subscriptionId: integer("subscription_id").references(() => subscriptions.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  nameIdx: index("institutions_name_idx").on(table.name),
+  typeIdx: index("institutions_type_idx").on(table.type),
+  subscriptionIdIdx: index("institutions_subscription_id_idx").on(table.subscriptionId),
+}));
+
+export const institutionMembers = pgTable("institution_members", {
+  id: serial("id").primaryKey(),
+  institutionId: integer("institution_id").notNull().references(() => institutions.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  role: text("role").notNull().default("member"),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+}, (table) => ({
+  institutionIdIdx: index("institution_members_institution_id_idx").on(table.institutionId),
+  userIdIdx: index("institution_members_user_id_idx").on(table.userId),
+  institutionUserIdx: index("institution_members_institution_user_idx").on(table.institutionId, table.userId),
+}));
+
+export const institutionInvites = pgTable("institution_invites", {
+  id: serial("id").primaryKey(),
+  institutionId: integer("institution_id").notNull().references(() => institutions.id),
+  email: text("email").notNull(),
+  role: text("role").notNull().default("member"),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  institutionIdIdx: index("institution_invites_institution_id_idx").on(table.institutionId),
+  tokenIdx: index("institution_invites_token_idx").on(table.token),
+  emailIdx: index("institution_invites_email_idx").on(table.email),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   papers: many(papers),
@@ -673,6 +781,21 @@ export const notificationPreferencesRelations = relations(notificationPreference
   }),
 }));
 
+export const apiKeysRelations = relations(apiKeys, ({ one, many }) => ({
+  user: one(users, {
+    fields: [apiKeys.userId],
+    references: [users.id],
+  }),
+  usage: many(apiUsage),
+}));
+
+export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
+  apiKey: one(apiKeys, {
+    fields: [apiUsage.apiKeyId],
+    references: [apiKeys.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -754,3 +877,23 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 export type NotificationPreference = typeof notificationPreferences.$inferSelect;
 export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
+
+// API Key types
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
+export type ApiUsage = typeof apiUsage.$inferSelect;
+export type InsertApiUsage = typeof apiUsage.$inferInsert;
+
+// Subscription types
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;
+export type PaymentHistory = typeof paymentHistory.$inferSelect;
+export type InsertPaymentHistory = typeof paymentHistory.$inferInsert;
+
+// Institution types
+export type Institution = typeof institutions.$inferSelect;
+export type InsertInstitution = typeof institutions.$inferInsert;
+export type InstitutionMember = typeof institutionMembers.$inferSelect;
+export type InsertInstitutionMember = typeof institutionMembers.$inferInsert;
+export type InstitutionInvite = typeof institutionInvites.$inferSelect;
+export type InsertInstitutionInvite = typeof institutionInvites.$inferInsert;

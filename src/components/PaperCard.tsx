@@ -52,18 +52,19 @@ const PaperCard: React.FC<PaperCardProps> = ({
 
   return (
     <Link to={`/paper/${id}`} className="block group">
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-102 relative overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 hover:shadow-2xl transition-all duration-300 sm:transform sm:hover:scale-102 relative overflow-hidden active:bg-gray-50">
         {/* Story Badge */}
-        <div className="absolute top-4 left-4">
-          <div className="flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full">
+        <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10">
+          <div className="flex items-center space-x-1 px-2 sm:px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full">
             <Lightbulb className="w-3 h-3" />
-            <span>Research Story</span>
+            <span className="hidden sm:inline">Research Story</span>
+            <span className="sm:hidden">Story</span>
           </div>
         </div>
 
 
         {/* Read Time & Field */}
-        <div className="mt-8 mb-4 flex items-center justify-between">
+        <div className="mt-10 sm:mt-8 mb-3 sm:mb-4 flex items-center justify-between">
           <span className="text-xs text-gray-500 font-medium">
             {estimatedReadTime} min read
           </span>
@@ -75,7 +76,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
         </div>
 
         {/* Story Title */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
           {title}
         </h3>
 
@@ -145,16 +146,16 @@ const PaperCard: React.FC<PaperCardProps> = ({
         )}
 
         {/* Author & Date */}
-        <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            <User className="w-4 h-4" />
-            <span className="truncate">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-500 pt-4 border-t border-gray-100 gap-2">
+          <div className="flex items-center space-x-2 min-w-0">
+            <User className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate text-xs sm:text-sm">
               {authors?.join(", ") || "Unknown Author"}
             </span>
           </div>
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 flex-shrink-0">
             <Calendar className="w-4 h-4" />
-            <span>{new Date(createdAt).toLocaleDateString()}</span>
+            <span className="text-xs sm:text-sm">{new Date(createdAt).toLocaleDateString()}</span>
           </div>
         </div>
 

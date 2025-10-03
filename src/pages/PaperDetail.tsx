@@ -246,34 +246,34 @@ const PaperDetail: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <button
           onClick={() => navigate("/library")}
-          className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 mb-6 transition-colors"
+          className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 mb-4 sm:mb-6 transition-colors min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Discovery</span>
         </button>
 
         {/* Story Header */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6 relative overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 relative overflow-hidden">
           {/* Story Badge */}
-          <div className="flex items-center space-x-2 mb-4">
-            <div className="flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-bold rounded-full">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <div className="flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs sm:text-sm font-bold rounded-full">
               <Lightbulb className="w-4 h-4" />
               <span>Research Story</span>
             </div>
-            <div className="flex items-center space-x-1 text-sm text-gray-500">
+            <div className="flex items-center space-x-1 text-xs sm:text-sm text-gray-500">
               <Clock className="w-4 h-4" />
               <span>{estimatedReadTime} min read</span>
             </div>
           </div>
 
-          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
             {paper.title}
           </h1>
 
-          <div className="flex items-center space-x-6 text-sm text-gray-500 mb-8">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8">
             <div className="flex items-center space-x-2">
               <User className="w-4 h-4" />
               <span>{paper.authors?.join(", ") || "Unknown Author"}</span>
@@ -290,36 +290,36 @@ const PaperDetail: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex space-x-3 mb-8">
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
             <button 
               onClick={handleToggleBookmark}
               disabled={bookmarkLoading}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg transition-colors min-h-[44px] ${
                 isBookmarked 
                   ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
                   : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
               } disabled:opacity-50`}
             >
               <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
-              <span>{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
+              <span className="text-sm sm:text-base">{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
             </button>
             {paper?.createdBy && user?.id !== paper.createdBy && (
               <button 
                 onClick={handleToggleFollow}
                 disabled={followLoading}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg transition-colors min-h-[44px] ${
                   isFollowingAuthor 
                     ? 'bg-gray-600 text-white hover:bg-gray-700' 
                     : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                 } disabled:opacity-50`}
               >
                 <UserPlus className="w-4 h-4" />
-                <span>{isFollowingAuthor ? 'Following' : 'Follow Author'}</span>
+                <span className="text-sm sm:text-base">{isFollowingAuthor ? 'Following' : 'Follow Author'}</span>
               </button>
             )}
-            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors min-h-[44px]">
               <Share2 className="w-4 h-4" />
-              <span>Share</span>
+              <span className="text-sm sm:text-base">Share</span>
             </button>
           </div>
 
