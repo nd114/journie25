@@ -1,0 +1,55 @@
+Unchecked runtime.lastError: The message port closed before a response was received.Understand this error
+inject.js:22 pageshow:  PageTransitionEvent
+main.tsx:11 SW registered:  ServiceWorkerRegistration
+(index):1 Unchecked runtime.lastError: The message port closed before a response was received.Understand this error
+Navbar.tsx:121 Uncaught ReferenceError: LogIn is not defined
+    at Navbar (Navbar.tsx:121:18)
+    at renderWithHooks (chunk-YPSROYJW.js?v=6b634021:11566:26)
+    at mountIndeterminateComponent (chunk-YPSROYJW.js?v=6b634021:14944:21)
+    at beginWork (chunk-YPSROYJW.js?v=6b634021:15932:22)
+    at HTMLUnknownElement.callCallback2 (chunk-YPSROYJW.js?v=6b634021:3672:22)
+    at Object.invokeGuardedCallbackDev (chunk-YPSROYJW.js?v=6b634021:3697:24)
+    at invokeGuardedCallback (chunk-YPSROYJW.js?v=6b634021:3731:39)
+    at beginWork$1 (chunk-YPSROYJW.js?v=6b634021:19791:15)
+    at performUnitOfWork (chunk-YPSROYJW.js?v=6b634021:19224:20)
+    at workLoopConcurrent (chunk-YPSROYJW.js?v=6b634021:19215:13)Understand this error
+Navbar.tsx:121 Uncaught ReferenceError: LogIn is not defined
+    at Navbar (Navbar.tsx:121:18)
+    at renderWithHooks (chunk-YPSROYJW.js?v=6b634021:11566:26)
+    at mountIndeterminateComponent (chunk-YPSROYJW.js?v=6b634021:14944:21)
+    at beginWork (chunk-YPSROYJW.js?v=6b634021:15932:22)
+    at HTMLUnknownElement.callCallback2 (chunk-YPSROYJW.js?v=6b634021:3672:22)
+    at Object.invokeGuardedCallbackDev (chunk-YPSROYJW.js?v=6b634021:3697:24)
+    at invokeGuardedCallback (chunk-YPSROYJW.js?v=6b634021:3731:39)
+    at beginWork$1 (chunk-YPSROYJW.js?v=6b634021:19791:15)
+    at performUnitOfWork (chunk-YPSROYJW.js?v=6b634021:19224:20)
+    at workLoopSync (chunk-YPSROYJW.js?v=6b634021:19163:13)Understand this error
+chunk-YPSROYJW.js?v=6b634021:14050 The above error occurred in the <Navbar> component:
+
+    at Navbar (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/Navbar.tsx:26:28)
+    at div
+    at LibraryLanding (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/pages/LibraryLanding.tsx:138:47)
+    at RenderedRoute (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=6b634021:5631:26)
+    at Routes (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=6b634021:6509:3)
+    at Suspense
+    at AppRoutes
+    at Router (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=6b634021:6452:13)
+    at BrowserRouter (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=6b634021:9573:3)
+    at AuthProvider (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/contexts/AuthContext.tsx:22:32)
+    at ErrorBoundary (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/ErrorBoundary.tsx:7:8)
+    at App
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+logCapturedError @ chunk-YPSROYJW.js?v=6b634021:14050Understand this error
+ErrorBoundary.tsx:26 ErrorBoundary caught an error: ReferenceError: LogIn is not defined
+    at Navbar (Navbar.tsx:121:18)
+    at renderWithHooks (chunk-YPSROYJW.js?v=6b634021:11566:26)
+    at mountIndeterminateComponent (chunk-YPSROYJW.js?v=6b634021:14944:21)
+    at beginWork (chunk-YPSROYJW.js?v=6b634021:15932:22)
+    at beginWork$1 (chunk-YPSROYJW.js?v=6b634021:19779:22)
+    at performUnitOfWork (chunk-YPSROYJW.js?v=6b634021:19224:20)
+    at workLoopSync (chunk-YPSROYJW.js?v=6b634021:19163:13)
+    at renderRootSync (chunk-YPSROYJW.js?v=6b634021:19142:15)
+    at recoverFromConcurrentError (chunk-YPSROYJW.js?v=6b634021:18762:28)
+    at performConcurrentWorkOnRoot (chunk-YPSROYJW.js?v=6b634021:18710:30) Object
+componentDidCatch @ ErrorBoundary.tsx:26Understand this error
