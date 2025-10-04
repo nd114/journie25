@@ -35,6 +35,7 @@ export const useTheme = () => {
       return () => mediaQuery.removeEventListener('change', handleChange)
     } else {
       updateTheme(theme)
+      return undefined
     }
   }, [theme])
 

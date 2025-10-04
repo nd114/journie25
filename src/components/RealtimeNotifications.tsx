@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { Bell, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface Notification {
@@ -17,7 +17,6 @@ export const RealtimeNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
-  const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -69,8 +68,6 @@ export const RealtimeNotifications: React.FC = () => {
     websocket.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
-
-    setWs(websocket);
 
     return () => {
       if (websocket) {

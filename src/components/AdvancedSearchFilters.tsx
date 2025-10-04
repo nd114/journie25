@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { X, Calendar, User as UserIcon, Tag } from 'lucide-react';
+import { useState } from 'react';
+import { X, Calendar, User as UserIcon } from 'lucide-react';
 
 export interface SearchFilters {
   dateFrom?: string;

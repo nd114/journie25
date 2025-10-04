@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { BarChart3, TrendingUp, Users, Eye, Download, Calendar } from 'lucide-react';
 
@@ -23,7 +22,6 @@ interface DashboardData {
 }
 
 export default function AnalyticsDashboard() {
-  const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');

@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Filter,
   TrendingUp,
   Clock,
-  Users,
-  Eye,
   MessageCircle,
   Shuffle,
   Lightbulb,
@@ -93,7 +91,6 @@ const BrowsePapers: React.FC = () => {
         search: debouncedSearchQuery,
         field: selectedField,
         limit: 12,
-        offset: reset ? 0 : (page - 1) * 12,
         ...advancedFilters,
       });
       
@@ -165,7 +162,6 @@ const BrowsePapers: React.FC = () => {
         search: debouncedSearchQuery,
         field: selectedField,
         limit: 12,
-        offset: page * 12,
       });
 
       if (response.data && Array.isArray(response.data)) {

@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { Users, TrendingUp, MessageCircle, Plus, Search } from 'lucide-react';
+import { Users, Plus, Search } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
 

@@ -30,7 +30,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
   rank,
 }) => {
   // Extract key insight from abstract (first sentence or up to 120 chars)
-  const keyInsight = abstract.split('.')[0].substring(0, 120) + (abstract.length > 120 ? '...' : '');
+  const keyInsight = abstract ? ((abstract.split('.')[0] || '').substring(0, 120) + (abstract.length > 120 ? '...' : '')) : '';
 
   // Generate a "why this matters" snippet based on field
   const getWhyThisMatters = (field?: string) => {
@@ -48,7 +48,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
     return impacts[field as keyof typeof impacts] || 'Could open new research directions';
   };
 
-  const estimatedReadTime = Math.max(2, Math.ceil(abstract.length / 200));
+  const estimatedReadTime = Math.max(2, Math.ceil((abstract?.length || 0) / 200));
 
   return (
     <Link to={`/paper/${id}`} className="block group">

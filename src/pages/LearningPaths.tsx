@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { BookOpen, Clock, CheckCircle, Play, Users } from 'lucide-react';
+import { BookOpen, Clock, CheckCircle, Play } from 'lucide-react';
 
 interface LearningPath {
   id: number;
@@ -20,7 +20,6 @@ interface LearningPath {
 export function LearningPaths() {
   const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
 
   useEffect(() => {
     loadLearningPaths();
@@ -173,7 +172,7 @@ export function LearningPaths() {
 
                 {/* Steps */}
                 <div className="space-y-3">
-                  {path.steps.map((step, index) => (
+                  {path.steps.map((step) => (
                     <div key={step.id} className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200">
                       <div className="flex-shrink-0 mt-1">
                         {step.completed ? (
@@ -194,7 +193,6 @@ export function LearningPaths() {
                 </div>
 
                 <button
-                  onClick={() => setSelectedPath(path)}
                   className="w-full mt-4 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
                 >
                   <Play className="w-4 h-4" />

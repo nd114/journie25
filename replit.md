@@ -2,11 +2,27 @@
 
 ## Overview
 
-This is a collaborative research paper platform built as a full-stack web application. The platform allows researchers to publish papers, browse academic content, engage in discussions through comments, and manage their research workspace. It features user authentication, paper management with draft/published states, and a community-driven review system.
+This is a comprehensive collaborative research paper platform built as a full-stack web application. The platform allows researchers to publish papers, browse academic content, engage in discussions through comments, and manage their research workspace. It features user authentication, paper management with draft/published states, peer review workflow, real-time collaboration, analytics, and premium subscription tiers.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Updates (October 2025)
+
+**Phase 4-7 Implementation Completed:**
+- Advanced search with full-text search and filtering
+- Citation generator (APA, MLA, Chicago, BibTeX, EndNote)
+- Paper versioning with comparison and restore capabilities
+- Comprehensive peer review workflow system
+- Real-time collaborative editing via WebSocket
+- Analytics dashboard with metrics tracking
+- Performance optimizations (compression, caching, indexing)
+- Real-time notification system
+- PWA capabilities for mobile with offline support
+- Premium subscription tiers with Stripe integration
+- Institutional account management
+- Public REST API v1 with documentation
 
 ## System Architecture
 
@@ -14,138 +30,204 @@ Preferred communication style: Simple, everyday language.
 
 **Framework & Build Tools**
 - **React 18** with TypeScript for type-safe UI development
-- **Vite** as the build tool and development server, configured to run on port 5000
+- **Vite** as the build tool and development server
 - **React Router v7** for client-side routing and navigation
-- **Tailwind CSS** with custom configuration for styling, including dark mode support ('class' strategy)
+- **Tailwind CSS** with custom configuration for styling, including dark mode support
+- **PWA** enabled with service worker for offline capabilities
 
 **State Management**
 - Context API for global state (AuthContext for authentication)
-- Local component state with React hooks (useState, useEffect)
+- Local component state with React hooks
 - Custom hooks for reusable logic (useAuth, useTheme, useDatabase)
 
 **Key UI Components**
-- Navbar with authentication state awareness
-- PaperCard for displaying paper previews
+- Responsive Navbar with mobile hamburger menu
+- PaperCard optimized for mobile and desktop
 - CommentThread for nested discussion functionality
-- Rich text editor using Quill/React-Quill for paper content editing
-- Markdown rendering with react-markdown, rehype-raw, and remark-gfm for GitHub-flavored markdown
+- Rich text editor using Quill/React-Quill
+- Markdown rendering with react-markdown, rehype-raw, and remark-gfm
+- Real-time notification bell
+- Advanced search filters
+- Citation generator UI
 
 **Routing Structure**
 - Public routes: Landing page (/), Browse papers (/library), Paper detail (/paper/:id), Auth page (/auth)
 - Protected routes: Workspace dashboard (/workspace), Paper editor (/workspace/editor/:id?)
-- Route protection implemented via ProtectedRoute wrapper component checking user authentication state
+- Route protection via ProtectedRoute wrapper component
 
 ### Backend Architecture
 
 **Server Framework**
 - **Express.js** (v5.1.0) running on port 3000
+- **Compression** middleware for gzip response compression
 - CORS enabled for cross-origin requests
-- JSON body parsing middleware
-- JWT-based authentication with bearer token verification middleware
+- JWT-based authentication
+- **WebSocket Server** for real-time collaboration and notifications
 
 **API Design Pattern**
 - RESTful endpoints prefixed with `/api`
-- Vite dev server proxies `/api` requests to backend (localhost:3000)
+- Public API v1 endpoints prefixed with `/api/v1`
 - JWT token verification middleware for protected routes
+- API key authentication for public API access
+- Rate limiting (100 requests/hour per API key)
 - Standardized error handling and response format
 
-**Authentication Flow**
-- POST /api/auth/register - User registration with bcrypt password hashing (salt rounds: 10)
-- POST /api/auth/login - User login returning JWT token
-- JWT_SECRET environment variable required for token signing/verification
-- Token stored in localStorage on client, sent via Authorization header
+**Performance Optimizations**
+- In-memory caching with TTL for frequently accessed data
+- Gzip compression for all responses
+- Comprehensive database indexing
+- Lazy loading support
 
-**Data Access Layer**
-- Storage abstraction pattern via IStorage interface
-- DatabaseStorage class implementing all data operations
-- Methods organized by domain: Users, Papers, Comments, Reviews
-- Drizzle ORM for type-safe database queries
+**Real-time Features**
+- WebSocket server for collaborative editing
+- Real-time notifications
+- Active collaborator tracking
+- Section locking to prevent conflicts
 
 ### Data Storage
 
 **Database System**
-- **PostgreSQL** as primary database (configured via DATABASE_URL environment variable)
-- **Drizzle ORM** v0.44.5 with Neon serverless driver for database operations
-- Database schema defined in `/shared/schema.ts` for code sharing between frontend/backend
-- Migration files output to `/drizzle` directory
+- **PostgreSQL** via Neon serverless driver
+- **Drizzle ORM** v0.44.5 for type-safe database queries
+- Database schema defined in `/shared/schema.ts`
+- Comprehensive indexing on frequently queried fields
 
-**Schema Design**
-- **Users table**: Authentication (email/password), profile data (name, ORCID, affiliation, bio), timestamps
-- **Papers table**: Core content (title, abstract, content, PDF URL), metadata (authorIds, fieldIds as JSONB arrays), versioning, publication status, DOI
-- **Journals table**: Publication venues with slug-based URLs
-- **Fields table**: Research categories with self-referencing parent-child hierarchy
-- **Comments table**: Discussion threads with parent-child relationships
-- **Reviews table**: Peer review functionality
-- **Citations table**: Paper citation tracking
+**Core Tables**
+- users, papers, comments, reviews, citations
+- paper_versions, paper_insights, paper_views, paper_analytics
+- peer_review_assignments, peer_review_submissions
+- notifications, notification_preferences
+- subscriptions, payment_history
+- institutions, institution_members, institution_invites
+- api_keys, api_usage
+- section_locks, paper_drafts
+- user_follows, user_bookmarks, user_analytics
 
 **Data Relationships**
-- Many-to-many relationships via JSONB arrays (papers-authors, papers-fields)
-- Self-referencing hierarchy for research fields (parentId)
-- One-to-many relationships (papers-comments, papers-reviews)
+- Many-to-many relationships via JSONB arrays
+- Self-referencing hierarchy for research fields
+- One-to-many relationships with proper foreign keys
 
 ### Authentication & Authorization
 
 **Authentication Mechanism**
 - JWT (jsonwebtoken v9.0.2) for stateless authentication
 - Bcrypt (v6.0.0) for password hashing
-- Token-based session management (no server-side sessions)
-- Client stores token in localStorage, includes in Authorization header
+- Token stored in localStorage, sent via Authorization header
+- API key authentication for public API
 
-**Authorization Pattern**
-- authenticateToken middleware extracts and verifies JWT from Authorization header
-- Decoded user info attached to request object for downstream handlers
-- 401 status for missing tokens, 403 for invalid tokens
-- Frontend ProtectedRoute component prevents unauthorized access to protected pages
+**Authorization Patterns**
+- authenticateToken middleware for user endpoints
+- authenticateApiKey middleware for public API
+- requirePremium middleware for subscription-gated features
+- Role-based access control for institutional accounts
 
-**User Management**
-- User lookup by ID and email
-- User creation with hashed passwords
-- User profile updates (partial updates supported)
-- No password reset/forgot password mechanism currently implemented
+## Advanced Features
+
+### Search & Discovery
+- **Advanced Search**: Full-text search across title, abstract, content, authors
+- **Filtering**: By date range, author, research field, keywords
+- **Sorting**: By relevance, date, views, citations
+- **Pagination**: Efficient result pagination
+
+### Citation Management
+- **Citation Generation**: APA, MLA, Chicago, BibTeX, EndNote formats
+- **Citation Tracking**: Track citations between papers
+- **Export**: Download citations in various formats
+
+### Paper Versioning
+- **Version Tracking**: Automatic versioning on major edits
+- **Version Comparison**: Compare differences between versions
+- **Version Restore**: Restore paper to any previous version
+
+### Peer Review Workflow
+- **Review Assignment**: Assign reviewers to papers
+- **Blind Review**: Option to hide author information
+- **Rating System**: 1-5 star ratings with recommendations
+- **Review Status**: Tracking (pending, in_review, reviewed, accepted, rejected)
+
+### Collaborative Editing
+- **Real-time Sync**: WebSocket-based content synchronization
+- **Active Collaborators**: See who's editing
+- **Section Locking**: Prevent simultaneous edits
+- **Auto-save Drafts**: Periodic draft saving
+
+### Analytics
+- **Paper Analytics**: Views, citations, downloads, engagement metrics
+- **User Analytics**: Publication metrics, h-index, impact score
+- **Trending Analysis**: Trending papers, topics, and authors
+- **Timeline Analytics**: Historical performance tracking
+
+### Notifications
+- **Real-time Notifications**: WebSocket-based instant delivery
+- **Email Notifications**: Configurable email alerts
+- **Notification Types**: Comments, follows, citations, reviews, publications
+- **Preferences**: User-customizable notification settings
+
+### Premium Features (Stripe Integration)
+- **FREE**: 5 papers max, basic analytics
+- **PRO ($9.99/month)**: Unlimited papers, advanced analytics, API access
+- **INSTITUTIONAL ($49.99/month)**: Team features, custom branding, dedicated support
+- **Billing Portal**: Self-service subscription management
+
+### Institutional Accounts
+- **Institution Management**: Create and manage universities/labs
+- **Team Collaboration**: Multi-user institutional accounts
+- **Role-based Access**: Admin and member roles
+- **Aggregate Analytics**: Institution-wide metrics
+- **Member Invitations**: Email-based invitation system
+
+### Public REST API
+- **API Key System**: Secure API key generation and management
+- **Rate Limiting**: 100 requests/hour per key
+- **Usage Tracking**: Detailed usage statistics
+- **Documentation**: OpenAPI 3.0 specification at /api/docs
+- **Endpoints**: Papers, users, search with pagination
+
+### PWA Capabilities
+- **Installable**: Can be installed on mobile devices
+- **Offline Support**: Service worker caching
+- **Background Sync**: Draft synchronization
+- **Responsive Design**: Optimized for 320px-1920px screens
 
 ## External Dependencies
 
 ### Third-Party Services
-
-**Database Provider**
 - **Neon** serverless PostgreSQL (@neondatabase/serverless v1.0.1)
-- Connection via DATABASE_URL environment variable
-- HTTP-based SQL client for serverless environments
-
-**Potential Future Integrations**
-- **Supabase** client library included (@supabase/supabase-js v2.52.1) but not actively used
-- Could provide authentication, storage, or realtime features
+- **Stripe** payment processing (stripe v19.0.0)
 
 ### Development Tools
-
-**Database Management**
-- Drizzle Kit v0.31.5 for schema migrations and database pushes
+- Drizzle Kit v0.31.5 for database management
+- tsx v4.20.6 for TypeScript backend
 - Command: `npm run db:push` to sync schema to database
-- Alternative SQLite support via better-sqlite3 (types included but not primary database)
-
-**Development Server**
-- tsx v4.20.6 for running TypeScript backend with watch mode
-- Command: `npm run server` for backend development
-- Vite dev server with HMR for frontend development
 
 ### UI Libraries
-
-**Icons & Rich Media**
-- Lucide React v0.263.1 for consistent icon set
+- Lucide React v0.263.1 for icons
 - Quill v2.0.3 and react-quill v2.0.0 for WYSIWYG editing
-- React Markdown with extensions for content rendering
+- React Markdown with extensions
 
-**WebSocket Support**
-- ws v8.18.3 for real-time communication capabilities (types included, implementation status unclear)
+### WebSocket Support
+- ws v8.18.3 for real-time features
+- WebSocket server integrated with Express
 
-### Build & Deployment
+## Build & Deployment
 
 **Environment Requirements**
-- Node.js v20+ (per @types/node)
-- DATABASE_URL environment variable (required, throws error if missing)
-- JWT_SECRET environment variable (required for authentication)
+- Node.js v20+
+- DATABASE_URL (required)
+- JWT_SECRET (required for authentication)
+- STRIPE_SECRET_KEY (required for payments)
+- STRIPE_PRO_PRICE_ID (required for PRO tier)
+- STRIPE_INSTITUTIONAL_PRICE_ID (required for INSTITUTIONAL tier)
+- STRIPE_WEBHOOK_SECRET (required for webhooks)
 
 **Build Process**
-- TypeScript compilation followed by Vite build
-- Separate tsconfig files for app (tsconfig.json) and tooling (tsconfig.node.json)
-- Output optimized for modern browsers (ES2020 target)
+- Development: `npm run dev` (frontend), `npm run server` (backend)
+- Production Build: `npm run build`
+- Production Start: `npm start`
+- Database Sync: `npm run db:push`
+
+**Deployment Configuration**
+- Target: VM (for WebSocket support and state management)
+- Build: `npm run build` (creates production assets)
+- Run: `npm start` (production server on port 3000)

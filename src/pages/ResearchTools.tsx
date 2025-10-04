@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { Search, Calculator, FileText, BarChart3, Zap, Lock } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
@@ -77,8 +77,6 @@ export function ResearchTools() {
       setProcessingTool(false);
     }
   };
-
-  const categories = ['All', ...Array.from(new Set(tools.map(t => t.category)))];
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -52,7 +52,6 @@ const PaperDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
-  const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
@@ -294,12 +293,11 @@ const PaperDetail: React.FC = () => {
           <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
             <button 
               onClick={handleToggleBookmark}
-              disabled={bookmarkLoading}
               className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg transition-colors min-h-[44px] ${
                 isBookmarked 
                   ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
                   : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-              } disabled:opacity-50`}
+              }`}
             >
               <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
               <span className="text-sm sm:text-base">{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>

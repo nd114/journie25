@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, ReactNode } from 'react';
+import { useState, useRef, ReactNode } from 'react';
 
 interface VirtualListProps<T> {
   items: T[];
