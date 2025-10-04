@@ -6,10 +6,10 @@ import {
   Users,
   Sparkles,
   TrendingUp,
-  Eye
+  Eye,
   MessageCircle,
   Zap
-  } from "lucide-react";
+} from "lucide-react";
 
 const CommunityStats: React.FC = () => {
   const [stats, setStats] = useState({
@@ -315,83 +315,6 @@ const LibraryLanding: React.FC = () => {
           <CommunityStats />
         </div>
       </div>
-
-      {/* Trending Research Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Trending Research</h2>
-            <Link to="/trending" className="text-blue-600 hover:text-blue-800 font-medium">
-              View All →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                title: "AI-Driven Climate Prediction Models",
-                field: "Climate Science",
-                views: "15.2K",
-                trend: "+23%"
-              },
-              {
-                title: "Quantum Error Correction Breakthrough",
-                field: "Quantum Physics",
-                views: "12.5K",
-                trend: "+18%"
-              },
-              {
-                title: "CRISPR Gene Therapy Applications",
-                field: "Biotechnology",
-                views: "9.8K",
-                trend: "+31%"
-              }
-            ].map((paper, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                    {paper.field}
-                  </span>
-                  <span className="text-green-600 text-sm font-medium">{paper.trend}</span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-3">{paper.title}</h3>
-                <div className="flex justify-between items-center text-sm text-gray-500">
-                  <span>{paper.views} views</span>
-                  <span>Trending</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Access Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Quick Access</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Link to="/browse" className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="text-3xl mb-3">📖</div>
-              <h3 className="text-xl font-semibold mb-2">Browse Papers</h3>
-              <p className="text-gray-600">Explore our research collection</p>
-            </Link>
-            <Link to="/communities" className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="text-3xl mb-3">👥</div>
-              <h3 className="text-xl font-semibold mb-2">Communities</h3>
-              <p className="text-gray-600">Connect with researchers</p>
-            </Link>
-            <Link to="/learning-paths" className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="text-3xl mb-3">🎯</div>
-              <h3 className="text-xl font-semibold mb-2">Learning Paths</h3>
-              <p className="text-gray-600">Structured learning journeys</p>
-            </Link>
-            <Link to="/tools" className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="text-3xl mb-3">🔧</div>
-              <h3 className="text-xl font-semibold mb-2">Research Tools</h3>
-              <p className="text-gray-600">Boost your productivity</p>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* Simplified Footer */}
       <footer className="bg-gray-50 mt-20">
