@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { apiClient } from '../services/apiClient';
 
 interface User {
@@ -23,8 +23,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
+    // Prevent double initialization in strict mode
+    if (initialized.current) return;
+    initialized.current = true;
+
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('auth_token');
@@ -103,6 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    // More helpful error message
+    console.error('useAuth called outside of AuthProvider. Check your component tree.');
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

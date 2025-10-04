@@ -109,12 +109,14 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </AuthProvider>
-    </ErrorBoundary>
+    <React.StrictMode>
+      <ErrorBoundary>
+        <AuthProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </AuthProvider>
+      </ErrorBoundary>
+    </React.StrictMode>
   );
 }

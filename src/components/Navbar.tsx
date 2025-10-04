@@ -5,9 +5,17 @@ import { useAuth } from "../contexts/AuthContext";
 import { RealtimeNotifications } from "./RealtimeNotifications";
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const auth = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Safety check - should never happen with proper context setup
+  if (!auth) {
+    console.error('Navbar rendered outside AuthProvider');
+    return null;
+  }
+
+  const { user, logout } = auth;
 
   const handleLogout = () => {
     logout();
