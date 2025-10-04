@@ -7,6 +7,52 @@ import {
   Sparkles,
   TrendingUp,
   Eye,
+
+
+const CommunityStats: React.FC = () => {
+  const [stats, setStats] = useState({
+    researchers: 0,
+    papers: 0,
+    discussions: 0,
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const response = await fetch('/api/analytics/dashboard');
+        if (response.ok) {
+          const data = await response.json();
+          setStats({
+            researchers: data.totalUsers || 0,
+            papers: data.totalPapers || 0,
+            discussions: data.totalComments || 0,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
+    };
+    loadStats();
+  }, []);
+
+  return (
+    <div className="flex justify-center space-x-8 text-sm">
+      <div>
+        <div className="text-2xl font-bold">{stats.researchers.toLocaleString()}+</div>
+        <div className="opacity-80">Active Researchers</div>
+      </div>
+      <div>
+        <div className="text-2xl font-bold">{stats.papers.toLocaleString()}+</div>
+        <div className="opacity-80">Papers Published</div>
+      </div>
+      <div>
+        <div className="text-2xl font-bold">{stats.discussions.toLocaleString()}+</div>
+        <div className="opacity-80">Discussions Started</div>
+      </div>
+    </div>
+  );
+};
+
   MessageCircle,
   Zap,
 } from "lucide-react";
@@ -266,20 +312,7 @@ const LibraryLanding: React.FC = () => {
             Every paper tells a story. Every reader brings a perspective. What
             will you discover today?
           </p>
-          <div className="flex justify-center space-x-8 text-sm">
-            <div>
-              <div className="text-2xl font-bold">2.4k+</div>
-              <div className="opacity-80">Active Researchers</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">850+</div>
-              <div className="opacity-80">Papers Published</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">15k+</div>
-              <div className="opacity-80">Discussions Started</div>
-            </div>
-          </div>
+          <CommunityStats />
         </div>
       </div>
 
