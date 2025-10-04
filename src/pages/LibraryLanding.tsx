@@ -6,8 +6,10 @@ import {
   Users,
   Sparkles,
   TrendingUp,
-  Eye,
-
+  Eye
+  MessageCircle,
+  Zap
+  } from "lucide-react";
 
 const CommunityStats: React.FC = () => {
   const [stats, setStats] = useState({
@@ -53,9 +55,7 @@ const CommunityStats: React.FC = () => {
   );
 };
 
-  MessageCircle,
-  Zap,
-} from "lucide-react";
+  
 import Navbar from "../components/Navbar";
 import { apiClient } from "../services/apiClient";
 
