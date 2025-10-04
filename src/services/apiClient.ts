@@ -37,21 +37,22 @@ class ApiClient {
       let data;
       if (hasJsonContent) {
         const text = await response.text();
-        if (text) {
+        if (text && text.trim()) {
           try {
             data = JSON.parse(text);
           } catch (parseError) {
-            console.error('JSON parse error:', parseError);
+            console.error('JSON parse error:', parseError, 'Response:', text.substring(0, 200));
             return { error: 'Invalid response format from server' };
           }
         } else {
-          // Empty JSON response
+          // Empty response with JSON content-type
           data = null;
         }
       } else {
         // Non-JSON response - read as text for error reporting
         const text = await response.text();
         if (!response.ok) {
+          console.error('Non-JSON error response:', text.substring(0, 200));
           return { error: text || `Request failed with status ${response.status}: ${response.statusText}` };
         }
         data = null;

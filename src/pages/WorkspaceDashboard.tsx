@@ -25,13 +25,32 @@ const WorkspaceDashboard: React.FC = () => {
 
   const loadPapers = async () => {
     setLoading(true);
-    const response = await apiClient.getPapers({});
-    if (response.data) {
-      // Handle paginated response structure
-      const papersArray = Array.isArray(response.data) ? response.data : response.data.papers || [];
-      setPapers(papersArray);
+    try {
+      const response = await apiClient.getPapers({});
+      if (response.error) {
+        console.error('Error loading papers:', response.error);
+        setPapers([]);
+      } else if (response.data) {
+        // Handle various response structures
+        let papersArray: Paper[] = [];
+        if (Array.isArray(response.data)) {
+          papersArray = response.data;
+        } else if (response.data.papers && Array.isArray(response.data.papers)) {
+          papersArray = response.data.papers;
+        } else if (typeof response.data === 'object') {
+          // Wrap single object in array
+          papersArray = [response.data];
+        }
+        setPapers(papersArray);
+      } else {
+        setPapers([]);
+      }
+    } catch (error) {
+      console.error('Exception loading papers:', error);
+      setPapers([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleDelete = async (id: number) => {

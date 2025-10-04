@@ -37,16 +37,27 @@ const LibraryLanding: React.FC = () => {
   }, []);
 
   const loadTrendingPapers = async () => {
-    const response = await apiClient.getPapers({ limit: 3 });
-    if (response.data && Array.isArray(response.data)) {
-      setTrendingPapers(
-        response.data.map((paper) => ({
-          ...paper,
-          readCount: Math.floor(Math.random() * 150) + 20,
-          commentCount: Math.floor(Math.random() * 25) + 1,
-        })),
-      );
-    } else {
+    try {
+      const response = await apiClient.getPapers({ limit: 3 });
+      if (response.error) {
+        console.error('Error loading trending papers:', response.error);
+        setTrendingPapers([]);
+        return;
+      }
+      
+      if (response.data && Array.isArray(response.data)) {
+        setTrendingPapers(
+          response.data.map((paper) => ({
+            ...paper,
+            readCount: Math.floor(Math.random() * 150) + 20,
+            commentCount: Math.floor(Math.random() * 25) + 1,
+          })),
+        );
+      } else {
+        setTrendingPapers([]);
+      }
+    } catch (error) {
+      console.error('Exception loading trending papers:', error);
       setTrendingPapers([]);
     }
   };

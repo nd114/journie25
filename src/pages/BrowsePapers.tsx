@@ -42,51 +42,56 @@ const BrowsePapers: React.FC = () => {
 
   const loadPapers = async () => {
     setLoading(true);
-    const response = await apiClient.getPapers({
-      search: searchQuery,
-      field: selectedField,
-    });
-    
-    if (response.error) {
-      console.error('Error loading papers:', response.error);
-      setPapers([]);
-      setLoading(false);
-      return;
-    }
-    
-    if (response.data && Array.isArray(response.data)) {
-      // Add mock engagement data and sort
-      const enrichedPapers = response.data.map((paper) => ({
-        ...paper,
-        readCount: Math.floor(Math.random() * 200) + 10,
-        commentCount: Math.floor(Math.random() * 30) + 1,
-      }));
-
-      // Sort based on selected criteria
-      let sortedPapers = [...enrichedPapers];
-      switch (sortBy) {
-        case "trending":
-          sortedPapers.sort((a, b) => (b.readCount || 0) - (a.readCount || 0));
-          break;
-        case "discussed":
-          sortedPapers.sort(
-            (a, b) => (b.commentCount || 0) - (a.commentCount || 0),
-          );
-          break;
-        case "latest":
-        default:
-          sortedPapers.sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-          );
-          break;
+    try {
+      const response = await apiClient.getPapers({
+        search: searchQuery,
+        field: selectedField,
+      });
+      
+      if (response.error) {
+        console.error('Error loading papers:', response.error);
+        setPapers([]);
+        return;
       }
+      
+      if (response.data && Array.isArray(response.data)) {
+        // Add mock engagement data and sort
+        const enrichedPapers = response.data.map((paper) => ({
+          ...paper,
+          readCount: paper.readCount || Math.floor(Math.random() * 200) + 10,
+          commentCount: paper.commentCount || Math.floor(Math.random() * 30) + 1,
+        }));
 
-      setPapers(sortedPapers);
-    } else {
+        // Sort based on selected criteria
+        let sortedPapers = [...enrichedPapers];
+        switch (sortBy) {
+          case "trending":
+            sortedPapers.sort((a, b) => (b.readCount || 0) - (a.readCount || 0));
+            break;
+          case "discussed":
+            sortedPapers.sort(
+              (a, b) => (b.commentCount || 0) - (a.commentCount || 0),
+            );
+            break;
+          case "latest":
+          default:
+            sortedPapers.sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+            );
+            break;
+        }
+
+        setPapers(sortedPapers);
+      } else {
+        setPapers([]);
+      }
+    } catch (error) {
+      console.error('Exception loading papers:', error);
       setPapers([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSurpriseMe = () => {

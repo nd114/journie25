@@ -66,8 +66,15 @@ self.addEventListener('fetch', (event) => {
 });
 
 function isValidCacheRequest(request) {
-  const url = new URL(request.url);
-  return url.protocol === 'http:' || url.protocol === 'https:';
+  try {
+    const url = new URL(request.url);
+    // Only cache http/https URLs from our domain
+    return (url.protocol === 'http:' || url.protocol === 'https:') && 
+           !url.href.includes('chrome-extension://') &&
+           !url.href.includes('extension://');
+  } catch {
+    return false;
+  }
 }
 
 async function networkFirstStrategy(request) {

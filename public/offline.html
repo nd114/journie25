@@ -58,7 +58,9 @@
     <div class="icon">📡</div>
     <h1>You're Offline</h1>
     <p>It looks like you've lost your internet connection. Please check your network and try again.</p>
-    <button onclick="window.location.reload()">Retry</button>
+    <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 1rem;">Some cached content may still be available.</p>
+    <button onclick="window.location.reload()">Retry Connection</button>
+    <button onclick="history.back()" style="margin-left: 10px; background: transparent; border: 2px solid white;">Go Back</button>
   </div>
 </body>
 </html>

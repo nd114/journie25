@@ -1,4 +1,2 @@
-This is a placeholder for the 512x512 PWA icon.
-In production, replace this with an actual PNG icon.
-This is a placeholder. Replace with actual 512x512 PNG icon file.
-The icon should be named 'icon-512.png' (remove the .txt extension).
+
+<!-- This file will be deleted and replaced with actual icon -->

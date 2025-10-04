@@ -50,15 +50,15 @@ const UserProfile: React.FC = () => {
 
         if (followersRes.ok) {
           const followers = await followersRes.json();
-          setFollowersCount(followers.length);
+          setFollowersCount(Array.isArray(followers) ? followers.length : 0);
         }
 
         if (followingRes.ok) {
           const following = await followingRes.json();
-          setFollowingCount(following.length);
+          setFollowingCount(Array.isArray(following) ? following.length : 0);
         }
 
-        if (bookmarksRes.data) {
+        if (bookmarksRes.data && Array.isArray(bookmarksRes.data)) {
           setBookmarks(bookmarksRes.data);
         }
       }
