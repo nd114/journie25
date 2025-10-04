@@ -38,16 +38,16 @@ const LibraryLanding: React.FC = () => {
 
   const loadTrendingPapers = async () => {
     const response = await apiClient.getPapers({ limit: 3 });
-    if (response.data) {
-      // Handle paginated response structure
-      const papersArray = Array.isArray(response.data) ? response.data : response.data.papers || [];
+    if (response.data && Array.isArray(response.data)) {
       setTrendingPapers(
-        papersArray.map((paper) => ({
+        response.data.map((paper) => ({
           ...paper,
           readCount: Math.floor(Math.random() * 150) + 20,
           commentCount: Math.floor(Math.random() * 25) + 1,
         })),
       );
+    } else {
+      setTrendingPapers([]);
     }
   };
 

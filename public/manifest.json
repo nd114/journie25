@@ -8,29 +8,5 @@
   "theme_color": "#4f46e5",
   "orientation": "portrait-primary",
   "categories": ["education", "research", "science"],
-  "icons": [],
-  "screenshots": [
-    {
-      "src": "/screenshot-mobile.png",
-      "sizes": "540x720",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Browse Papers",
-      "short_name": "Browse",
-      "description": "Explore research papers",
-      "url": "/browse",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Trending Research",
-      "short_name": "Trending",
-      "description": "View trending research",
-      "url": "/trending",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    }
-  ]
+  "icons": []
 }

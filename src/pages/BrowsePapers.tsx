@@ -46,7 +46,15 @@ const BrowsePapers: React.FC = () => {
       search: searchQuery,
       field: selectedField,
     });
-    if (response.data) {
+    
+    if (response.error) {
+      console.error('Error loading papers:', response.error);
+      setPapers([]);
+      setLoading(false);
+      return;
+    }
+    
+    if (response.data && Array.isArray(response.data)) {
       // Add mock engagement data and sort
       const enrichedPapers = response.data.map((paper) => ({
         ...paper,
@@ -75,6 +83,8 @@ const BrowsePapers: React.FC = () => {
       }
 
       setPapers(sortedPapers);
+    } else {
+      setPapers([]);
     }
     setLoading(false);
   };

@@ -111,13 +111,28 @@ class ApiClient {
     this.setToken(null);
   }
 
-  async getPapers(filters?: { field?: string; search?: string }) {
+  async getPapers(filters?: { field?: string; search?: string; limit?: number }) {
     const params = new URLSearchParams();
     if (filters?.field) params.append('field', filters.field);
     if (filters?.search) params.append('search', filters.search);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
     
     const query = params.toString() ? `?${params.toString()}` : '';
-    return this.request<any[]>(`/papers${query}`);
+    const response = await this.request<any>(`/papers${query}`);
+    
+    // Ensure we always return an array structure
+    if (response.data) {
+      if (Array.isArray(response.data)) {
+        return { data: response.data, error: response.error };
+      }
+      if (response.data.papers && Array.isArray(response.data.papers)) {
+        return { data: response.data.papers, error: response.error };
+      }
+      // If data exists but is neither array nor has papers property, wrap it
+      return { data: [], error: response.error };
+    }
+    
+    return { data: [], error: response.error };
   }
 
   async advancedSearch(filters: {

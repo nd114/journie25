@@ -65,13 +65,20 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
+function isValidCacheRequest(request) {
+  const url = new URL(request.url);
+  return url.protocol === 'http:' || url.protocol === 'https:';
+}
+
 async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
 
-    if (networkResponse.ok) {
+    if (networkResponse.ok && isValidCacheRequest(request)) {
       const cache = await caches.open(API_CACHE);
-      cache.put(request, networkResponse.clone());
+      cache.put(request, networkResponse.clone()).catch(err => {
+        console.warn('[SW] Failed to cache:', request.url, err);
+      });
     }
 
     return networkResponse;
@@ -109,9 +116,11 @@ async function cacheFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
 
-    if (networkResponse.ok) {
+    if (networkResponse.ok && isValidCacheRequest(request)) {
       const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, networkResponse.clone());
+      cache.put(request, networkResponse.clone()).catch(err => {
+        console.warn('[SW] Failed to cache:', request.url, err);
+      });
     }
 
     return networkResponse;
@@ -128,8 +137,10 @@ async function staleWhileRevalidateStrategy(request) {
   const cachedResponse = await caches.match(request);
 
   const fetchPromise = fetch(request).then((networkResponse) => {
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
+    if (networkResponse.ok && isValidCacheRequest(request)) {
+      cache.put(request, networkResponse.clone()).catch(err => {
+        console.warn('[SW] Failed to cache:', request.url, err);
+      });
     }
     return networkResponse;
   }).catch(() => cachedResponse);

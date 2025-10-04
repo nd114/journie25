@@ -76,7 +76,7 @@ const WorkspaceDashboard: React.FC = () => {
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
           >
-            All Papers ({papers.length})
+            All Papers ({Array.isArray(papers) ? papers.length : 0})
           </button>
           <button
             onClick={() => setFilter('draft')}
@@ -86,7 +86,7 @@ const WorkspaceDashboard: React.FC = () => {
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
           >
-            Drafts ({papers.filter(p => p.status === 'draft').length})
+            Drafts ({Array.isArray(papers) ? papers.filter(p => p.status === 'draft').length : 0})
           </button>
           <button
             onClick={() => setFilter('published')}
@@ -96,7 +96,7 @@ const WorkspaceDashboard: React.FC = () => {
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
           >
-            Published ({papers.filter(p => p.status === 'published').length})
+            Published ({Array.isArray(papers) ? papers.filter(p => p.status === 'published').length : 0})
           </button>
         </div>
 
