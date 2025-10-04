@@ -1,0 +1,43 @@
+client.ts:79 WebSocket connection to 'wss://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/?token=dR93cxmA9yy1' failed: 
+
+(index):1 Unchecked runtime.lastError: The message port closed before a response was received.
+AuthContext.tsx:106 Uncaught Error: useAuth must be used within an AuthProvider
+    at useAuth (AuthContext.tsx:106:11)
+    at Navbar (Navbar.tsx:8:28)
+inject.js:22 pageshow:  
+PageTransitionEvent
+main.tsx:11 SW registered:  
+ServiceWorkerRegistration
+(index):1 Unchecked runtime.lastError: The message port closed before a response was received.
+AuthContext.tsx:106 Uncaught Error: useAuth must be used within an AuthProvider
+    at useAuth (AuthContext.tsx:106:11)
+    at Navbar (Navbar.tsx:8:28)
+chunk-YPSROYJW.js?v=cf5dc93f:14050 The above error occurred in the <Navbar> component:
+
+    at Navbar (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/Navbar.tsx:26:28)
+    at div
+    at LibraryLanding (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/pages/LibraryLanding.tsx:138:47)
+    at RenderedRoute (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=7af8f374:5631:26)
+    at Routes (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=7af8f374:6509:3)
+    at Suspense
+    at AppRoutes
+    at Router (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=7af8f374:6452:13)
+    at BrowserRouter (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=7af8f374:9573:3)
+    at AuthProvider (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/contexts/AuthContext.tsx:22:32)
+    at ErrorBoundary (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/ErrorBoundary.tsx:7:8)
+    at App
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+ErrorBoundary.tsx:26 ErrorBoundary caught an error: Error: useAuth must be used within an AuthProvider
+    at useAuth (AuthContext.tsx:106:11)
+    at Navbar (Navbar.tsx:8:28)
+ 
+Object
+client.ts:79 WebSocket connection to 'wss://localhost:5000/?token=dR93cxmA9yy1' failed: 
+client.ts:49 [vite] failed to connect to websocket.
+your current setup:
+  (browser) 017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/ <--[HTTP]--> localhost:5000/ (server)
+  (browser) 017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev:/ <--[WebSocket (failing)]--> localhost:5000/ (server)
+Check out your Vite / network configuration and https://vitejs.dev/config/server-options.html#server-hmr .
+﻿
+

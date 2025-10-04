@@ -1,0 +1,58 @@
+chunk-23MOMCFD.js?v=cf5dc93f:162 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+printWarning @ chunk-23MOMCFD.js?v=cf5dc93f:162Understand this error
+chunk-23MOMCFD.js?v=cf5dc93f:1092 Uncaught TypeError: Cannot read properties of null (reading 'useState')
+    at useState (chunk-23MOMCFD.js?v=cf5dc93f:1092:29)
+    at AuthProvider (AuthContext.tsx:23:27)
+    at renderWithHooks (chunk-YPSROYJW.js?v=14ad267d:11566:26)
+    at mountIndeterminateComponent (chunk-YPSROYJW.js?v=14ad267d:14944:21)
+    at beginWork (chunk-YPSROYJW.js?v=14ad267d:15932:22)
+    at HTMLUnknownElement.callCallback2 (chunk-YPSROYJW.js?v=14ad267d:3672:22)
+    at Object.invokeGuardedCallbackDev (chunk-YPSROYJW.js?v=14ad267d:3697:24)
+    at invokeGuardedCallback (chunk-YPSROYJW.js?v=14ad267d:3731:39)
+    at beginWork$1 (chunk-YPSROYJW.js?v=14ad267d:19791:15)
+    at performUnitOfWork (chunk-YPSROYJW.js?v=14ad267d:19224:20)Understand this error
+2chunk-23MOMCFD.js?v=cf5dc93f:162 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+printWarning @ chunk-23MOMCFD.js?v=cf5dc93f:162Understand this error
+chunk-23MOMCFD.js?v=cf5dc93f:1092 Uncaught TypeError: Cannot read properties of null (reading 'useState')
+    at useState (chunk-23MOMCFD.js?v=cf5dc93f:1092:29)
+    at AuthProvider (AuthContext.tsx:23:27)
+    at renderWithHooks (chunk-YPSROYJW.js?v=14ad267d:11566:26)
+    at mountIndeterminateComponent (chunk-YPSROYJW.js?v=14ad267d:14944:21)
+    at beginWork (chunk-YPSROYJW.js?v=14ad267d:15932:22)
+    at HTMLUnknownElement.callCallback2 (chunk-YPSROYJW.js?v=14ad267d:3672:22)
+    at Object.invokeGuardedCallbackDev (chunk-YPSROYJW.js?v=14ad267d:3697:24)
+    at invokeGuardedCallback (chunk-YPSROYJW.js?v=14ad267d:3731:39)
+    at beginWork$1 (chunk-YPSROYJW.js?v=14ad267d:19791:15)
+    at performUnitOfWork (chunk-YPSROYJW.js?v=14ad267d:19224:20)Understand this error
+chunk-YPSROYJW.js?v=14ad267d:14050 The above error occurred in the <AuthProvider> component:
+
+    at AuthProvider (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/contexts/AuthContext.tsx:22:32)
+    at ErrorBoundary (https://017ef337-19b4-4739-bfe6-83da09367d23-00-2577362ltp7i.kirk.replit.dev/src/components/ErrorBoundary.tsx:7:8)
+    at App
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+logCapturedError @ chunk-YPSROYJW.js?v=14ad267d:14050Understand this error
+ErrorBoundary.tsx:26 ErrorBoundary caught an error: TypeError: Cannot read properties of null (reading 'useState')
+    at useState (chunk-23MOMCFD.js?v=cf5dc93f:1092:29)
+    at AuthProvider (AuthContext.tsx:23:27)
+    at renderWithHooks (chunk-YPSROYJW.js?v=14ad267d:11566:26)
+    at mountIndeterminateComponent (chunk-YPSROYJW.js?v=14ad267d:14944:21)
+    at beginWork (chunk-YPSROYJW.js?v=14ad267d:15932:22)
+    at beginWork$1 (chunk-YPSROYJW.js?v=14ad267d:19779:22)
+    at performUnitOfWork (chunk-YPSROYJW.js?v=14ad267d:19224:20)
+    at workLoopSync (chunk-YPSROYJW.js?v=14ad267d:19163:13)
+    at renderRootSync (chunk-YPSROYJW.js?v=14ad267d:19142:15)
+    at recoverFromConcurrentError (chunk-YPSROYJW.js?v=14ad267d:18762:28) Object
+componentDidCatch @ ErrorBoundary.tsx:26Understand this error
+(index):1 Unchecked runtime.lastError: The message port closed before a response was received.Understand this error
+inject.js:22 pageshow:  PageTransitionEvent
+main.tsx:11 SW registered:  ServiceWorkerRegistration
+(index):1 Unchecked runtime.lastError: The message port closed before a response was received.Understand this error
