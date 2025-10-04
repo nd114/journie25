@@ -55,7 +55,7 @@ const CommunityStats: React.FC = () => {
   );
 };
 
-  
+
 import Navbar from "../components/Navbar";
 import { apiClient } from "../services/apiClient";
 
@@ -90,7 +90,7 @@ const LibraryLanding: React.FC = () => {
         setTrendingPapers([]);
         return;
       }
-      
+
       if (response.data && Array.isArray(response.data)) {
         setTrendingPapers(
           response.data.map((paper) => ({

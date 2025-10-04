@@ -112,6 +112,16 @@ const PaperCard: React.FC<PaperCardProps> = ({
           </div>
         )}
 
+        {/* Cover Image with Lazy Loading */}
+        {(paper as any).coverImage && (
+          <img 
+            src={(paper as any).coverImage} 
+            alt={`Cover for ${title}`}
+            loading="lazy"
+            className="w-full h-48 object-cover rounded-lg mb-4"
+          />
+        )}
+
         {/* Status Badge */}
         {status && (
           <span
@@ -130,14 +140,14 @@ const PaperCard: React.FC<PaperCardProps> = ({
           <div className="flex items-center space-x-4 mb-4 text-sm">
             {readCount && (
               <div className="flex items-center space-x-1 text-gray-500">
-                <Eye className="w-4 h-4" />
+                <Eye className="w-4 h-4" aria-hidden="true" />
                 <span>{readCount}</span>
                 <span className="text-xs">reads</span>
               </div>
             )}
             {commentCount && (
               <div className="flex items-center space-x-1 text-gray-500">
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4" aria-hidden="true" />
                 <span>{commentCount}</span>
                 <span className="text-xs">discussions</span>
               </div>

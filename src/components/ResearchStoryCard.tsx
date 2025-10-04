@@ -138,10 +138,10 @@ const ResearchStoryCard: React.FC<ResearchStoryCardProps> = ({
         {/* Engagement metrics */}
         <div className="flex items-center justify-between mb-4 text-sm">
           <div className="flex items-center space-x-4 text-gray-500">
-            {viewCount && (
+            {readCount && (
               <div className="flex items-center space-x-1">
                 <Eye className="w-4 h-4" />
-                <span>{viewCount}</span>
+                <span>{readCount}</span>
               </div>
             )}
             {commentCount && (
