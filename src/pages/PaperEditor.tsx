@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Upload, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X, Upload } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Navbar from '../components/Navbar';
@@ -13,7 +12,8 @@ const PaperEditor: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
-  
+  const [previewMode, setPreviewMode] = useState(false);
+
   const [title, setTitle] = useState('');
   const [abstract, setAbstract] = useState('');
   const [content, setContent] = useState('');
@@ -30,11 +30,11 @@ const PaperEditor: React.FC = () => {
   // Auto-save every 30 seconds
   useEffect(() => {
     if (!id) return; // Don't auto-save new papers
-    
+
     const interval = setInterval(() => {
       handleAutoSave();
     }, 30000);
-    
+
     return () => clearInterval(interval);
   }, [title, abstract, content, authors, researchField, keywords, id]);
 
@@ -56,7 +56,7 @@ const PaperEditor: React.FC = () => {
 
   const handleAutoSave = async () => {
     if (!title.trim() || !abstract.trim() || saving || autoSaving) return;
-    
+
     setAutoSaving(true);
     const paperData = {
       title,
@@ -71,7 +71,7 @@ const PaperEditor: React.FC = () => {
     if (id) {
       await apiClient.updatePaper(parseInt(id), paperData);
     }
-    
+
     setAutoSaving(false);
   };
 
@@ -181,7 +181,7 @@ const PaperEditor: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <button
@@ -191,10 +191,18 @@ const PaperEditor: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Workspace</span>
           </button>
-          
-          {autoSaving && (
-            <span className="text-sm text-gray-500 italic">Auto-saving...</span>
-          )}
+
+          <div className="flex items-center space-x-4">
+            {autoSaving && (
+              <span className="text-sm text-gray-500 italic">Auto-saving...</span>
+            )}
+            <button
+              onClick={() => setPreviewMode(!previewMode)}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {previewMode ? 'Edit Mode' : 'Preview'}
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-8">
@@ -231,23 +239,46 @@ const PaperEditor: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content
+                Content *
               </label>
-              <div className="border border-gray-300 rounded-lg">
-                <ReactQuill
-                  theme="snow"
-                  value={content}
-                  onChange={setContent}
-                  modules={modules}
-                  formats={formats}
-                  placeholder="Write your research paper content here..."
-                  className="bg-white"
-                  style={{ minHeight: '400px' }}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Use the toolbar above to format your text, add images, links, and more.
-              </p>
+              {previewMode ? (
+                <div className="border border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[400px]">
+                  <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+                </div>
+              ) : (
+                <div className="border border-gray-300 rounded-lg overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={content}
+                    onChange={setContent}
+                    modules={{
+                      toolbar: [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'script': 'sub'}, { 'script': 'super' }],
+                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                        ['blockquote', 'code-block'],
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                      ]
+                    }}
+                    formats={[
+                      'header',
+                      'bold', 'italic', 'underline', 'strike',
+                      'list', 'bullet',
+                      'script',
+                      'indent',
+                      'blockquote', 'code-block',
+                      'align',
+                      'link', 'image'
+                    ]}
+                    style={{ minHeight: '400px' }}
+                    placeholder="Write your research paper content here..."
+                  />
+                </div>
+              )}
             </div>
 
             <div>

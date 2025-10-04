@@ -5,6 +5,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Quill Editor Customization */
+.ql-container {
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.ql-editor {
+  min-height: 400px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.ql-editor.ql-blank::before {
+  font-style: normal;
+  color: #9ca3af;
+}
+
+/* Quill Toolbar Styling */
+.ql-toolbar.ql-snow {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  background-color: #f9fafb;
+}
+
+.ql-container.ql-snow {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
 /* Quill Editor Styling */
 .ql-container {
   min-height: 400px;

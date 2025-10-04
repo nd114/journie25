@@ -40,7 +40,8 @@ export const KnowledgeQuest: React.FC = () => {
   const [userXP, setUserXP] = useState(750);
   const [completedQuests, setCompletedQuests] = useState<string[]>([]);
   const [newAchievement, setNewAchievement] = useState<string | null>(null);
-  const [nextLevelXP, setNextLevelXP] = useState(1000); // Initialize with a default
+  const [nextLevelXP, setNextLevelXP] = useState(1000);
+  const [activeTab, setActiveTab] = useState<'quests' | 'achievements'>('quests');
 
   // XP thresholds for leveling up
   const getXPForLevel = (level: number) => level * 200;
