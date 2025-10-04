@@ -28,6 +28,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleReset = () => {
     this.setState({ hasError: false, error: null });
+    // Clear any potential localStorage issues
+    try {
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn('Could not clear session storage:', e);
+    }
     window.location.reload();
   };
 

@@ -26,16 +26,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        const response = await apiClient.getCurrentUser();
-        if (response.data) {
-          setUser(response.data);
-        } else {
-          apiClient.logout();
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          const response = await apiClient.getCurrentUser();
+          if (response.data) {
+            setUser(response.data);
+          } else {
+            apiClient.logout();
+          }
         }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        apiClient.logout();
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();

@@ -28,7 +28,7 @@ if ('serviceWorker' in navigator) {
         });
       })
       .catch((error) => {
-        console.log('SW registration failed: ', error);
+        console.warn('SW registration failed: ', error);
       });
   });
 }

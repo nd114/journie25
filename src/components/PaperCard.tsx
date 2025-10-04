@@ -112,15 +112,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
           </div>
         )}
 
-        {/* Cover Image with Lazy Loading */}
-        {(paper as any).coverImage && (
-          <img 
-            src={(paper as any).coverImage} 
-            alt={`Cover for ${title}`}
-            loading="lazy"
-            className="w-full h-48 object-cover rounded-lg mb-4"
-          />
-        )}
+        {/* Cover Image would go here if we had coverImage in props */}
 
         {/* Status Badge */}
         {status && (

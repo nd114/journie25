@@ -47,12 +47,15 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  if (request.method !== 'GET') {
+  // Skip cross-origin requests, chrome-extension URLs, and non-GET requests
+  if (event.request.url.startsWith('chrome-extension://') ||
+      !event.request.url.startsWith(self.location.origin) ||
+      event.request.method !== 'GET') {
     return;
   }
+
+  const { request } = event;
+  const url = new URL(request.url);
 
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirstStrategy(request));
@@ -69,7 +72,7 @@ function isValidCacheRequest(request) {
   try {
     const url = new URL(request.url);
     // Only cache http/https URLs from our domain
-    return (url.protocol === 'http:' || url.protocol === 'https:') && 
+    return (url.protocol === 'http:' || url.protocol === 'https:') &&
            !url.href.includes('chrome-extension://') &&
            !url.href.includes('extension://');
   } catch {

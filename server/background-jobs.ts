@@ -5,27 +5,31 @@ import { eq } from 'drizzle-orm';
 
 // Background job to send email notifications
 export async function processEmailNotifications() {
-  console.log('Processing email notifications...');
-  
-  // This would integrate with an email service like SendGrid, AWS SES, etc.
-  // For now, it's a placeholder for the structure
-  
-  const pendingNotifications = await db.query.notifications.findMany({
-    where: (notifications, { eq }) => 
-      eq(notifications.isRead, false),
-    limit: 100,
-  });
+  try {
+    console.log('Processing email notifications...');
+    
+    // This would integrate with an email service like SendGrid, AWS SES, etc.
+    // For now, it's a placeholder for the structure
+    
+    const pendingNotifications = await db.query.notifications.findMany({
+      where: (notifications, { eq }) => 
+        eq(notifications.isRead, false),
+      limit: 100,
+    });
 
-  for (const notification of pendingNotifications) {
-    try {
-      // Send email logic here
-      console.log(`Would send email for notification ${notification.id}`);
-      
-      // Mark as sent in database
-      // await db.update(notifications).set({ emailSent: true }).where(eq(notifications.id, notification.id));
-    } catch (error) {
-      console.error(`Failed to send email for notification ${notification.id}:`, error);
+    for (const notification of pendingNotifications) {
+      try {
+        // Send email logic here
+        console.log(`Would send email for notification ${notification.id}`);
+        
+        // Mark as sent in database
+        // await db.update(notifications).set({ emailSent: true }).where(eq(notifications.id, notification.id));
+      } catch (error) {
+        console.error(`Failed to send email for notification ${notification.id}:`, error);
+      }
     }
+  } catch (error) {
+    console.error('Error in processEmailNotifications:', error);
   }
 }
 
