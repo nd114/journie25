@@ -164,16 +164,18 @@ const LibraryLanding: React.FC = () => {
             <Link
               to="/library"
               className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all text-lg font-medium transform hover:scale-105"
+              aria-label="Start exploring research papers"
             >
-              <Zap className="w-5 h-5" />
+              <Zap className="w-5 h-5" aria-hidden="true" />
               <span>Start Exploring</span>
             </Link>
 
             <Link
               to="/auth"
               className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-indigo-600 border-2 border-indigo-200 rounded-xl hover:bg-indigo-50 transition-all text-lg font-medium"
+              aria-label="Join the research community"
             >
-              <Users className="w-5 h-5" />
+              <Users className="w-5 h-5" aria-hidden="true" />
               <span>Join the Community</span>
             </Link>
           </div>

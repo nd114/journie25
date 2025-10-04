@@ -124,19 +124,20 @@ const PaperDetail: React.FC = () => {
       return;
     }
     
-    setBookmarkLoading(true);
+    // Optimistic update
+    const previousState = isBookmarked;
+    setIsBookmarked(!isBookmarked);
+    
     try {
-      if (isBookmarked) {
+      if (previousState) {
         await apiClient.removeBookmark(parseInt(id!));
-        setIsBookmarked(false);
       } else {
         await apiClient.bookmarkPaper(parseInt(id!));
-        setIsBookmarked(true);
       }
     } catch (error) {
+      // Revert on error
+      setIsBookmarked(previousState);
       console.error('Error toggling bookmark:', error);
-    } finally {
-      setBookmarkLoading(false);
     }
   };
 

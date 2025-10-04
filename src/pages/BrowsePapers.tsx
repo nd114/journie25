@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Filter,
@@ -13,6 +13,23 @@ import {
 import Navbar from "../components/Navbar";
 import PaperCard from "../components/PaperCard";
 import { apiClient } from "../services/apiClient";
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 interface Paper {
   id: number;
@@ -35,17 +52,44 @@ const BrowsePapers: React.FC = () => {
     "trending",
   );
   const [showSurpriseMe, setShowSurpriseMe] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
-    loadPapers();
-  }, [searchQuery, selectedField, sortBy]);
+    setPage(1);
+    setPapers([]);
+    loadPapers(true);
+  }, [debouncedSearchQuery, selectedField, sortBy]);
 
-  const loadPapers = async () => {
+  // Infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 100
+      ) {
+        if (!isLoadingMore && hasMore) {
+          loadMorePapers();
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isLoadingMore, hasMore, page]);
+
+  const loadPapers = async (reset = false) => {
     setLoading(true);
     try {
       const response = await apiClient.getPapers({
-        search: searchQuery,
+        search: debouncedSearchQuery,
         field: selectedField,
+        limit: 12,
+        offset: reset ? 0 : (page - 1) * 12,
       });
       
       if (response.error) {
@@ -82,15 +126,76 @@ const BrowsePapers: React.FC = () => {
             break;
         }
 
-        setPapers(sortedPapers);
+        if (reset) {
+          setPapers(sortedPapers);
+        } else {
+          setPapers(prev => [...prev, ...sortedPapers]);
+        }
+        setHasMore(sortedPapers.length === 12);
       } else {
-        setPapers([]);
+        if (reset) {
+          setPapers([]);
+        }
+        setHasMore(false);
       }
     } catch (error) {
       console.error('Exception loading papers:', error);
-      setPapers([]);
+      if (reset) {
+        setPapers([]);
+      }
+      setHasMore(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMorePapers = async () => {
+    if (isLoadingMore || !hasMore) return;
+    
+    setIsLoadingMore(true);
+    setPage(prev => prev + 1);
+    
+    try {
+      const response = await apiClient.getPapers({
+        search: debouncedSearchQuery,
+        field: selectedField,
+        limit: 12,
+        offset: page * 12,
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        const enrichedPapers = response.data.map((paper) => ({
+          ...paper,
+          readCount: paper.readCount || Math.floor(Math.random() * 200) + 10,
+          commentCount: paper.commentCount || Math.floor(Math.random() * 30) + 1,
+        }));
+
+        let sortedPapers = [...enrichedPapers];
+        switch (sortBy) {
+          case "trending":
+            sortedPapers.sort((a, b) => (b.readCount || 0) - (a.readCount || 0));
+            break;
+          case "discussed":
+            sortedPapers.sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0));
+            break;
+          case "latest":
+          default:
+            sortedPapers.sort((a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            break;
+        }
+
+        setPapers(prev => [...prev, ...sortedPapers]);
+        setHasMore(sortedPapers.length === 12);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Exception loading more papers:', error);
+      setHasMore(false);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -266,6 +371,20 @@ const BrowsePapers: React.FC = () => {
                 />
               ))}
             </div>
+
+            {/* Infinite scroll loading indicator */}
+            {isLoadingMore && (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                <p className="text-gray-500 mt-2 text-sm">Loading more...</p>
+              </div>
+            )}
+
+            {!hasMore && papers.length > 0 && (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                You've reached the end of the results
+              </div>
+            )}
           </>
         )}
       </div>

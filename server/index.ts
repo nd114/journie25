@@ -13,6 +13,7 @@ import Stripe from "stripe";
 import { db } from "./db";
 import { subscriptions, institutionMembers } from "../shared/schema";
 import { eq } from "drizzle-orm";
+import { rateLimit } from "./rate-limiter";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,6 +68,9 @@ app.use(
   }),
 );
 app.use(express.json());
+
+// Rate limiting: 100 requests per 15 minutes
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
 // In-memory cache implementation with TTL
 interface CacheEntry<T> {
@@ -154,7 +158,7 @@ const requirePremium = (requiredTier: 'pro' | 'institutional' = 'pro') => {
   return async (req: any, res: any, next: any) => {
     try {
       const subscription = await storage.getSubscription(req.user.id);
-      
+
       if (!subscription || subscription.plan === 'free') {
         return res.status(403).json({ 
           error: "Premium subscription required",
@@ -193,7 +197,7 @@ const rateLimitStore = new Map<number, { count: number; resetAt: number }>();
 // API Key authentication middleware with rate limiting
 const authenticateApiKey = async (req: any, res: any, next: any) => {
   const startTime = Date.now();
-  
+
   try {
     const apiKey = req.headers["x-api-key"];
 
@@ -340,12 +344,12 @@ app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
     if (cachedUser) {
       return res.json(cachedUser);
     }
-    
+
     const user = await storage.getUser(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     const userData = {
       id: user.id,
       email: user.email,
@@ -354,13 +358,13 @@ app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
       affiliation: user.affiliation,
       bio: user.bio,
     };
-    
+
     // Cache user profile
     cache.set(cacheKey, userData, CACHE_TTL.USER_PROFILE);
-    
+
     // Add cache control headers
     res.set('Cache-Control', 'private, max-age=300'); // 5 minutes
-    
+
     res.json(userData);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user" });
@@ -379,10 +383,10 @@ app.put("/api/auth/profile", authenticateToken, async (req: any, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     // Invalidate user cache after update
     invalidateUserCache(req.user.id);
-    
+
     res.json({
       id: user.id,
       email: user.email,
@@ -437,7 +441,7 @@ app.post("/api/subscriptions/create-checkout", authenticateToken, async (req: an
     }
 
     const { plan } = req.body;
-    
+
     if (!plan || !['pro', 'institutional'].includes(plan)) {
       return res.status(400).json({ error: "Invalid plan. Choose 'pro' or 'institutional'." });
     }
@@ -471,7 +475,7 @@ app.post("/api/subscriptions/create-checkout", authenticateToken, async (req: an
     }
 
     const tierConfig = plan === 'pro' ? SUBSCRIPTION_TIERS.PRO : SUBSCRIPTION_TIERS.INSTITUTIONAL;
-    
+
     if (!tierConfig.priceId) {
       return res.status(500).json({ 
         error: `Price ID not configured for ${plan} plan. Please set STRIPE_${plan.toUpperCase()}_PRICE_ID environment variable.` 
@@ -510,7 +514,7 @@ app.post("/api/subscriptions/create-portal", authenticateToken, async (req: any,
     }
 
     const subscription = await storage.getSubscription(req.user.id);
-    
+
     if (!subscription?.stripeCustomerId) {
       return res.status(400).json({ error: "No subscription found" });
     }
@@ -530,7 +534,7 @@ app.post("/api/subscriptions/create-portal", authenticateToken, async (req: any,
 app.get("/api/subscriptions/status", authenticateToken, async (req: any, res) => {
   try {
     let subscription = await storage.getSubscription(req.user.id);
-    
+
     if (!subscription) {
       subscription = await storage.createSubscription({
         userId: req.user.id,
@@ -543,7 +547,7 @@ app.get("/api/subscriptions/status", authenticateToken, async (req: any, res) =>
       isPublished: true,
     });
     const userPaperCount = userPapers.papers.filter((p: any) => p.createdBy === req.user.id).length;
-    
+
     const tier = SUBSCRIPTION_TIERS[subscription.plan.toUpperCase() as keyof typeof SUBSCRIPTION_TIERS] || SUBSCRIPTION_TIERS.FREE;
 
     res.json({
@@ -718,7 +722,7 @@ app.post("/api/institutions", authenticateToken, requirePremium('institutional')
     }
 
     const subscription = await storage.getSubscription(req.user.id);
-    
+
     const institution = await storage.createInstitution({
       name,
       domain,
@@ -744,7 +748,7 @@ app.post("/api/institutions", authenticateToken, requirePremium('institutional')
 app.get("/api/institutions/:id", authenticateToken, async (req: any, res) => {
   try {
     const institutionId = parseInt(req.params.id);
-    
+
     const isMember = await storage.isInstitutionMember(req.user.id, institutionId);
     if (!isMember) {
       return res.status(403).json({ error: "Not a member of this institution" });
@@ -829,7 +833,7 @@ app.post("/api/institutions/accept-invite/:token", authenticateToken, async (req
     const { token } = req.params;
 
     const member = await storage.acceptInvite(token, req.user.id);
-    
+
     if (!member) {
       return res.status(400).json({ error: "Failed to accept invite" });
     }
@@ -936,13 +940,13 @@ app.get("/api/papers", async (req, res) => {
       page: parseInt(page as string),
       limit: parseInt(limit as string),
     });
-    
+
     // Add pagination metadata for frontend optimization
     res.set('X-Total-Count', result.total.toString());
     res.set('X-Page', result.page.toString());
     res.set('X-Total-Pages', result.totalPages.toString());
     res.set('Cache-Control', 'public, max-age=120');
-    
+
     res.json(result);
   } catch (error) {
     console.error("Error fetching papers:", error);
@@ -989,22 +993,22 @@ app.get("/api/papers/trending", async (req, res) => {
   try {
     const { limit = 10 } = req.query;
     const cacheKey = `trending:papers:${limit}`;
-    
+
     // Try to get from cache first
     const cachedPapers = cache.get(cacheKey);
     if (cachedPapers) {
       res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
       return res.json(cachedPapers);
     }
-    
+
     const papers = await storage.getTrendingPapers(parseInt(limit as string));
-    
+
     // Cache trending papers
     cache.set(cacheKey, papers, CACHE_TTL.TRENDING_PAPERS);
-    
+
     // Add CDN-ready headers
     res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
-    
+
     res.json(papers);
   } catch (error) {
     console.error("Error fetching trending papers:", error);
@@ -1016,14 +1020,14 @@ app.get("/api/papers/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const paperId = parseInt(id);
-    
+
     // Try to get from cache first
     const cacheKey = `paper:${paperId}`;
     const cachedPaper = cache.get(cacheKey);
     if (cachedPaper) {
       return res.json(cachedPaper);
     }
-    
+
     const paper = await storage.getPaper(paperId);
     if (!paper) {
       return res.status(404).json({ error: "Paper not found" });
@@ -1036,11 +1040,11 @@ app.get("/api/papers/:id", async (req, res) => {
 
     // Cache published papers
     cache.set(cacheKey, paper, CACHE_TTL.PAPER_DETAILS);
-    
+
     // Add CDN-ready headers
     res.set('Cache-Control', 'public, max-age=120'); // 2 minutes
     res.set('ETag', `W/"${paper.id}-${paper.updatedAt?.getTime() || paper.createdAt.getTime()}"`);
-    
+
     res.json(paper);
   } catch (error) {
     console.error("Error fetching paper:", error);
@@ -1121,7 +1125,7 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
     }
 
     const paper = await storage.updatePaper(paperId, updates);
-    
+
     // Create notification for paper published
     if (isNewlyPublished) {
       const user = await storage.getUser(req.user.id);
@@ -1134,7 +1138,7 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
           entityType: 'paper',
           entityId: paperId,
         });
-        
+
         // Notify followers about the new publication
         const followers = await storage.getUserFollowers(req.user.id);
         for (const follower of followers) {
@@ -1149,10 +1153,10 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
         }
       }
     }
-    
+
     // Invalidate cache after update
     invalidatePaperCache(paperId);
-    
+
     res.json(paper);
   } catch (error) {
     console.error("Error updating paper:", error);
@@ -1177,10 +1181,10 @@ app.delete("/api/papers/:id", authenticateToken, async (req: any, res) => {
     }
 
     await storage.deletePaper(paperId);
-    
+
     // Invalidate cache after delete
     invalidatePaperCache(paperId);
-    
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Failed to delete paper" });
@@ -1223,7 +1227,7 @@ app.post(
         content,
         parentId: parentId || null,
       });
-      
+
       // Create notification for paper author if not commenting on own paper
       if (paper.createdBy !== req.user.id) {
         const commenterUser = await storage.getUser(req.user.id);
@@ -1238,7 +1242,7 @@ app.post(
           });
         }
       }
-      
+
       res.json(comment);
     } catch (error) {
       res.status(500).json({ error: "Failed to create comment" });
@@ -1284,7 +1288,7 @@ app.post(
         recommendation,
         isPublic: true,
       });
-      
+
       // Create notification for paper author if not reviewing own paper
       if (paper.createdBy !== req.user.id) {
         const reviewerUser = await storage.getUser(req.user.id);
@@ -1299,7 +1303,7 @@ app.post(
           });
         }
       }
-      
+
       res.json(review);
     } catch (error) {
       res.status(500).json({ error: "Failed to create review" });
@@ -1329,14 +1333,14 @@ app.get("/api/papers/:id/cite", async (req, res) => {
   try {
     const paperId = parseInt(req.params.id);
     const format = (req.query.format as string) || 'apa';
-    
+
     const paper = await storage.getPaper(paperId);
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
 
     const { generateAPA, generateMLA, generateChicago, generateBibTeX, generateEndNote } = await import("./citations");
-    
+
     const citationData = {
       title: paper.title,
       authors: Array.isArray(paper.authors) ? paper.authors : [],
@@ -1549,22 +1553,22 @@ app.get("/api/trending-topics", async (req, res) => {
   try {
     const { limit = 10 } = req.query;
     const cacheKey = `trending:topics:${limit}`;
-    
+
     // Try to get from cache first
     const cachedTopics = cache.get(cacheKey);
     if (cachedTopics) {
       res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
       return res.json(cachedTopics);
     }
-    
+
     const topics = await storage.getTrendingTopics(parseInt(limit as string));
-    
+
     // Cache trending topics
     cache.set(cacheKey, topics, CACHE_TTL.TRENDING_PAPERS);
-    
+
     // Add CDN-ready headers
     res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
-    
+
     res.json(topics);
   } catch (error) {
     console.error("Error fetching trending topics:", error);
@@ -1867,7 +1871,7 @@ app.post("/api/users/:id/follow", authenticateToken, async (req, res) => {
     }
 
     await storage.followUser(userId, followingId);
-    
+
     // Create notification for the followed user
     const followerUser = await storage.getUser(userId);
     if (followerUser) {
@@ -1880,7 +1884,7 @@ app.post("/api/users/:id/follow", authenticateToken, async (req, res) => {
         entityId: userId,
       });
     }
-    
+
     res.json({ message: "Successfully followed user" });
   } catch (error) {
     console.error("Error following user:", error);
@@ -2105,7 +2109,7 @@ app.post("/api/reviews/:assignmentId/submit", authenticateToken, async (req: any
     // Get assignment details to notify paper author
     const assignments = await storage.getReviewAssignments(req.user.id);
     const assignment = assignments.find((a: any) => a.id === assignmentId);
-    
+
     if (assignment) {
       const paper = await storage.getPaper(assignment.paperId);
       if (paper) {
@@ -2185,7 +2189,7 @@ app.get("/api/analytics/paper/:id", async (req, res) => {
   try {
     const paperId = parseInt(req.params.id);
     const paper = await storage.getPaper(paperId);
-    
+
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
@@ -2202,16 +2206,16 @@ app.get("/api/analytics/user/:id", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
     const user = await storage.getUser(userId);
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
     const analytics = await storage.getUserAnalytics(userId);
-    
+
     const hIndex = await storage.calculateHIndex(userId);
     const impactScore = await storage.calculateImpactScore(userId);
-    
+
     await storage.updateUserAnalytics(userId, {
       hIndex,
       impactScore: impactScore.toString(),
@@ -2284,14 +2288,14 @@ app.get("/api/analytics/papers/:id", async (req, res) => {
   try {
     const paperId = parseInt(req.params.id);
     const paper = await storage.getPaper(paperId);
-    
+
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
 
     const analytics = await storage.getPaperAnalytics(paperId);
     const engagementScore = await storage.calculateEngagementScore(paperId);
-    
+
     await storage.updatePaperAnalytics(paperId, {
       engagementScore: engagementScore.toString(),
     });
@@ -2308,7 +2312,7 @@ app.get("/api/analytics/papers/:id/timeline", async (req, res) => {
   try {
     const paperId = parseInt(req.params.id);
     const period = (req.query.period as 'daily' | 'weekly' | 'monthly') || 'daily';
-    
+
     const paper = await storage.getPaper(paperId);
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
@@ -2349,7 +2353,7 @@ app.get("/api/analytics/top-papers", async (req, res) => {
   try {
     const metric = (req.query.metric as 'views' | 'citations' | 'downloads' | 'engagement') || 'views';
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-    
+
     const topPapers = await storage.getTopPapers(metric, limit);
     res.json(topPapers);
   } catch (error) {
@@ -2417,11 +2421,11 @@ app.put("/api/notifications/read-all", authenticateToken, async (req: any, res) 
 app.delete("/api/notifications/:id", authenticateToken, async (req: any, res) => {
   try {
     const notificationId = parseInt(req.params.id);
-    
+
     // First, get the notification to verify ownership
     const notifications = await storage.getUserNotifications(req.user.id, { page: 1, limit: 1000 });
     const notification = notifications.notifications.find(n => n.id === notificationId);
-    
+
     if (!notification) {
       return res.status(404).json({ error: "Notification not found" });
     }
@@ -2445,7 +2449,7 @@ app.get("/api/notifications/unread-count", authenticateToken, async (req: any, r
       page: 1,
       limit: 1,
     });
-    
+
     res.json({ count: result.unread });
   } catch (error) {
     console.error("Error fetching unread count:", error);
@@ -2479,7 +2483,7 @@ app.put("/api/notifications/preferences", authenticateToken, async (req: any, re
 
     // Get existing preferences or create defaults
     let preferences = await storage.getNotificationPreferences(req.user.id);
-    
+
     if (!preferences) {
       preferences = await storage.createDefaultNotificationPreferences(req.user.id);
     }
@@ -2507,16 +2511,16 @@ app.put("/api/notifications/preferences", authenticateToken, async (req: any, re
 app.get("/api/papers/:id/collaborators", authenticateToken, async (req: any, res) => {
   try {
     const paperId = parseInt(req.params.id);
-    
+
     // Check if user has access to this paper
     const canEdit = await canUserEditPaper(req.user.id, paperId);
     if (!canEdit) {
       return res.status(403).json({ error: "Access denied" });
     }
-    
+
     // Get active collaborators from WebSocket sessions
     const collaborators = getActiveCollaborators(paperId);
-    
+
     res.json({ collaborators });
   } catch (error) {
     console.error("Error fetching collaborators:", error);
@@ -2529,23 +2533,23 @@ app.post("/api/papers/:id/lock-section", authenticateToken, async (req: any, res
   try {
     const paperId = parseInt(req.params.id);
     const { sectionId } = req.body;
-    
+
     if (!sectionId) {
       return res.status(400).json({ error: "sectionId is required" });
     }
-    
+
     // Check if user has access to this paper
     const canEdit = await canUserEditPaper(req.user.id, paperId);
     if (!canEdit) {
       return res.status(403).json({ error: "Access denied" });
     }
-    
+
     // Get user details
     const user = await storage.getUser(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     // Lock the section
     const lock = await storage.lockSection({
       paperId,
@@ -2554,7 +2558,7 @@ app.post("/api/papers/:id/lock-section", authenticateToken, async (req: any, res
       userName: user.name,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000), // Lock expires in 5 minutes
     });
-    
+
     // Broadcast lock to all collaborators in the room
     broadcastToRoom(paperId, {
       type: "section-locked",
@@ -2564,7 +2568,7 @@ app.post("/api/papers/:id/lock-section", authenticateToken, async (req: any, res
       lockedAt: lock.lockedAt,
       expiresAt: lock.expiresAt,
     });
-    
+
     res.json(lock);
   } catch (error) {
     console.error("Error locking section:", error);
@@ -2577,27 +2581,27 @@ app.delete("/api/papers/:id/lock-section", authenticateToken, async (req: any, r
   try {
     const paperId = parseInt(req.params.id);
     const { sectionId } = req.body;
-    
+
     if (!sectionId) {
       return res.status(400).json({ error: "sectionId is required" });
     }
-    
+
     // Check if user has access to this paper
     const canEdit = await canUserEditPaper(req.user.id, paperId);
     if (!canEdit) {
       return res.status(403).json({ error: "Access denied" });
     }
-    
+
     // Release the lock
     await storage.unlockSection(paperId, sectionId, req.user.id);
-    
+
     // Broadcast unlock to all collaborators in the room
     broadcastToRoom(paperId, {
       type: "section-unlocked",
       sectionId,
       userId: req.user.id,
     });
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error("Error unlocking section:", error);
@@ -2609,16 +2613,16 @@ app.delete("/api/papers/:id/lock-section", authenticateToken, async (req: any, r
 app.get("/api/papers/:id/locks", authenticateToken, async (req: any, res) => {
   try {
     const paperId = parseInt(req.params.id);
-    
+
     // Check if user has access to this paper
     const canEdit = await canUserEditPaper(req.user.id, paperId);
     if (!canEdit) {
       return res.status(403).json({ error: "Access denied" });
     }
-    
+
     // Get active locks
     const locks = await storage.getActiveLocks(paperId);
-    
+
     res.json({ locks });
   } catch (error) {
     console.error("Error fetching locks:", error);
@@ -2630,16 +2634,16 @@ app.get("/api/papers/:id/locks", authenticateToken, async (req: any, res) => {
 app.get("/api/papers/:id/draft", authenticateToken, async (req: any, res) => {
   try {
     const paperId = parseInt(req.params.id);
-    
+
     // Check if user has access to this paper
     const canEdit = await canUserEditPaper(req.user.id, paperId);
     if (!canEdit) {
       return res.status(403).json({ error: "Access denied" });
     }
-    
+
     // Get latest draft
     const draft = await storage.getLatestDraft(paperId, req.user.id);
-    
+
     res.json({ draft });
   } catch (error) {
     console.error("Error fetching draft:", error);
@@ -2713,11 +2717,11 @@ app.get("/api/v1/papers/:id", authenticateApiKey, async (req: any, res) => {
   try {
     const { id } = req.params;
     const paper = await storage.getPaper(parseInt(id));
-    
+
     if (!paper || !paper.isPublished) {
       return res.status(404).json({ error: "Paper not found" });
     }
-    
+
     res.json(paper);
   } catch (error) {
     console.error("Error fetching paper:", error);
@@ -2730,11 +2734,11 @@ app.get("/api/v1/users/:id", authenticateApiKey, async (req: any, res) => {
   try {
     const { id } = req.params;
     const user = await storage.getUser(parseInt(id));
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     // Return public user info only
     res.json({
       id: user.id,
@@ -2754,18 +2758,18 @@ app.get("/api/v1/users/:id/papers", authenticateApiKey, async (req: any, res) =>
   try {
     const { id } = req.params;
     const { page = 1, limit = 20 } = req.query;
-    
+
     const result = await storage.getPapers({
       isPublished: true,
       page: parseInt(page as string),
       limit: Math.min(parseInt(limit as string), 100),
     });
-    
+
     // Filter papers by user
     const userPapers = result.papers.filter((p: any) => 
       p.authorIds && (p.authorIds as any[]).includes(parseInt(id))
     );
-    
+
     res.json({
       papers: userPapers,
       total: userPapers.length,
@@ -2782,17 +2786,17 @@ app.get("/api/v1/users/:id/papers", authenticateApiKey, async (req: any, res) =>
 app.post("/api/v1/papers", authenticateApiKey, async (req: any, res) => {
   try {
     const { permissions } = req.apiKey;
-    
+
     if (!permissions || !permissions.write) {
       return res.status(403).json({ error: "Write permission required" });
     }
-    
+
     const { title, abstract, content, authors, researchField, keywords } = req.body;
-    
+
     if (!title || !abstract) {
       return res.status(400).json({ error: "Title and abstract are required" });
     }
-    
+
     const paper = await storage.createPaper({
       title,
       abstract,
@@ -2805,7 +2809,7 @@ app.post("/api/v1/papers", authenticateApiKey, async (req: any, res) => {
       createdBy: req.apiKey.userId,
       status: "draft",
     });
-    
+
     res.status(201).json(paper);
   } catch (error) {
     console.error("Error creating paper:", error);
@@ -2821,18 +2825,18 @@ app.post("/api/v1/papers", authenticateApiKey, async (req: any, res) => {
 app.post("/api/api-keys", authenticateToken, async (req: any, res) => {
   try {
     const { name, permissions, expiresAt } = req.body;
-    
+
     if (!name) {
       return res.status(400).json({ error: "API key name is required" });
     }
-    
+
     const { apiKey, plainKey } = await storage.createApiKey({
       userId: req.user.id,
       name,
       permissions: permissions || { read: true, write: false },
       expiresAt: expiresAt ? new Date(expiresAt) : undefined,
     });
-    
+
     // Return the plain key only once - user must save it
     res.status(201).json({
       id: apiKey.id,
@@ -2853,7 +2857,7 @@ app.post("/api/api-keys", authenticateToken, async (req: any, res) => {
 app.get("/api/api-keys", authenticateToken, async (req: any, res) => {
   try {
     const keys = await storage.getUserApiKeys(req.user.id);
-    
+
     // Don't return key hashes
     const safeKeys = keys.map((key: any) => ({
       id: key.id,
@@ -2863,7 +2867,7 @@ app.get("/api/api-keys", authenticateToken, async (req: any, res) => {
       expiresAt: key.expiresAt,
       createdAt: key.createdAt,
     }));
-    
+
     res.json(safeKeys);
   } catch (error) {
     console.error("Error fetching API keys:", error);
@@ -2876,15 +2880,15 @@ app.delete("/api/api-keys/:id", authenticateToken, async (req: any, res) => {
   try {
     const { id } = req.params;
     const apiKey = await storage.getApiKey(parseInt(id));
-    
+
     if (!apiKey) {
       return res.status(404).json({ error: "API key not found" });
     }
-    
+
     if (apiKey.userId !== req.user.id) {
       return res.status(403).json({ error: "Not authorized to delete this API key" });
     }
-    
+
     await storage.deleteApiKey(parseInt(id));
     res.json({ success: true, message: "API key revoked" });
   } catch (error) {
@@ -2898,17 +2902,17 @@ app.get("/api/api-keys/:id/usage", authenticateToken, async (req: any, res) => {
   try {
     const { id } = req.params;
     const { period = 'hour' } = req.query;
-    
+
     const apiKey = await storage.getApiKey(parseInt(id));
-    
+
     if (!apiKey) {
       return res.status(404).json({ error: "API key not found" });
     }
-    
+
     if (apiKey.userId !== req.user.id) {
       return res.status(403).json({ error: "Not authorized to view this API key usage" });
     }
-    
+
     const stats = await storage.getApiKeyUsageStats(parseInt(id), period as 'hour' | 'day' | 'week');
     res.json(stats);
   } catch (error) {
@@ -3098,7 +3102,7 @@ app.get("/api/docs", (req, res) => {
       }
     }
   };
-  
+
   res.json(apiDocs);
 });
 
@@ -3132,15 +3136,15 @@ async function canUserEditPaper(userId: number, paperId: number): Promise<boolea
   try {
     const paper = await storage.getPaper(paperId);
     if (!paper) return false;
-    
+
     // Check if user is the creator
     if (paper.createdBy === userId) return true;
-    
+
     // Check if user is in authorIds
     if (Array.isArray(paper.authorIds) && paper.authorIds.includes(userId)) {
       return true;
     }
-    
+
     return false;
   } catch (error) {
     console.error("Error checking paper edit permissions:", error);
@@ -3152,7 +3156,7 @@ async function canUserEditPaper(userId: number, paperId: number): Promise<boolea
 function broadcastToRoom(paperId: number, message: any, excludeClient?: WebSocket) {
   const clients = editingSessions.get(paperId);
   if (!clients) return;
-  
+
   const messageStr = JSON.stringify(message);
   clients.forEach((client) => {
     if (client !== excludeClient && client.readyState === WebSocket.OPEN) {
@@ -3165,12 +3169,12 @@ function broadcastToRoom(paperId: number, message: any, excludeClient?: WebSocke
 function broadcastNotificationToUser(userId: number, notification: any) {
   const sockets = userSockets.get(userId);
   if (!sockets) return;
-  
+
   const messageStr = JSON.stringify({
     type: 'notification',
     payload: notification,
   });
-  
+
   sockets.forEach((socket) => {
     if (socket.readyState === WebSocket.OPEN) {
       socket.send(messageStr);
@@ -3201,7 +3205,7 @@ async function createAndBroadcastNotification(data: {
 function getActiveCollaborators(paperId: number) {
   const clients = editingSessions.get(paperId);
   if (!clients) return [];
-  
+
   const collaborators: any[] = [];
   clients.forEach((client) => {
     const metadata = clientMetadata.get(client);
@@ -3213,36 +3217,36 @@ function getActiveCollaborators(paperId: number) {
       });
     }
   });
-  
+
   return collaborators;
 }
 
 // WebSocket connection handler
 wss.on("connection", async (ws: WebSocket, req) => {
   console.log("New WebSocket connection attempt");
-  
+
   let authenticated = false;
   let currentPaperId: number | null = null;
   let currentUserId: number | null = null;
-  
+
   // Handle messages from client
   ws.on("message", async (data) => {
     try {
       const message = JSON.parse(data.toString());
       const { type, token, paperId, content, cursorPosition, sectionId, version } = message;
-      
+
       // Handle join message - authenticate and join room
       if (type === "join") {
         if (!token || !paperId) {
           ws.send(JSON.stringify({ type: "error", message: "Token and paperId required" }));
           return;
         }
-        
+
         try {
           // Verify JWT token
           const decoded = await verifyJWT(token);
           const userId = decoded.id;
-          
+
           // Check if user can edit this paper
           const canEdit = await canUserEditPaper(userId, paperId);
           if (!canEdit) {
@@ -3253,7 +3257,7 @@ wss.on("connection", async (ws: WebSocket, req) => {
             ws.close();
             return;
           }
-          
+
           // Get user details
           const user = await storage.getUser(userId);
           if (!user) {
@@ -3261,12 +3265,12 @@ wss.on("connection", async (ws: WebSocket, req) => {
             ws.close();
             return;
           }
-          
+
           // Authentication successful
           authenticated = true;
           currentPaperId = paperId;
           currentUserId = userId;
-          
+
           // Store client metadata
           clientMetadata.set(ws, {
             userId: userId,
@@ -3274,19 +3278,19 @@ wss.on("connection", async (ws: WebSocket, req) => {
             paperId: paperId,
             cursorPosition: null,
           });
-          
+
           // Add client to editing session
           if (!editingSessions.has(paperId)) {
             editingSessions.set(paperId, new Set());
           }
           editingSessions.get(paperId)!.add(ws);
-          
+
           // Register user socket for notifications
           if (!userSockets.has(userId)) {
             userSockets.set(userId, new Set());
           }
           userSockets.get(userId)!.add(ws);
-          
+
           // Send success response
           ws.send(JSON.stringify({ 
             type: "joined", 
@@ -3294,16 +3298,16 @@ wss.on("connection", async (ws: WebSocket, req) => {
             userId: userId,
             userName: user.name,
           }));
-          
+
           // Broadcast updated collaborators list to all in room
           const collaborators = getActiveCollaborators(paperId);
           broadcastToRoom(paperId, {
             type: "collaborators-update",
             collaborators: collaborators,
           });
-          
+
           console.log(`User ${user.name} (${userId}) joined paper ${paperId}`);
-          
+
         } catch (error) {
           console.error("Authentication error:", error);
           ws.send(JSON.stringify({ type: "error", message: "Authentication failed" }));
@@ -3311,20 +3315,20 @@ wss.on("connection", async (ws: WebSocket, req) => {
           return;
         }
       }
-      
+
       // All other message types require authentication
       if (!authenticated) {
         ws.send(JSON.stringify({ type: "error", message: "Not authenticated" }));
         return;
       }
-      
+
       // Handle content change
       if (type === "content-change") {
         if (!content) {
           ws.send(JSON.stringify({ type: "error", message: "Content required" }));
           return;
         }
-        
+
         // Broadcast content change to other collaborators
         broadcastToRoom(currentPaperId!, {
           type: "content-change",
@@ -3333,14 +3337,14 @@ wss.on("connection", async (ws: WebSocket, req) => {
           userName: clientMetadata.get(ws)?.userName,
           timestamp: new Date().toISOString(),
         }, ws);
-        
+
         // Send acknowledgment to sender
         ws.send(JSON.stringify({ 
           type: "content-change-ack", 
           message: "Content change broadcasted" 
         }));
       }
-      
+
       // Handle cursor position update
       if (type === "cursor-position") {
         // Update cursor position in metadata
@@ -3349,7 +3353,7 @@ wss.on("connection", async (ws: WebSocket, req) => {
           metadata.cursorPosition = cursorPosition;
           clientMetadata.set(ws, metadata);
         }
-        
+
         // Broadcast cursor position to other collaborators
         broadcastToRoom(currentPaperId!, {
           type: "cursor-position",
@@ -3358,14 +3362,14 @@ wss.on("connection", async (ws: WebSocket, req) => {
           cursorPosition: cursorPosition,
         }, ws);
       }
-      
+
       // Handle draft save
       if (type === "save-draft") {
         if (!content) {
           ws.send(JSON.stringify({ type: "error", message: "Content required for draft save" }));
           return;
         }
-        
+
         try {
           // Save draft to database
           await storage.savePaperDraft({
@@ -3374,14 +3378,14 @@ wss.on("connection", async (ws: WebSocket, req) => {
             content: content,
             version: version || 1,
           });
-          
+
           // Send success response
           ws.send(JSON.stringify({ 
             type: "save-draft-ack", 
             message: "Draft saved successfully",
             timestamp: new Date().toISOString(),
           }));
-          
+
           console.log(`Draft saved for paper ${currentPaperId} by user ${currentUserId}`);
         } catch (error) {
           console.error("Error saving draft:", error);
@@ -3391,35 +3395,35 @@ wss.on("connection", async (ws: WebSocket, req) => {
           }));
         }
       }
-      
+
       // Handle leave
       if (type === "leave") {
         handleClientLeave(ws);
       }
-      
+
     } catch (error) {
       console.error("Error processing WebSocket message:", error);
       ws.send(JSON.stringify({ type: "error", message: "Failed to process message" }));
     }
   });
-  
+
   // Handle client disconnect
   ws.on("close", () => {
     handleClientLeave(ws);
   });
-  
+
   // Handle errors
   ws.on("error", (error) => {
     console.error("WebSocket error:", error);
     handleClientLeave(ws);
   });
-  
+
   // Helper function to handle client leaving
   function handleClientLeave(client: WebSocket) {
     const metadata = clientMetadata.get(client);
     if (metadata) {
       const { paperId, userName, userId } = metadata;
-      
+
       // Remove from editing session
       const clients = editingSessions.get(paperId);
       if (clients) {
@@ -3435,7 +3439,7 @@ wss.on("connection", async (ws: WebSocket, req) => {
           });
         }
       }
-      
+
       // Remove from user sockets for notifications
       const userSocketSet = userSockets.get(userId);
       if (userSocketSet) {
@@ -3444,10 +3448,10 @@ wss.on("connection", async (ws: WebSocket, req) => {
           userSockets.delete(userId);
         }
       }
-      
+
       // Clean up metadata
       clientMetadata.delete(client);
-      
+
       console.log(`User ${userName} left paper ${paperId}`);
     }
   }

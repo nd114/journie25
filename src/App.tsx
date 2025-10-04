@@ -1,24 +1,36 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import LibraryLanding from './pages/LibraryLanding';
-import BrowsePapers from './pages/BrowsePapers';
-import PaperDetail from './pages/PaperDetail';
-import AuthPage from './pages/AuthPage';
-import WorkspaceDashboard from './pages/WorkspaceDashboard';
-import PaperEditor from './pages/PaperEditor';
-import UserProfile from './pages/UserProfile';
-import About from './pages/About';
-import HowItWorks from './pages/HowItWorks';
-import Contact from './pages/Contact';
-import FAQ from './pages/FAQ';
-import { ResearchCommunities } from './pages/ResearchCommunities';
-import { TrendingResearch } from './pages/TrendingResearch';
-import { LearningPaths } from './pages/LearningPaths';
-import { ResearchTools } from './pages/ResearchTools';
-import { PrivacyPolicy } from './pages/PrivacyPolicy';
-import { TermsOfService } from './pages/TermsOfService';
+
+// Lazy load pages
+const LibraryLanding = lazy(() => import('./pages/LibraryLanding'));
+const BrowsePapers = lazy(() => import('./pages/BrowsePapers'));
+const PaperDetail = lazy(() => import('./pages/PaperDetail'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const WorkspaceDashboard = lazy(() => import('./pages/WorkspaceDashboard'));
+const PaperEditor = lazy(() => import('./pages/PaperEditor'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
+const About = lazy(() => import('./pages/About'));
+const HowItWorks = lazy(() => import('./pages/HowItWorks'));
+const Contact = lazy(() => import('./pages/Contact'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const ResearchCommunities = lazy(() => import('./pages/ResearchCommunities').then(m => ({ default: m.ResearchCommunities })));
+const TrendingResearch = lazy(() => import('./pages/TrendingResearch').then(m => ({ default: m.TrendingResearch })));
+const LearningPaths = lazy(() => import('./pages/LearningPaths').then(m => ({ default: m.LearningPaths })));
+const ResearchTools = lazy(() => import('./pages/ResearchTools').then(m => ({ default: m.ResearchTools })));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import('./pages/TermsOfService').then(m => ({ default: m.TermsOfService })));
+
+// Loading component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -40,7 +52,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
       <Route path="/" element={<LibraryLanding />} />
       <Route path="/library" element={<BrowsePapers />} />
       <Route path="/paper/:id" element={<PaperDetail />} />
@@ -81,6 +94,7 @@ function AppRoutes() {
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }
 
