@@ -9,10 +9,12 @@ import {
   MessageCircle,
   Shuffle,
   Lightbulb,
+  SlidersHorizontal,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import PaperCard from "../components/PaperCard";
 import { apiClient } from "../services/apiClient";
+import { AdvancedSearchFilters, SearchFilters } from "../components/AdvancedSearchFilters";
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -55,6 +57,8 @@ const BrowsePapers: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<SearchFilters>({});
 
   // Debounce search query
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -90,6 +94,7 @@ const BrowsePapers: React.FC = () => {
         field: selectedField,
         limit: 12,
         offset: reset ? 0 : (page - 1) * 12,
+        ...advancedFilters,
       });
       
       if (response.error) {
@@ -270,6 +275,14 @@ const BrowsePapers: React.FC = () => {
               </div>
 
               <button
+                onClick={() => setShowAdvancedFilters(true)}
+                className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all min-h-[44px] whitespace-nowrap"
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+                <span className="hidden sm:inline">Advanced</span>
+              </button>
+
+              <button
                 onClick={handleSurpriseMe}
                 className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all sm:transform sm:hover:scale-105 min-h-[44px] whitespace-nowrap"
               >
@@ -281,6 +294,17 @@ const BrowsePapers: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {showAdvancedFilters && (
+            <AdvancedSearchFilters
+              onApply={(filters) => {
+                setAdvancedFilters(filters);
+                setPage(1);
+                setPapers([]);
+              }}
+              onClose={() => setShowAdvancedFilters(false)}
+            />
+          )}
 
           {/* Sort Options */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-4 pt-4 border-t border-gray-100 gap-3 sm:gap-0">

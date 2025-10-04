@@ -22,7 +22,6 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^20.0.0",
     "@types/pg": "^8.15.4",
     "@types/stripe": "^8.0.416",
     "@types/ws": "^8.18.1",
@@ -50,6 +49,7 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@types/node": "^24.6.2",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.0.0",

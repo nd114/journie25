@@ -21,6 +21,7 @@ const LearningPaths = lazy(() => import('./pages/LearningPaths').then(m => ({ de
 const ResearchTools = lazy(() => import('./pages/ResearchTools').then(m => ({ default: m.ResearchTools })));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazy(() => import('./pages/TermsOfService').then(m => ({ default: m.TermsOfService })));
+const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'));
 
 // Loading component
 const PageLoader = () => (
@@ -68,6 +69,14 @@ function AppRoutes() {
       <Route path="/tools" element={<ResearchTools />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <AnalyticsDashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/workspace"
         element={

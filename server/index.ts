@@ -14,6 +14,7 @@ import { db } from "./db";
 import { subscriptions, institutionMembers } from "../shared/schema";
 import { eq } from "drizzle-orm";
 import { rateLimit } from "./rate-limiter";
+import { startBackgroundJobs } from "./background-jobs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -3461,4 +3462,7 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
   console.log(`Frontend proxy should connect to port ${PORT}`);
   console.log(`WebSocket server is ready for collaborative editing`);
+  
+  // Start background jobs
+  startBackgroundJobs();
 });
