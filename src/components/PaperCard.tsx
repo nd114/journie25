@@ -52,7 +52,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
 
   return (
     <Link to={`/paper/${id}`} className="block group">
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 hover:shadow-2xl transition-all duration-300 sm:transform sm:hover:scale-102 relative overflow-hidden active:bg-gray-50">
+      <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-4 sm:p-6 hover:shadow-2xl transition-all duration-300 sm:transform sm:hover:scale-102 relative overflow-hidden active:bg-gray-50 min-h-[44px]">
         {/* Story Badge */}
         <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10">
           <div className="flex items-center space-x-1 px-2 sm:px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full">

@@ -55,18 +55,18 @@ const CommunityStats: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex justify-center space-x-8 text-sm">
+    <div className="flex flex-col sm:flex-row justify-center sm:space-x-8 space-y-4 sm:space-y-0 text-sm">
       <div>
-        <div className="text-2xl font-bold">{stats.researchers.toLocaleString()}+</div>
-        <div className="opacity-80">Active Researchers</div>
+        <div className="text-xl sm:text-2xl font-bold">{stats.researchers.toLocaleString()}+</div>
+        <div className="opacity-80 text-xs sm:text-sm">Active Researchers</div>
       </div>
       <div>
-        <div className="text-2xl font-bold">{stats.papers.toLocaleString()}+</div>
-        <div className="opacity-80">Papers Published</div>
+        <div className="text-xl sm:text-2xl font-bold">{stats.papers.toLocaleString()}+</div>
+        <div className="opacity-80 text-xs sm:text-sm">Papers Published</div>
       </div>
       <div>
-        <div className="text-2xl font-bold">{stats.discussions.toLocaleString()}+</div>
-        <div className="opacity-80">Discussions Started</div>
+        <div className="text-xl sm:text-2xl font-bold">{stats.discussions.toLocaleString()}+</div>
+        <div className="opacity-80 text-xs sm:text-sm">Discussions Started</div>
       </div>
     </div>
   );
@@ -155,16 +155,16 @@ const LibraryLanding: React.FC = () => {
       <Navbar />
 
       {/* Hero Section with Live Activity */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="text-center mb-8 sm:mb-12">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-xs sm:text-sm text-gray-600">
               {activeReaders} researchers exploring right now
             </span>
           </div>
 
-          <h1 className="text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">
             Where Curiosity Meets
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
               {" "}
@@ -172,47 +172,47 @@ const LibraryLanding: React.FC = () => {
             </span>
           </h1>
 
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4">
             Dive into research that sparks wonder. Connect ideas across fields.
             Join conversations that matter.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             <Link
               to="/library"
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all text-lg font-medium transform hover:scale-105"
+              className="inline-flex items-center justify-center space-x-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all text-base sm:text-lg font-medium transform hover:scale-105 w-full sm:w-auto"
               aria-label="Start exploring research papers"
             >
-              <Zap className="w-5 h-5" aria-hidden="true" />
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
               <span>Start Exploring</span>
             </Link>
 
             <Link
               to="/auth"
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-indigo-600 border-2 border-indigo-200 rounded-xl hover:bg-indigo-50 transition-all text-lg font-medium"
+              className="inline-flex items-center justify-center space-x-2 px-6 py-3 sm:px-8 sm:py-4 bg-white text-indigo-600 border-2 border-indigo-200 rounded-xl hover:bg-indigo-50 transition-all text-base sm:text-lg font-medium w-full sm:w-auto"
               aria-label="Join the research community"
             >
-              <Users className="w-5 h-5" aria-hidden="true" />
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
               <span>Join the Community</span>
             </Link>
           </div>
         </div>
 
         {/* Trending Research Stories */}
-        <div className="mb-16">
-          <div className="flex items-center space-x-2 mb-8">
-            <TrendingUp className="w-6 h-6 text-indigo-600" />
-            <h2 className="text-3xl font-bold text-gray-900">
+        <div className="mb-12 sm:mb-16">
+          <div className="flex items-center space-x-2 mb-6 sm:mb-8 px-2">
+            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 flex-shrink-0" />
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Research Stories Trending Now
             </h2>
           </div>
-          <p className="text-gray-600 mb-6 text-center max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-2xl mx-auto px-4">
             Each research paper is transformed into an engaging story
             highlighting key insights, real-world impact, and why it matters to
             you.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {trendingPapers.map((paper, index) => (
               <Link key={paper.id} to={`/paper/${paper.id}`}>
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all transform hover:scale-102 group">
@@ -256,12 +256,12 @@ const LibraryLanding: React.FC = () => {
         </div>
 
         {/* Explore by Interest */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+        <div className="mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center px-4">
             What Sparks Your Curiosity?
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {researchFields.map((field) => (
               <Link
                 key={field.name}
@@ -280,11 +280,11 @@ const LibraryLanding: React.FC = () => {
         </div>
 
         {/* New Feature Section */}
-        <div className="text-center py-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-12">
+        <div className="text-center py-8 sm:py-12 lg:py-16 px-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-8 sm:mb-12">
             Unlock Your Research Potential
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             <div className="text-center">
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">📚</span>
@@ -325,9 +325,9 @@ const LibraryLanding: React.FC = () => {
         </div>
 
         {/* Community Highlights */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">Join the Conversation</h2>
-          <p className="text-xl opacity-90 mb-6 max-w-2xl mx-auto">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-white text-center mx-2 sm:mx-0">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Join the Conversation</h2>
+          <p className="text-base sm:text-xl opacity-90 mb-4 sm:mb-6 max-w-2xl mx-auto px-2">
             Every paper tells a story. Every reader brings a perspective. What
             will you discover today?
           </p>
@@ -336,17 +336,17 @@ const LibraryLanding: React.FC = () => {
       </div>
 
       {/* Simplified Footer */}
-      <footer className="bg-gray-50 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <footer className="bg-gray-50 mt-12 sm:mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <BookOpen className="w-6 h-6 text-indigo-600" />
-              <span className="text-xl font-bold text-gray-900">
+            <div className="flex items-center justify-center space-x-2 mb-3 sm:mb-4">
+              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900">
                 Research Platform
               </span>
             </div>
-            <p className="text-gray-600 mb-6">Where research comes alive</p>
-            <div className="flex justify-center space-x-6 text-sm text-gray-500">
+            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Where research comes alive</p>
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-500">
               <Link
                 to="/library"
                 className="hover:text-indigo-600 transition-colors"

@@ -11,11 +11,8 @@ export async function processEmailNotifications() {
   // For now, it's a placeholder for the structure
   
   const pendingNotifications = await db.query.notifications.findMany({
-    where: (notifications, { eq, and }) => 
-      and(
-        eq(notifications.read, false),
-        // Add emailSent field to schema to track this
-      ),
+    where: (notifications, { eq }) => 
+      eq(notifications.isRead, false),
     limit: 100,
   });
 

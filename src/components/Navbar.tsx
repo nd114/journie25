@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, LogOut, User, Menu, X } from "lucide-react";
+import { BookOpen, LogOut, User, Menu, X, LogIn } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { RealtimeNotifications } from "./RealtimeNotifications";
 
