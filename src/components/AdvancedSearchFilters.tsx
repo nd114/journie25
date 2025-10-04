@@ -2,11 +2,6 @@
 import React, { useState } from 'react';
 import { X, Calendar, User as UserIcon, Tag } from 'lucide-react';
 
-interface AdvancedSearchFiltersProps {
-  onApply: (filters: SearchFilters) => void;
-  onClose: () => void;
-}
-
 export interface SearchFilters {
   dateFrom?: string;
   dateTo?: string;
@@ -14,6 +9,11 @@ export interface SearchFilters {
   tags?: string[];
   minReads?: number;
   hasDiscussions?: boolean;
+}
+
+interface AdvancedSearchFiltersProps {
+  onApply: (filters: SearchFilters) => void;
+  onClose: () => void;
 }
 
 export const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({ onApply, onClose }) => {

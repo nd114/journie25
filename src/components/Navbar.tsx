@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, LogIn, LogOut, User, Menu, X } from "lucide-react";
+import { BookOpen, LogOut, User, Menu, X } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { RealtimeNotifications } from "./RealtimeNotifications";
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -94,6 +95,7 @@ const Navbar: React.FC = () => {
                 >
                   My Workspace
                 </Link>
+                <RealtimeNotifications />
                 <div className="flex items-center space-x-3">
                   <Link
                     to="/profile"
