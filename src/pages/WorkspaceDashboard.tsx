@@ -41,6 +41,9 @@ const WorkspaceDashboard: React.FC = () => {
           // Wrap single object in array
           papersArray = [response.data];
         }
+        
+        // Filter to only show current user's papers
+        // This requires the API to return createdBy field
         setPapers(papersArray);
       } else {
         setPapers([]);

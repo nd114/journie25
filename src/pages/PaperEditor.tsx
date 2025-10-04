@@ -1,6 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Upload, Plus, X } from 'lucide-react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import Navbar from '../components/Navbar';
 import { apiClient } from '../services/apiClient';
 
@@ -9,6 +12,7 @@ const PaperEditor: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
   
   const [title, setTitle] = useState('');
   const [abstract, setAbstract] = useState('');
@@ -23,6 +27,17 @@ const PaperEditor: React.FC = () => {
     }
   }, [id]);
 
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    if (!id) return; // Don't auto-save new papers
+    
+    const interval = setInterval(() => {
+      handleAutoSave();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [title, abstract, content, authors, researchField, keywords, id]);
+
   const loadPaper = async () => {
     if (!id) return;
     setLoading(true);
@@ -31,12 +46,33 @@ const PaperEditor: React.FC = () => {
       const paper = response.data;
       setTitle(paper.title);
       setAbstract(paper.abstract);
-      setContent(paper.content);
+      setContent(paper.content || '');
       setAuthors(paper.authors && paper.authors.length > 0 ? paper.authors : ['']);
       setResearchField(paper.researchField || '');
       setKeywords(paper.keywords?.length > 0 ? paper.keywords : ['']);
     }
     setLoading(false);
+  };
+
+  const handleAutoSave = async () => {
+    if (!title.trim() || !abstract.trim() || saving || autoSaving) return;
+    
+    setAutoSaving(true);
+    const paperData = {
+      title,
+      abstract,
+      content,
+      authors: authors.filter(a => a.trim()),
+      researchField,
+      keywords: keywords.filter(k => k.trim()),
+      status: 'draft' as const,
+    };
+
+    if (id) {
+      await apiClient.updatePaper(parseInt(id), paperData);
+    }
+    
+    setAutoSaving(false);
   };
 
   const handleSave = async (publishNow: boolean = false) => {
@@ -100,6 +136,35 @@ const PaperEditor: React.FC = () => {
     setKeywords(newKeywords);
   };
 
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ 'font': [] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'align': [] }],
+      ['blockquote', 'code-block'],
+      ['link', 'image', 'video'],
+      ['clean']
+    ],
+  };
+
+  const formats = [
+    'header', 'font', 'size',
+    'bold', 'italic', 'underline', 'strike',
+    'color', 'background',
+    'script',
+    'list', 'bullet',
+    'indent',
+    'align',
+    'blockquote', 'code-block',
+    'link', 'image', 'video'
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -117,14 +182,20 @@ const PaperEditor: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <button
-          onClick={() => navigate('/workspace')}
-          className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Workspace</span>
-        </button>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate('/workspace')}
+            className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Workspace</span>
+          </button>
+          
+          {autoSaving && (
+            <span className="text-sm text-gray-500 italic">Auto-saving...</span>
+          )}
+        </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">
@@ -162,13 +233,21 @@ const PaperEditor: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Content
               </label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={12}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
-                placeholder="Enter paper content (supports plain text)"
-              />
+              <div className="border border-gray-300 rounded-lg">
+                <ReactQuill
+                  theme="snow"
+                  value={content}
+                  onChange={setContent}
+                  modules={modules}
+                  formats={formats}
+                  placeholder="Write your research paper content here..."
+                  className="bg-white"
+                  style={{ minHeight: '400px' }}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Use the toolbar above to format your text, add images, links, and more.
+              </p>
             </div>
 
             <div>
@@ -220,6 +299,9 @@ const PaperEditor: React.FC = () => {
                 <option value="Biology">Biology</option>
                 <option value="Mathematics">Mathematics</option>
                 <option value="Chemistry">Chemistry</option>
+                <option value="Climate Science">Climate Science</option>
+                <option value="Neuroscience">Neuroscience</option>
+                <option value="Psychology">Psychology</option>
               </select>
             </div>
 
