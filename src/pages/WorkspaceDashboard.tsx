@@ -27,29 +27,31 @@ const WorkspaceDashboard: React.FC = () => {
     setLoading(true);
     const response = await apiClient.getPapers({});
     if (response.data) {
-      setPapers(response.data);
+      // Handle paginated response structure
+      const papersArray = Array.isArray(response.data) ? response.data : response.data.papers || [];
+      setPapers(papersArray);
     }
     setLoading(false);
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this paper?')) return;
-    
+
     const response = await apiClient.deletePaper(id);
     if (!response.error) {
       setPapers(papers.filter(p => p.id !== id));
     }
   };
 
-  const filteredPapers = papers.filter(paper => {
+  const filteredPapers = Array.isArray(papers) ? papers.filter(paper => {
     if (filter === 'all') return true;
     return paper.status === filter;
-  });
+  }) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
