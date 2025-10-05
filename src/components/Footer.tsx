@@ -24,7 +24,7 @@ export function Footer() {
               <li><Link to="/library" className="text-gray-400 hover:text-white transition-colors">Browse Papers</Link></li>
               <li><Link to="/trending" className="text-gray-400 hover:text-white transition-colors">Trending Research</Link></li>
               <li><Link to="/communities" className="text-gray-400 hover:text-white transition-colors">Communities</Link></li>
-              <li><Link to="/learning-paths" className="text-gray-400 hover:text-white transition-colors">Learning Paths</Link></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">About Us</Link></li>
             </ul>
           </div>
 
@@ -32,10 +32,9 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider">Resources</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">About Us</Link></li>
               <li><Link to="/how-it-works" className="text-gray-400 hover:text-white transition-colors">How It Works</Link></li>
-              <li><Link to="/tools" className="text-gray-400 hover:text-white transition-colors">Research Tools</Link></li>
               <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
+              <li><Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
 

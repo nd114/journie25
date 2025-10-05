@@ -1,7 +1,16 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
+
+// Scroll to top on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 // Lazy load pages
 const LibraryLanding = lazy(() => import('./pages/LibraryLanding'));
@@ -17,8 +26,6 @@ const Contact = lazy(() => import('./pages/Contact'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 const ResearchCommunities = lazy(() => import('./pages/ResearchCommunities').then(m => ({ default: m.ResearchCommunities })));
 const TrendingResearch = lazy(() => import('./pages/TrendingResearch').then(m => ({ default: m.TrendingResearch })));
-const LearningPaths = lazy(() => import('./pages/LearningPaths').then(m => ({ default: m.LearningPaths })));
-const ResearchTools = lazy(() => import('./pages/ResearchTools').then(m => ({ default: m.ResearchTools })));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazy(() => import('./pages/TermsOfService').then(m => ({ default: m.TermsOfService })));
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'));
@@ -54,6 +61,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
+      <ScrollToTop />
       <Routes>
       <Route path="/" element={<LibraryLanding />} />
       <Route path="/library" element={<BrowsePapers />} />
@@ -65,8 +73,9 @@ function AppRoutes() {
       <Route path="/faq" element={<FAQ />} />
       <Route path="/communities" element={<ResearchCommunities />} />
       <Route path="/trending" element={<TrendingResearch />} />
-      <Route path="/learning-paths" element={<LearningPaths />} />
-      <Route path="/tools" element={<ResearchTools />} />
+      {/* Redirect unimplemented pages to home */}
+      <Route path="/learning-paths" element={<Navigate to="/" replace />} />
+      <Route path="/tools" element={<Navigate to="/" replace />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route

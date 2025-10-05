@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, Lightbulb, Target, Zap, ArrowRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const About: React.FC = () => {
   return (
@@ -131,6 +132,7 @@ const About: React.FC = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

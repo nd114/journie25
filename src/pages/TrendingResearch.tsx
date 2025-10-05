@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { TrendingUp, Eye, MessageCircle, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../services/apiClient';
@@ -155,6 +156,7 @@ export function TrendingResearch() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

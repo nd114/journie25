@@ -16,6 +16,7 @@ import {
   Share2
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const HowItWorks: React.FC = () => {
   const features = [
@@ -237,6 +238,7 @@ const HowItWorks: React.FC = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

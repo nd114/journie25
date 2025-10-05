@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, BookOpen, Users, Shield, Zap } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 interface FAQItem {
   id: string;
@@ -203,6 +204,7 @@ const FAQ: React.FC = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

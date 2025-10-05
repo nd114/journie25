@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Send, MessageCircle, Users, Clock } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -217,6 +218,7 @@ const Contact: React.FC = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

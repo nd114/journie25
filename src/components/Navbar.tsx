@@ -58,18 +58,6 @@ const Navbar: React.FC = () => {
               Communities
             </Link>
             <Link
-              to="/learning-paths"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Learning Paths
-            </Link>
-            <Link
-              to="/tools"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Tools
-            </Link>
-            <Link
               to="/about"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
             >
@@ -169,20 +157,6 @@ const Navbar: React.FC = () => {
               className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
             >
               Communities
-            </Link>
-            <Link
-              to="/learning-paths"
-              onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
-            >
-              Learning Paths
-            </Link>
-            <Link
-              to="/tools"
-              onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
-            >
-              Tools
             </Link>
             <Link
               to="/about"

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { Users, Plus, Search } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -278,6 +279,7 @@ export function ResearchCommunities() {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 }

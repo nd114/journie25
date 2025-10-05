@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, User, Users, UserPlus, Bookmark } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
 import AuthorClaimWidget from "../components/AuthorClaimWidget";
@@ -330,6 +331,7 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
