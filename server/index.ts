@@ -91,8 +91,8 @@ app.use(sanitizeMiddleware);
 // Rate limiting: 100 requests per 15 minutes (general API)
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
-// Stricter rate limiting for auth endpoints: 10 requests per 15 minutes
-app.use('/api/auth/', rateLimit({ windowMs: 15 * 60 * 1000, max: 10 }));
+// Stricter rate limiting for auth endpoints: 50 requests per 15 minutes
+app.use('/api/auth/', rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }));
 
 // In-memory cache implementation with TTL
 interface CacheEntry<T> {
