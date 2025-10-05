@@ -154,30 +154,30 @@ const PaperEditor: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6">
           <button
             onClick={() => navigate('/workspace')}
-            className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700"
+            className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Workspace</span>
           </button>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             {autoSaving && (
               <span className="text-sm text-gray-500 italic">Auto-saving...</span>
             )}
             <button
               onClick={() => setPreviewMode(!previewMode)}
-              className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
             >
               {previewMode ? 'Edit Mode' : 'Preview'}
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 lg:p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">
             {id ? 'Edit Paper' : 'New Research Paper'}
           </h1>
@@ -343,18 +343,18 @@ const PaperEditor: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200">
             <button
               onClick={() => navigate('/workspace')}
-              className="px-6 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-6 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-h-[44px] order-last sm:order-first"
             >
               Cancel
             </button>
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => handleSave(false)}
                 disabled={saving}
-                className="flex items-center space-x-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center space-x-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 <Save className="w-4 h-4" />
                 <span>{saving ? 'Saving...' : 'Save Draft'}</span>
@@ -362,7 +362,7 @@ const PaperEditor: React.FC = () => {
               <button
                 onClick={() => handleSave(true)}
                 disabled={saving}
-                className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 <Upload className="w-4 h-4" />
                 <span>{saving ? 'Publishing...' : 'Publish'}</span>
