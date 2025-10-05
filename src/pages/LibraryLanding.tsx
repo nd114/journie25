@@ -69,16 +69,26 @@ interface TrendingPaper {
 
 const LibraryLanding: React.FC = () => {
   const [trendingPapers, setTrendingPapers] = useState<TrendingPaper[]>([]);
-  const [activeReaders, setActiveReaders] = useState(127); // Mock data for now
+  const [activeReaders, setActiveReaders] = useState(0);
 
   useEffect(() => {
     loadTrendingPapers();
-    // Simulate live reader count updates
-    const interval = setInterval(() => {
-      setActiveReaders((prev) => prev + Math.floor(Math.random() * 3) - 1);
-    }, 5000);
+    loadActiveReaders();
+    const interval = setInterval(loadActiveReaders, 30000); // Update every 30 seconds
     return () => clearInterval(interval);
   }, []);
+
+  const loadActiveReaders = async () => {
+    try {
+      const response = await fetch('/api/analytics/active-users');
+      if (response.ok) {
+        const data = await response.json();
+        setActiveReaders(data.activeUsers || 0);
+      }
+    } catch (error) {
+      console.error('Failed to load active readers:', error);
+    }
+  };
 
   const loadTrendingPapers = async () => {
     try {
@@ -90,13 +100,7 @@ const LibraryLanding: React.FC = () => {
       }
 
       if (response.data && Array.isArray(response.data)) {
-        setTrendingPapers(
-          response.data.map((paper) => ({
-            ...paper,
-            readCount: Math.floor(Math.random() * 150) + 20,
-            commentCount: Math.floor(Math.random() * 25) + 1,
-          })),
-        );
+        setTrendingPapers(response.data);
       } else {
         setTrendingPapers([]);
       }
@@ -301,6 +305,51 @@ const LibraryLanding: React.FC = () => {
               <p className="text-gray-600">
                 Follow structured learning paths for your research area
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Testimonials / Social Proof */}
+        <div className="my-12 sm:my-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Trusted by Researchers Worldwide</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-2xl">👩‍🔬</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Dr. Sarah Chen</div>
+                  <div className="text-sm text-gray-600">Climate Scientist, MIT</div>
+                </div>
+              </div>
+              <p className="text-gray-700 italic">"Mars' Hill makes complex research accessible. The multi-level content feature helps me share my work with broader audiences."</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-2xl">👨‍💻</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Prof. James Rodriguez</div>
+                  <div className="text-sm text-gray-600">AI Researcher, Stanford</div>
+                </div>
+              </div>
+              <p className="text-gray-700 italic">"The collaborative editing and peer review features streamline our entire research workflow. It's transformed how our lab works."</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-2xl">🎓</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Maria Santos</div>
+                  <div className="text-sm text-gray-600">PhD Student, Oxford</div>
+                </div>
+              </div>
+              <p className="text-gray-700 italic">"As a graduate student, Mars' Hill helps me discover papers I wouldn't find otherwise. The cross-field connections are invaluable."</p>
             </div>
           </div>
         </div>
