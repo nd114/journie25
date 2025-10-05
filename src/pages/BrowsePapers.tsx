@@ -88,6 +88,7 @@ const BrowsePapers: React.FC = () => {
     setLoading(true);
     try {
       const response = await apiClient.getPapers({
+        page: 1,
         search: debouncedSearchQuery,
         field: selectedField,
         limit: 12,
@@ -155,10 +156,12 @@ const BrowsePapers: React.FC = () => {
     if (isLoadingMore || !hasMore) return;
     
     setIsLoadingMore(true);
-    setPage(prev => prev + 1);
+    const nextPage = page + 1;
+    setPage(nextPage);
     
     try {
       const response = await apiClient.getPapers({
+        page: nextPage,
         search: debouncedSearchQuery,
         field: selectedField,
         limit: 12,

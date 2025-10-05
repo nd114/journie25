@@ -112,11 +112,12 @@ class ApiClient {
     this.setToken(null);
   }
 
-  async getPapers(filters?: { field?: string; search?: string; limit?: number }) {
+  async getPapers(filters?: { field?: string; search?: string; limit?: number; page?: number }) {
     const params = new URLSearchParams();
     if (filters?.field) params.append('field', filters.field);
     if (filters?.search) params.append('search', filters.search);
     if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.page) params.append('page', filters.page.toString());
     
     const query = params.toString() ? `?${params.toString()}` : '';
     const response = await this.request<any>(`/papers${query}`);
