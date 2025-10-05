@@ -22,12 +22,12 @@ localPort = 5001
 externalPort = 3003
 
 [[ports]]
-localPort = 34579
-externalPort = 4200
-
-[[ports]]
 localPort = 35087
 externalPort = 3001
+
+[[ports]]
+localPort = 35491
+externalPort = 4200
 
 [[ports]]
 localPort = 41839
@@ -93,3 +93,4 @@ args = "npm run server"
 
 [agent]
 expertMode = true
+integrations = ["javascript_database:1.0.0"]

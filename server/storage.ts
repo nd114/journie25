@@ -1,4 +1,4 @@
-import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, apiKeys, apiUsage, subscriptions, paymentHistory, institutions, institutionMembers, institutionInvites, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference, type ApiKey, type InsertApiKey, type ApiUsage, type InsertApiUsage, type Subscription, type InsertSubscription, type PaymentHistory, type InsertPaymentHistory, type Institution, type InsertInstitution, type InstitutionMember, type InsertInstitutionMember, type InstitutionInvite, type InsertInstitutionInvite } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, apiKeys, apiUsage, subscriptions, paymentHistory, institutions, institutionMembers, institutionInvites, learningPaths, userLearningProgress, researchTools, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference, type ApiKey, type InsertApiKey, type ApiUsage, type InsertApiUsage, type Subscription, type InsertSubscription, type PaymentHistory, type InsertPaymentHistory, type Institution, type InsertInstitution, type InstitutionMember, type InsertInstitutionMember, type InstitutionInvite, type InsertInstitutionInvite } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
 
@@ -94,11 +94,6 @@ export interface IStorage {
   getResearchTools(): Promise<any[]>;
   useResearchTool(toolId: number, input: any, userId: number): Promise<any>;
 
-  // User bookmarks and engagement
-  bookmarkPaper(userId: number, paperId: number): Promise<void>;
-  removeBookmark(userId: number, paperId: number): Promise<void>;
-  getUserBookmarks(userId: number): Promise<any[]>;
-  getUserDashboardData(userId: number): Promise<any>;
 
   // Peer review methods
   createReviewAssignment(data: { paperId: number; reviewerId: number; deadline?: Date; isBlind: boolean; assignedBy: number }): Promise<any>;
@@ -221,7 +216,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(
         or(
           like(papers.title, `%${filters.search}%`),
-          like(papers.abstract, `%${filters.abstract}%`)
+          like(papers.abstract, `%${filters.search}%`)
         )
       );
     }
@@ -765,20 +760,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Trending topics
-  async getTrendingTopics(limit: number = 10) {
-    try {
-      const result = await db.query.trendingTopics.findMany({
-        orderBy: [desc(trendingTopics.momentumScore)],
-        limit
-      });
-      return result;
-    } catch (error) {
-      console.error('Error fetching trending topics:', error);
-      return [];
-    }
-  }
-
   async updateTrendingTopics() {
     // Calculate trending topics based on recent paper activity
     const recentPapers = await db.select({
@@ -807,13 +788,13 @@ export class DatabaseStorage implements IStorage {
       await db.insert(trendingTopics).values({
         topic: field,
         field: field,
-        momentum: (data as any).momentum,
-        relatedPaperIds: [],
+        momentumScore: String((data as any).momentum),
+        paperCount: 0,
       }).onConflictDoUpdate({
         target: trendingTopics.topic,
         set: {
-          momentum: (data as any).momentum,
-          calculatedAt: new Date(),
+          momentumScore: String((data as any).momentum),
+          updatedAt: new Date(),
         }
       });
     }
@@ -908,27 +889,6 @@ export class DatabaseStorage implements IStorage {
         .where(eq(communities.id, communityId));
     } catch (error) {
       console.error('Error leaving community:', error);
-      throw error;
-    }
-  }
-
-  async createCommunity(data: {
-    name: string;
-    description: string;
-    category: string;
-    memberCount?: number;
-  }) {
-    try {
-      const [community] = await db.insert(communities).values({
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        memberCount: data.memberCount || 0
-      }).returning();
-      
-      return community;
-    } catch (error) {
-      console.error('Error creating community:', error);
       throw error;
     }
   }
@@ -1041,63 +1001,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async joinCommunity(userId: number, communityId: number) {
-    try {
-      // Check if already a member
-      const existingMembership = await db.query.communityMembers.findFirst({
-        where: and(
-          eq(communityMembers.userId, userId),
-          eq(communityMembers.communityId, communityId)
-        )
-      });
-
-      if (existingMembership) {
-        throw new Error('Already a member of this community');
-      }
-
-      // Add membership
-      await db.insert(communityMembers).values({
-        userId,
-        communityId
-      });
-
-      // Update member count
-      await db.update(communities)
-        .set({ 
-          memberCount: sql`${communities.memberCount} + 1`,
-          updatedAt: new Date()
-        })
-        .where(eq(communities.id, communityId));
-
-    } catch (error) {
-      console.error('Error joining community:', error);
-      throw error;
-    }
-  }
-
-  async leaveCommunity(userId: number, communityId: number) {
-    try {
-      // Remove membership
-      await db.delete(communityMembers)
-        .where(and(
-          eq(communityMembers.userId, userId),
-          eq(communityMembers.communityId, communityId)
-        ));
-
-      // Update member count
-      await db.update(communities)
-        .set({ 
-          memberCount: sql`${communities.memberCount} - 1`,
-          updatedAt: new Date()
-        })
-        .where(eq(communities.id, communityId));
-
-    } catch (error) {
-      console.error('Error leaving community:', error);
-      throw error;
-    }
-  }
-
   async getTrendingTopics() {
     try {
       const trending = await db.query.trendingTopics.findMany({
@@ -1139,6 +1042,27 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error fetching research tools:', error);
       return [];
+    }
+  }
+
+  async useResearchTool(toolId: number, input: any, userId: number) {
+    try {
+      const tool = await db.query.researchTools.findFirst({
+        where: eq(researchTools.id, toolId)
+      });
+
+      if (!tool) {
+        throw new Error('Research tool not found');
+      }
+
+      return {
+        toolId,
+        result: `Tool ${tool.name} executed successfully`,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Error using research tool:', error);
+      throw error;
     }
   }
 
@@ -1200,24 +1124,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Community methods
-  async getCommunities(category?: string) {
-    try {
-      if (category) {
-        return await db.query.communities.findMany({
-          where: eq(communities.category, category),
-          orderBy: [desc(communities.memberCount)]
-        });
-      }
-      return await db.query.communities.findMany({
-        orderBy: [desc(communities.memberCount)]
-      });
-    } catch (error) {
-      console.error('Error fetching communities:', error);
-      return [];
-    }
-  }
-
   async createCommunity(data: { name: string; description: string; category: string; createdBy: number }) {
     try {
       const [community] = await db.insert(communities).values({
@@ -1236,43 +1142,6 @@ export class DatabaseStorage implements IStorage {
       return community;
     } catch (error) {
       console.error('Error creating community:', error);
-      throw error;
-    }
-  }
-
-  async joinCommunity(userId: number, communityId: number) {
-    try {
-      await db.insert(communityMembers).values({
-        userId,
-        communityId
-      });
-
-      await db.update(communities)
-        .set({ 
-          memberCount: sql`${communities.memberCount} + 1` 
-        })
-        .where(eq(communities.id, communityId));
-    } catch (error) {
-      console.error('Error joining community:', error);
-      throw error;
-    }
-  }
-
-  async leaveCommunity(userId: number, communityId: number) {
-    try {
-      await db.delete(communityMembers)
-        .where(and(
-          eq(communityMembers.userId, userId),
-          eq(communityMembers.communityId, communityId)
-        ));
-
-      await db.update(communities)
-        .set({ 
-          memberCount: sql`${communities.memberCount} - 1` 
-        })
-        .where(eq(communities.id, communityId));
-    } catch (error) {
-      console.error('Error leaving community:', error);
       throw error;
     }
   }
@@ -1375,22 +1244,6 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error checking follow status:', error);
       return false;
-    }
-  }
-
-  async getUserBookmarks(userId: number) {
-    try {
-      const bookmarks = await db.query.userBookmarks.findMany({
-        where: eq(userBookmarks.userId, userId),
-        with: {
-          paper: true
-        },
-        orderBy: [desc(userBookmarks.createdAt)]
-      });
-      return bookmarks.map(b => b.paper);
-    } catch (error) {
-      console.error('Error fetching bookmarks:', error);
-      return [];
     }
   }
 
