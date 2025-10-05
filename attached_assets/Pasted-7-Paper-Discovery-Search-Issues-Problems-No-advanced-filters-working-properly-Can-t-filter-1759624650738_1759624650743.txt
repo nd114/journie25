@@ -1,0 +1,93 @@
+7. Paper Discovery & Search Issues
+Problems:
+
+No advanced filters working properly - Can't filter by date range, author, or field effectively
+Search results lack relevance ranking - No way to know why papers appear in results
+Missing saved searches - Can't save search queries for later
+No citation-based discovery - Can't find related papers through citations
+Poor metadata display - Missing key info like publication date, journal, DOI visibility
+8. Author & Collaboration Problems
+Critical Issues:
+
+No author profiles - Can't view researcher's body of work
+Missing co-author management - No way to properly attribute multiple authors
+No follow functionality working - Can't track favorite researchers' new work
+No collaboration invites - Can't invite co-authors to edit papers
+Missing author disambiguation - John Smith vs John Smith problem
+9. Reference & Citation Management
+Major Gaps:
+
+No bibliography section in papers - Can't add references properly
+Citation generator not integrated into editor - Exists as separate feature, not embedded
+No reference import (BibTeX, RIS, EndNote) - Have to manually type everything
+Can't cite other papers in platform - No internal citation linking
+Missing citation count visibility - Can't see paper impact
+10. Paper Editor Deficiencies
+Blocking Issues:
+
+Rich text editor too basic - No support for:
+Equations/formulas (critical for STEM)
+Tables with formatting
+Figure captions and cross-references
+Footnotes/endnotes
+Section numbering
+No draft auto-save feedback - Don't know if work is saved
+Missing word count - Essential for journal submissions
+No export to PDF with proper formatting
+Can't upload supplementary files (datasets, code, images)
+11. Publishing Workflow Broken
+Current Problems:
+
+Publish button doesn't work (confirmed)
+No submission checklist - What's required before publishing?
+Missing pre-publication review - Can't preview how it will look
+No withdrawal/unpublish option - Once published, stuck
+No DOI assignment - Critical for citations
+Missing license selection (CC-BY, etc.)
+12. Paper Versioning Issues
+Problems:
+
+No visible version history - Can't see what changed
+No version comparison UI - Backend exists but no frontend
+Can't restore old versions - Feature exists but not accessible
+No changelog/update notes - Why was paper updated?
+13. Comment & Discussion System
+UX Problems:
+
+Comments hard to find - Buried at bottom
+No threaded discussions UI - Hard to follow conversations
+Can't @mention people - No notifications
+No moderation tools - Can't hide spam/inappropriate
+Missing voting/upvoting - Can't surface good comments
+14. Dashboard & Workspace
+Critical Missing:
+
+No paper status overview - Can't see draft vs published
+Missing analytics at a glance - Views, downloads, citations
+No submission history - What did I publish when?
+Can't organize papers - No folders, collections, or tags
+Missing notifications center - Don't know what's happening
+15. Reading Experience
+Major Issues:
+
+No reading mode - Cluttered interface while reading
+Can't highlight or annotate - Basic researcher need
+Missing download options - PDF, ePub, etc.
+No print-friendly view
+Can't bookmark/save papers - Have to search again
+No reading progress - For long papers
+16. Mobile Experience
+Completely Broken:
+
+Can't edit papers on mobile - Editor unusable
+Reading papers difficult - Text too small, bad formatting
+Navigation menu breaks - Can't access all features
+Forms don't work well - Tag input, login, etc.
+17. Data Integrity & Trust
+Concerns:
+
+No paper verification - Anyone can publish anything
+Missing plagiarism check
+No retraction mechanism
+Can't report papers
+No editorial oversight
