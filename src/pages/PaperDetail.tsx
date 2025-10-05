@@ -16,6 +16,7 @@ import {
   UserPlus
 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import CommentThread from "../components/CommentThread";
 import { MultiLevelContent } from "../components/MultiLevelContent";
 import { KnowledgeQuest } from "../components/KnowledgeQuest";
@@ -378,15 +379,15 @@ const PaperDetail: React.FC = () => {
         {user && <KnowledgeQuest />}
 
         {/* Full Content */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6">
           <div className="flex items-center space-x-2 mb-6">
             <BookOpen className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Deep Dive</h2>
-            <span className="text-sm text-gray-500">({estimatedReadTime} min read)</span>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Deep Dive</h2>
+            <span className="text-xs sm:text-sm text-gray-500">({estimatedReadTime} min read)</span>
           </div>
 
-          <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-            <div className="whitespace-pre-wrap">
+          <div className="prose prose-base sm:prose-lg max-w-none">
+            <div className="text-gray-700 leading-relaxed text-base sm:text-lg whitespace-pre-wrap break-words">
               {paper.content}
             </div>
           </div>
@@ -403,6 +404,7 @@ const PaperDetail: React.FC = () => {
           <CommentThread comments={comments} onAddComment={handleAddComment} />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
