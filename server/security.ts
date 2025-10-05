@@ -33,10 +33,6 @@ export const sanitizeMiddleware = (req: Request, res: Response, next: NextFuncti
     req.body = sanitizeInput(req.body);
   }
   
-  if (req.query) {
-    req.query = sanitizeInput(req.query);
-  }
-  
   next();
 };
 
