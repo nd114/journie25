@@ -59,7 +59,7 @@ export interface IStorage {
   recordUserInteraction(data: { userId: number; paperId: number; interactionType: string; metadata: any }): Promise<any>;
 
   // Trending topics
-  getTrendingTopics(limit?: number): Promise<any[]>;
+  getTrendingTopics(limit?: number): Promise<{ name: string; count: number; growth: string }[]>;
   updateTrendingTopics(): Promise<void>;
 
   // Communities
@@ -1001,30 +1001,45 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getTrendingTopics() {
+  async getTrendingTopics(limit: number = 20) {
     try {
-      const trending = await db.query.trendingTopics.findMany({
-        orderBy: [desc(trendingTopics.momentumScore)],
-        limit: 20
+      // Get top keywords from recent papers
+      const recentPapers = await db.query.papers.findMany({
+        where: eq(papers.isPublished, true),
+        orderBy: [desc(papers.publishedAt)],
+        limit: 100
       });
 
-      // Get recent papers for trending topics
-      const trendingWithPapers = await Promise.all(
-        trending.map(async (topic) => {
-          const relatedPapers = await db.query.papers.findMany({
-            where: sql`${papers.keywords}::text ILIKE ${'%' + topic.topic + '%'}`,
-            orderBy: [desc(papers.publishedAt)],
-            limit: 5
-          });
+      // Extract and count keywords
+      const keywordCounts = new Map<string, number>();
+      const keywordGrowth = new Map<string, number>();
+      
+      recentPapers.forEach((paper, index) => {
+        const keywords = (paper.keywords as string[]) || [];
+        const weight = index < 20 ? 2 : 1; // Recent papers get more weight
+        
+        keywords.forEach(keyword => {
+          const count = keywordCounts.get(keyword) || 0;
+          keywordCounts.set(keyword, count + weight);
+          
+          if (index < 20) {
+            const growth = keywordGrowth.get(keyword) || 0;
+            keywordGrowth.set(keyword, growth + 1);
+          }
+        });
+      });
 
-          return {
-            ...topic,
-            papers: relatedPapers
-          };
+      // Convert to array and sort by count
+      const trendingTopics = Array.from(keywordCounts.entries())
+        .map(([name, count]) => {
+          const recentCount = keywordGrowth.get(name) || 0;
+          const growth = recentCount > 5 ? '+high' : recentCount > 2 ? '+medium' : '+low';
+          return { name, count, growth };
         })
-      );
+        .sort((a, b) => b.count - a.count)
+        .slice(0, limit);
 
-      return trendingWithPapers;
+      return trendingTopics;
     } catch (error) {
       console.error('Error fetching trending topics:', error);
       return [];
@@ -1130,6 +1145,7 @@ export class DatabaseStorage implements IStorage {
         name: data.name,
         description: data.description,
         category: data.category,
+        createdBy: data.createdBy,
         memberCount: 1
       }).returning();
 

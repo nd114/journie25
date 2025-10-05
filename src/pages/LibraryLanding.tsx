@@ -84,9 +84,12 @@ const LibraryLanding: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setActiveReaders(data.activeUsers || 0);
+      } else {
+        setActiveReaders(0);
       }
     } catch (error) {
       console.error('Failed to load active readers:', error);
+      setActiveReaders(0);
     }
   };
 
@@ -142,12 +145,14 @@ const LibraryLanding: React.FC = () => {
       {/* Hero Section with Live Activity */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="text-center mb-8 sm:mb-12">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs sm:text-sm text-gray-600">
-              {activeReaders} researchers exploring right now
-            </span>
-          </div>
+          {activeReaders > 0 && (
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-xs sm:text-sm text-gray-600">
+                {activeReaders} researchers exploring right now
+              </span>
+            </div>
+          )}
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">
             Where Curiosity Meets
@@ -197,47 +202,60 @@ const LibraryLanding: React.FC = () => {
             you.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {trendingPapers.map((paper, index) => (
-              <Link key={paper.id} to={`/paper/${paper.id}`}>
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all transform hover:scale-102 group">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 rounded-full">
-                      #{index + 1} Trending
-                    </span>
-                    <div className="flex items-center space-x-3 text-sm text-gray-500">
-                      <div className="flex items-center space-x-1">
-                        <Eye className="w-4 h-4" />
-                        <span>{paper.readCount}</span>
+          {trendingPapers.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {trendingPapers.map((paper, index) => (
+                <Link key={paper.id} to={`/paper/${paper.id}`}>
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all transform hover:scale-102 group">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 rounded-full">
+                        #{index + 1} Trending
+                      </span>
+                      <div className="flex items-center space-x-3 text-sm text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <Eye className="w-4 h-4" />
+                          <span>{paper.readCount}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>{paper.commentCount}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <MessageCircle className="w-4 h-4" />
-                        <span>{paper.commentCount}</span>
+                    </div>
+
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                      {paper.title}
+                    </h3>
+
+                    <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                      {paper.abstract}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {paper.authors?.slice(0, 2).join(", ")}
+                        {paper.authors && paper.authors.length > 2 && " +more"}
+                      </span>
+                      <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                        <span className="text-xs">→</span>
                       </div>
                     </div>
                   </div>
-
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
-                    {paper.title}
-                  </h3>
-
-                  <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                    {paper.abstract}
-                  </p>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">
-                      {paper.authors?.slice(0, 2).join(", ")}
-                      {paper.authors && paper.authors.length > 2 && " +more"}
-                    </span>
-                    <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                      <span className="text-xs">→</span>
-                    </div>
-                  </div>
-                </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
+              <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No trending papers available at the moment</p>
+              <Link
+                to="/library"
+                className="inline-block mt-4 text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                Explore all papers →
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Explore by Interest */}

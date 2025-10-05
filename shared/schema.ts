@@ -245,6 +245,7 @@ export const communities = pgTable('communities', {
   description: text('description'),
   category: varchar('category', { length: 100 }),
   memberCount: integer('member_count').default(0),
+  createdBy: integer('created_by').references(() => users.id).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

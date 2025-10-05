@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { TrendingUp, Eye, MessageCircle, Calendar } from 'lucide-react';
+import { TrendingUp, Eye, MessageCircle, Calendar, AlertCircle, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../services/apiClient';
 
@@ -27,6 +27,7 @@ export function TrendingResearch() {
   const [trendingPapers, setTrendingPapers] = useState<TrendingPaper[]>([]);
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('week');
 
   useEffect(() => {
@@ -35,21 +36,32 @@ export function TrendingResearch() {
 
   const loadTrendingData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [papersResponse, topicsResponse] = await Promise.all([
         apiClient.getTrendingPapers(20),
-        fetch('/api/trending-topics?limit=10').then(r => r.json())
+        fetch('/api/trending-topics?limit=10').then(r => r.ok ? r.json() : []).catch(() => [])
       ]);
 
       if (papersResponse.data && Array.isArray(papersResponse.data)) {
         setTrendingPapers(papersResponse.data);
+      } else if (papersResponse.error) {
+        setError('Failed to load trending papers. Please try again.');
+        setTrendingPapers([]);
+      } else {
+        setTrendingPapers([]);
       }
 
       if (topicsResponse && Array.isArray(topicsResponse)) {
         setTrendingTopics(topicsResponse);
+      } else {
+        setTrendingTopics([]);
       }
     } catch (error) {
       console.error('Failed to load trending data:', error);
+      setError('Unable to load trending data. Please check your connection and try again.');
+      setTrendingPapers([]);
+      setTrendingTopics([]);
     } finally {
       setLoading(false);
     }
@@ -88,6 +100,32 @@ export function TrendingResearch() {
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
             <p className="text-gray-500 mt-4">Loading trending data...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Trending Data</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={loadTrendingData}
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Retry</span>
+            </button>
+          </div>
+        ) : trendingPapers.length === 0 ? (
+          <div className="text-center py-12">
+            <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Trending Papers Available</h3>
+            <p className="text-gray-600 mb-6">There are no trending papers for this time period yet.</p>
+            <button
+              onClick={loadTrendingData}
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Refresh</span>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -140,17 +178,21 @@ export function TrendingResearch() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Trending Topics</h2>
               <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="space-y-4">
-                  {trendingTopics.map((topic, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">{topic.name}</div>
-                        <div className="text-sm text-gray-500">{topic.count} papers</div>
+                {trendingTopics.length > 0 ? (
+                  <div className="space-y-4">
+                    {trendingTopics.map((topic, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{topic.name}</div>
+                          <div className="text-sm text-gray-500">{topic.count} papers</div>
+                        </div>
+                        <span className="text-green-600 text-sm font-medium">{topic.growth}</span>
                       </div>
-                      <span className="text-green-600 text-sm font-medium">{topic.growth}</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No trending topics available</p>
+                )}
               </div>
             </div>
           </div>

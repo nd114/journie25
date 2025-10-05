@@ -8,6 +8,8 @@ import {
   Shuffle,
   Lightbulb,
   SlidersHorizontal,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -47,6 +49,7 @@ interface Paper {
 const BrowsePapers: React.FC = () => {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedField, setSelectedField] = useState("");
   const [sortBy, setSortBy] = useState<"latest" | "trending" | "discussed">(
@@ -87,6 +90,15 @@ const BrowsePapers: React.FC = () => {
 
   const loadPapers = async (reset = false) => {
     setLoading(true);
+    setError(null);
+    
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        setError('Loading is taking longer than expected. Please check your connection and try again.');
+        setLoading(false);
+      }
+    }, 10000);
+
     try {
       const response = await apiClient.getPapers({
         page: 1,
@@ -96,21 +108,22 @@ const BrowsePapers: React.FC = () => {
         ...advancedFilters,
       });
       
+      clearTimeout(timeoutId);
+      
       if (response.error) {
         console.error('Error loading papers:', response.error);
+        setError('Failed to load papers. Please try again.');
         setPapers([]);
         return;
       }
       
       if (response.data && Array.isArray(response.data)) {
-        // Add mock engagement data and sort
         const enrichedPapers = response.data.map((paper) => ({
           ...paper,
           readCount: paper.readCount || Math.floor(Math.random() * 200) + 10,
           commentCount: paper.commentCount || Math.floor(Math.random() * 30) + 1,
         }));
 
-        // Sort based on selected criteria
         let sortedPapers = [...enrichedPapers];
         switch (sortBy) {
           case "trending":
@@ -143,7 +156,9 @@ const BrowsePapers: React.FC = () => {
         setHasMore(false);
       }
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error('Exception loading papers:', error);
+      setError('Unable to load papers. Please check your connection and try again.');
       if (reset) {
         setPapers([]);
       }
@@ -343,6 +358,19 @@ const BrowsePapers: React.FC = () => {
             <p className="text-gray-500 mt-4">
               Finding amazing research for you...
             </p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Papers</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => loadPapers(true)}
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Retry</span>
+            </button>
           </div>
         ) : papers.length === 0 ? (
           <div className="text-center py-12">

@@ -11,8 +11,8 @@ import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
 import Stripe from "stripe";
 import { db } from "./db";
-import { subscriptions, institutionMembers } from "../shared/schema";
-import { eq } from "drizzle-orm";
+import { subscriptions, institutionMembers, paperViews } from "../shared/schema";
+import { eq, and, gte, sql } from "drizzle-orm";
 import { rateLimit } from "./rate-limiter";
 import { startBackgroundJobs } from "./background-jobs";
 import { 
@@ -1690,10 +1690,8 @@ app.post("/api/communities", authenticateToken, async (req, res) => {
       name,
       description,
       category,
+      createdBy: userId,
     });
-
-    // Automatically join the creator to the community
-    await storage.joinCommunity(userId, community.id);
 
     res.status(201).json({ ...community, isJoined: true });
   } catch (error) {
@@ -2307,6 +2305,27 @@ app.get("/api/analytics/dashboard", async (req, res) => {
   } catch (error) {
     console.error("Error fetching dashboard analytics:", error);
     res.status(500).json({ error: "Failed to fetch dashboard analytics" });
+  }
+});
+
+app.get("/api/analytics/active-users", async (req, res) => {
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    const activeUsers = await db
+      .selectDistinct({ userId: paperViews.userId })
+      .from(paperViews)
+      .where(
+        and(
+          gte(paperViews.viewedAt, fiveMinutesAgo),
+          sql`${paperViews.userId} IS NOT NULL`
+        )
+      );
+    
+    res.json({ activeUsers: activeUsers.length });
+  } catch (error) {
+    console.error("Error fetching active users:", error);
+    res.status(500).json({ error: "Failed to fetch active users" });
   }
 });
 

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Users, Plus, Search } from 'lucide-react';
+import { Users, Plus, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -19,6 +19,7 @@ export function ResearchCommunities() {
   const { user } = useAuth();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -46,16 +47,21 @@ export function ResearchCommunities() {
 
   const loadCommunities = async () => {
     setLoading(true);
+    setError(null);
     try {
       const category = selectedCategory === 'All' ? '' : selectedCategory;
       const response = await apiClient.getCommunities(category);
       if (response.data && Array.isArray(response.data)) {
         setCommunities(response.data);
+      } else if (response.error) {
+        setError('Failed to load communities. Please try again.');
+        setCommunities([]);
       } else {
         setCommunities([]);
       }
     } catch (error) {
       console.error('Failed to load communities:', error);
+      setError('Unable to load communities. Please check your connection and try again.');
       setCommunities([]);
     } finally {
       setLoading(false);
@@ -73,15 +79,19 @@ export function ResearchCommunities() {
       if (!community) return;
 
       if (community.isJoined) {
-        await apiClient.leaveCommunity(communityId);
-        setCommunities(prev => prev.map(c => 
-          c.id === communityId ? { ...c, isJoined: false, memberCount: c.memberCount - 1 } : c
-        ));
+        const response = await apiClient.leaveCommunity(communityId);
+        if (!response.error) {
+          setCommunities(prev => prev.map(c => 
+            c.id === communityId ? { ...c, isJoined: false, memberCount: c.memberCount - 1 } : c
+          ));
+        }
       } else {
-        await apiClient.joinCommunity(communityId);
-        setCommunities(prev => prev.map(c => 
-          c.id === communityId ? { ...c, isJoined: true, memberCount: c.memberCount + 1 } : c
-        ));
+        const response = await apiClient.joinCommunity(communityId);
+        if (!response.error) {
+          setCommunities(prev => prev.map(c => 
+            c.id === communityId ? { ...c, isJoined: true, memberCount: c.memberCount + 1 } : c
+          ));
+        }
       }
     } catch (error) {
       console.error('Failed to join/leave community:', error);
@@ -179,11 +189,37 @@ export function ResearchCommunities() {
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
             <p className="text-gray-500 mt-4">Loading communities...</p>
           </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Communities</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={loadCommunities}
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Retry</span>
+            </button>
+          </div>
         ) : filteredCommunities.length === 0 ? (
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No communities found</h3>
-            <p className="text-gray-500">Try adjusting your search or create a new community</p>
+            <p className="text-gray-500 mb-6">
+              {searchQuery || selectedCategory 
+                ? 'Try adjusting your search or filters' 
+                : 'Be the first to create a community'}
+            </p>
+            {user && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Create Community</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
