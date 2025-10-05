@@ -15,6 +15,15 @@ import { subscriptions, institutionMembers } from "../shared/schema";
 import { eq } from "drizzle-orm";
 import { rateLimit } from "./rate-limiter";
 import { startBackgroundJobs } from "./background-jobs";
+import { 
+  sanitizeMiddleware, 
+  httpsEnforcement, 
+  securityHeaders,
+  recordFailedLogin,
+  clearFailedLogin,
+  isAccountLocked,
+  getFailedAttempts
+} from "./security";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +63,12 @@ const SUBSCRIPTION_TIERS = {
 // Enable gzip compression for all responses
 app.use(compression());
 
+// Security headers
+app.use(securityHeaders);
+
+// HTTPS enforcement in production
+app.use(httpsEnforcement);
+
 app.use(
   cors({
     origin: [
@@ -70,8 +85,14 @@ app.use(
 );
 app.use(express.json());
 
-// Rate limiting: 100 requests per 15 minutes
+// Input sanitization
+app.use(sanitizeMiddleware);
+
+// Rate limiting: 100 requests per 15 minutes (general API)
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+
+// Stricter rate limiting for auth endpoints: 10 requests per 15 minutes
+app.use('/api/auth/', rateLimit({ windowMs: 15 * 60 * 1000, max: 10 }));
 
 // In-memory cache implementation with TTL
 interface CacheEntry<T> {
@@ -296,7 +317,7 @@ app.post("/api/auth/register", async (req, res) => {
     });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "24h", // 24 hour expiration for better security
     });
 
     res.json({
@@ -313,18 +334,41 @@ app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check account lockout
+    const lockStatus = isAccountLocked(email);
+    if (lockStatus.locked) {
+      return res.status(429).json({ 
+        error: "Too many failed login attempts. Account temporarily locked.",
+        remainingTime: lockStatus.remainingTime,
+        message: `Please try again in ${lockStatus.remainingTime} seconds`
+      });
+    }
+
     const user = await storage.getUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      recordFailedLogin(email);
+      const attempts = getFailedAttempts(email);
+      return res.status(401).json({ 
+        error: "Invalid credentials",
+        remainingAttempts: Math.max(0, 5 - attempts)
+      });
     }
 
     const isValidPassword = await compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      recordFailedLogin(email);
+      const attempts = getFailedAttempts(email);
+      return res.status(401).json({ 
+        error: "Invalid credentials",
+        remainingAttempts: Math.max(0, 5 - attempts)
+      });
     }
 
+    // Clear failed attempts on successful login
+    clearFailedLogin(email);
+
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "24h", // 24 hour expiration for better security
     });
 
     res.json({
