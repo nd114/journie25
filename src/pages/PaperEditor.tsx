@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, X, Upload } from 'lucide-react';
+import { ArrowLeft, Save, Upload } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Navbar from '../components/Navbar';
@@ -106,34 +106,6 @@ const PaperEditor: React.FC = () => {
     } else if (response.error) {
       alert(response.error);
     }
-  };
-
-  const addAuthor = () => {
-    setAuthors([...authors, '']);
-  };
-
-  const removeAuthor = (index: number) => {
-    setAuthors(authors.filter((_, i) => i !== index));
-  };
-
-  const updateAuthor = (index: number, value: string) => {
-    const newAuthors = [...authors];
-    newAuthors[index] = value;
-    setAuthors(newAuthors);
-  };
-
-  const addKeyword = () => {
-    setKeywords([...keywords, '']);
-  };
-
-  const removeKeyword = (index: number) => {
-    setKeywords(keywords.filter((_, i) => i !== index));
-  };
-
-  const updateKeyword = (index: number, value: string) => {
-    const newKeywords = [...keywords];
-    newKeywords[index] = value;
-    setKeywords(newKeywords);
   };
 
 
@@ -257,34 +229,21 @@ const PaperEditor: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Authors
               </label>
-              <div className="space-y-2">
-                {authors.map((author, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={author}
-                      onChange={(e) => updateAuthor(index, e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Author name"
-                    />
-                    {authors.length > 1 && (
-                      <button
-                        onClick={() => removeAuthor(index)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  onClick={addAuthor}
-                  className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Author</span>
-                </button>
-              </div>
+              <textarea
+                value={authors.join(', ')}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.trim()) {
+                    setAuthors(value.split(',').map(a => a.trim()).filter(a => a));
+                  } else {
+                    setAuthors(['']);
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter author names separated by commas (e.g., John Smith, Jane Doe, Dr. Alex Johnson)"
+                rows={2}
+              />
+              <p className="mt-1 text-xs text-gray-500">Separate multiple authors with commas</p>
             </div>
 
             <div>
@@ -312,34 +271,21 @@ const PaperEditor: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Keywords
               </label>
-              <div className="space-y-2">
-                {keywords.map((keyword, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={keyword}
-                      onChange={(e) => updateKeyword(index, e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Enter keyword"
-                    />
-                    {keywords.length > 1 && (
-                      <button
-                        onClick={() => removeKeyword(index)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  onClick={addKeyword}
-                  className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Keyword</span>
-                </button>
-              </div>
+              <textarea
+                value={keywords.join(', ')}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.trim()) {
+                    setKeywords(value.split(',').map(k => k.trim()).filter(k => k));
+                  } else {
+                    setKeywords(['']);
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter keywords separated by commas (e.g., machine learning, neural networks, AI)"
+                rows={2}
+              />
+              <p className="mt-1 text-xs text-gray-500">Separate multiple keywords with commas</p>
             </div>
           </div>
 
