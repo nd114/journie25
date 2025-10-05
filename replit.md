@@ -30,6 +30,9 @@ Preferred communication style: Simple, everyday language.
 - **UX IMPROVEMENT**: Improved author/keyword inputs - now accept comma-separated values
 - **RESPONSIVE DESIGN**: Enhanced mobile layout for PaperEditor header and footer buttons
 - **VISUAL POLISH**: Updated footer with professional design and proper legal links
+- **NAVIGATION CLEANUP**: Removed unimplemented pages (Learning Paths, Tools) from navigation
+- **UX POLISH**: Added scroll-to-top on route changes for better navigation experience
+- **FOOTER CONSISTENCY**: Added footer to all 7 pages (About, Contact, FAQ, How It Works, Trending, Communities, User Profile)
 - Disabled failing background jobs temporarily (will re-enable with email service)
 - Verified Terms of Service and Privacy Policy pages are ready for launch
 
