@@ -24,6 +24,15 @@ Preferred communication style: Simple, everyday language.
 - Institutional account management
 - Public REST API v1 with documentation
 
+**Beta Launch Preparation (October 5, 2025):**
+- **CRITICAL FIX**: Fixed publishing workflow - papers can now be published on creation
+- **CRITICAL FIX**: Fixed pagination - all 74 papers now load correctly with infinite scroll
+- **UX IMPROVEMENT**: Improved author/keyword inputs - now accept comma-separated values
+- **RESPONSIVE DESIGN**: Enhanced mobile layout for PaperEditor header and footer buttons
+- **VISUAL POLISH**: Updated footer with professional design and proper legal links
+- Disabled failing background jobs temporarily (will re-enable with email service)
+- Verified Terms of Service and Privacy Policy pages are ready for launch
+
 ## System Architecture
 
 ### Frontend Architecture
