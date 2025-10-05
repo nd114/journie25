@@ -60,14 +60,12 @@ export async function cleanupExpiredData() {
 
 // Job scheduler - runs jobs at specified intervals
 export function startBackgroundJobs() {
-  // Run email notifications every 5 minutes
-  setInterval(processEmailNotifications, 5 * 60 * 1000);
+  // Temporarily disabled to prevent database connection errors
+  // Will re-enable after email service is configured
   
-  // Run analytics calculation every hour
-  setInterval(calculateDailyAnalytics, 60 * 60 * 1000);
+  // setInterval(processEmailNotifications, 5 * 60 * 1000);
+  // setInterval(calculateDailyAnalytics, 60 * 60 * 1000);
+  // setInterval(cleanupExpiredData, 24 * 60 * 60 * 1000);
   
-  // Run cleanup every day
-  setInterval(cleanupExpiredData, 24 * 60 * 60 * 1000);
-  
-  console.log('Background jobs started');
+  console.log('Background jobs disabled - will be enabled after email service setup');
 }

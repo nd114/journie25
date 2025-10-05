@@ -1055,10 +1055,12 @@ app.get("/api/papers/:id", async (req, res) => {
 
 app.post("/api/papers", authenticateToken, async (req: any, res) => {
   try {
-    const { title, abstract, content, authors, researchField, keywords } =
+    const { title, abstract, content, authors, researchField, keywords, status } =
       req.body;
 
-    const paper = await storage.createPaper({
+    const isPublishing = status === 'published';
+    
+    const paperData: any = {
       title,
       abstract,
       content: content || "",
@@ -1068,8 +1070,32 @@ app.post("/api/papers", authenticateToken, async (req: any, res) => {
       fieldIds: [],
       keywords: keywords || [],
       createdBy: req.user.id,
-      status: "draft",
-    });
+      status: status || "draft",
+    };
+
+    // If publishing on creation, set publication fields
+    if (isPublishing) {
+      paperData.isPublished = true;
+      paperData.publishedAt = new Date();
+      paperData.version = 1;
+    }
+
+    const paper = await storage.createPaper(paperData);
+
+    // Send notification if published
+    if (isPublishing) {
+      const user = await storage.getUser(req.user.id);
+      if (user) {
+        await createAndBroadcastNotification({
+          userId: req.user.id,
+          type: 'paper_published',
+          title: 'Paper Published',
+          message: `Your paper "${title}" has been published successfully`,
+          entityType: 'paper',
+          entityId: paper.id,
+        });
+      }
+    }
 
     res.json(paper);
   } catch (error) {
