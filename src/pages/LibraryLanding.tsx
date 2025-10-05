@@ -324,7 +324,7 @@ const LibraryLanding: React.FC = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <BookOpen className="w-6 h-6 text-indigo-400" />
-                <span className="text-xl font-bold">Research Platform</span>
+                <span className="text-xl font-bold">Mars' Hill</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Where curiosity meets discovery. Transforming academic papers into engaging research stories.
@@ -368,7 +368,7 @@ const LibraryLanding: React.FC = () => {
           {/* Bottom Bar */}
           <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} Research Platform. All rights reserved.
+              © {new Date().getFullYear()} Mars' Hill. All rights reserved.
             </p>
             <div className="flex space-x-6 text-gray-400">
               <a href="#" className="hover:text-white transition-colors text-sm">Twitter</a>

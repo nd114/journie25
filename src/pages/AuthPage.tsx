@@ -33,7 +33,7 @@ const AuthPage: React.FC = () => {
           <div className="flex justify-center mb-4">
             <BookOpen className="w-12 h-12 text-indigo-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Research Platform</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Mars' Hill</h2>
           <p className="text-gray-600 mt-2">
             {isLogin ? 'Sign in to your account' : 'Create your account'}
           </p>

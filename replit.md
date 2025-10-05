@@ -1,4 +1,4 @@
-# Research Platform
+# Mars' Hill
 
 ## Overview
 

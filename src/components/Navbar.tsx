@@ -34,7 +34,7 @@ const Navbar: React.FC = () => {
           <Link to="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
             <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600" />
             <span className="text-lg sm:text-xl font-bold text-gray-900">
-              Research Platform
+              Mars' Hill
             </span>
           </Link>
 

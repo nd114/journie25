@@ -18,7 +18,7 @@ export function generateAPA(data: CitationData): string {
   const authors = formatAuthorsAPA(data.authors);
   const year = data.year || new Date(data.publishedAt || Date.now()).getFullYear();
   const title = data.title;
-  const journal = data.journal || 'Research Platform';
+  const journal = data.journal || 'Mars\' Hill';
   
   let citation = `${authors} (${year}). ${title}. ${journal}`;
   
@@ -34,7 +34,7 @@ export function generateAPA(data: CitationData): string {
 export function generateMLA(data: CitationData): string {
   const authors = formatAuthorsMLA(data.authors);
   const title = `"${data.title}"`;
-  const journal = data.journal || 'Research Platform';
+  const journal = data.journal || 'Mars\' Hill';
   const year = data.year || new Date(data.publishedAt || Date.now()).getFullYear();
   
   let citation = `${authors}. ${title}. ${journal}`;
@@ -54,7 +54,7 @@ export function generateMLA(data: CitationData): string {
 export function generateChicago(data: CitationData): string {
   const authors = formatAuthorsChicago(data.authors);
   const title = `"${data.title}"`;
-  const journal = data.journal || 'Research Platform';
+  const journal = data.journal || 'Mars\' Hill';
   const year = data.year || new Date(data.publishedAt || Date.now()).getFullYear();
   
   let citation = `${authors}. ${title}. ${journal}`;
@@ -75,7 +75,7 @@ export function generateBibTeX(data: CitationData): string {
   const year = data.year || new Date(data.publishedAt || Date.now()).getFullYear();
   const key = generateCiteKey(data);
   const authors = data.authors.join(' and ');
-  const journal = data.journal || 'Research Platform';
+  const journal = data.journal || 'Mars\' Hill';
   
   let bibtex = `@article{${key},\n`;
   bibtex += `  author = {${authors}},\n`;
@@ -95,7 +95,7 @@ export function generateBibTeX(data: CitationData): string {
 
 export function generateEndNote(data: CitationData): string {
   const year = data.year || new Date(data.publishedAt || Date.now()).getFullYear();
-  const journal = data.journal || 'Research Platform';
+  const journal = data.journal || 'Mars\' Hill';
   
   let endnote = '%0 Journal Article\n';
   
