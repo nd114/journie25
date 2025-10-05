@@ -1099,7 +1099,7 @@ app.get("/api/papers/:id", async (req, res) => {
 
 app.post("/api/papers", authenticateToken, async (req: any, res) => {
   try {
-    const { title, abstract, content, authors, researchField, keywords, status } =
+    const { title, abstract, content, authors, researchField, keywords, status, storyData } =
       req.body;
 
     const isPublishing = status === 'published';
@@ -1115,6 +1115,7 @@ app.post("/api/papers", authenticateToken, async (req: any, res) => {
       keywords: keywords || [],
       createdBy: req.user.id,
       status: status || "draft",
+      storyData: storyData || {},
     };
 
     // If publishing on creation, set publication fields
@@ -1232,6 +1233,47 @@ app.put("/api/papers/:id", authenticateToken, async (req: any, res) => {
   } catch (error) {
     console.error("Error updating paper:", error);
     res.status(500).json({ error: "Failed to update paper" });
+  }
+});
+
+app.post("/api/papers/:id/story-data", authenticateToken, async (req: any, res) => {
+  try {
+    const paperId = parseInt(req.params.id);
+    const { general, intermediate, expert } = req.body;
+
+    const existingPaper = await storage.getPaper(paperId);
+
+    if (!existingPaper) {
+      return res.status(404).json({ error: "Paper not found" });
+    }
+
+    // Check authorization: user must be the creator
+    if (existingPaper.createdBy !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this paper's story data" });
+    }
+
+    // Validate input
+    if (!general && !intermediate && !expert) {
+      return res.status(400).json({ error: "At least one story level must be provided" });
+    }
+
+    const storyData = {
+      general: general || "",
+      intermediate: intermediate || "",
+      expert: expert || ""
+    };
+
+    const paper = await storage.updatePaper(paperId, { storyData });
+
+    // Invalidate cache after update
+    invalidatePaperCache(paperId);
+
+    res.json(paper);
+  } catch (error) {
+    console.error("Error updating story data:", error);
+    res.status(500).json({ error: "Failed to update story data" });
   }
 });
 

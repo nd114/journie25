@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Upload } from 'lucide-react';
 import ReactQuill from 'react-quill';
@@ -13,6 +13,7 @@ const PaperEditor: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [autoSaveError, setAutoSaveError] = useState<string | null>(null);
 
   const [title, setTitle] = useState('');
   const [abstract, setAbstract] = useState('');
@@ -20,23 +21,42 @@ const PaperEditor: React.FC = () => {
   const [authors, setAuthors] = useState<string[]>(['']);
   const [researchField, setResearchField] = useState('');
   const [keywords, setKeywords] = useState<string[]>(['']);
+  const [storyDataGeneral, setStoryDataGeneral] = useState('');
+  const [storyDataIntermediate, setStoryDataIntermediate] = useState('');
+  const [storyDataExpert, setStoryDataExpert] = useState('');
+  
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const stateRef = useRef({
+    title,
+    abstract,
+    content,
+    authors,
+    researchField,
+    keywords,
+    storyDataGeneral,
+    storyDataIntermediate,
+    storyDataExpert,
+  });
+
+  useEffect(() => {
+    stateRef.current = {
+      title,
+      abstract,
+      content,
+      authors,
+      researchField,
+      keywords,
+      storyDataGeneral,
+      storyDataIntermediate,
+      storyDataExpert,
+    };
+  }, [title, abstract, content, authors, researchField, keywords, storyDataGeneral, storyDataIntermediate, storyDataExpert]);
 
   useEffect(() => {
     if (id) {
       loadPaper();
     }
   }, [id]);
-
-  // Auto-save every 30 seconds
-  useEffect(() => {
-    if (!id) return; // Don't auto-save new papers
-
-    const interval = setInterval(() => {
-      handleAutoSave();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [title, abstract, content, authors, researchField, keywords, id]);
 
   const loadPaper = async () => {
     if (!id) return;
@@ -50,30 +70,68 @@ const PaperEditor: React.FC = () => {
       setAuthors(paper.authors && paper.authors.length > 0 ? paper.authors : ['']);
       setResearchField(paper.researchField || '');
       setKeywords(paper.keywords?.length > 0 ? paper.keywords : ['']);
+      setStoryDataGeneral(paper.storyData?.general || '');
+      setStoryDataIntermediate(paper.storyData?.intermediate || '');
+      setStoryDataExpert(paper.storyData?.expert || '');
     }
     setLoading(false);
   };
 
-  const handleAutoSave = async () => {
-    if (!title.trim() || !abstract.trim() || saving || autoSaving) return;
+  const handleAutoSave = useCallback(async () => {
+    const { title, abstract, content, authors, researchField, keywords, storyDataGeneral, storyDataIntermediate, storyDataExpert } = stateRef.current;
+    
+    if (!id || !title.trim() || !abstract.trim()) return;
 
     setAutoSaving(true);
-    const paperData = {
-      title,
-      abstract,
-      content,
-      authors: authors.filter(a => a.trim()),
-      researchField,
-      keywords: keywords.filter(k => k.trim()),
-      status: 'draft' as const,
-    };
+    setAutoSaveError(null);
+    
+    try {
+      const paperData = {
+        title,
+        abstract,
+        content,
+        authors: authors.filter(a => a.trim()),
+        researchField,
+        keywords: keywords.filter(k => k.trim()),
+        status: 'draft' as const,
+        storyData: {
+          general: storyDataGeneral,
+          intermediate: storyDataIntermediate,
+          expert: storyDataExpert,
+        },
+      };
 
-    if (id) {
-      await apiClient.updatePaper(parseInt(id), paperData);
+      const response = await apiClient.updatePaper(parseInt(id), paperData);
+      
+      if (response.error) {
+        setAutoSaveError(response.error);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Auto-save failed';
+      setAutoSaveError(errorMessage);
+      console.error('Auto-save error:', error);
+    } finally {
+      setAutoSaving(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
 
-    setAutoSaving(false);
-  };
+    debounceTimerRef.current = setTimeout(() => {
+      handleAutoSave();
+    }, 3000);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [title, abstract, content, authors, researchField, keywords, storyDataGeneral, storyDataIntermediate, storyDataExpert, id, handleAutoSave]);
 
   const handleSave = async (publishNow: boolean = false) => {
     if (!title.trim() || !abstract.trim()) {
@@ -90,6 +148,11 @@ const PaperEditor: React.FC = () => {
       researchField,
       keywords: keywords.filter(k => k.trim()),
       status: publishNow ? 'published' as const : 'draft' as const,
+      storyData: {
+        general: storyDataGeneral,
+        intermediate: storyDataIntermediate,
+        expert: storyDataExpert,
+      },
     };
 
     let response;
@@ -139,6 +202,9 @@ const PaperEditor: React.FC = () => {
           <div className="flex items-center space-x-3 sm:space-x-4">
             {autoSaving && (
               <span className="text-sm text-gray-500 italic">Auto-saving...</span>
+            )}
+            {autoSaveError && (
+              <span className="text-sm text-red-600 italic">Auto-save failed: {autoSaveError}</span>
             )}
             <button
               onClick={() => setPreviewMode(!previewMode)}
@@ -286,6 +352,56 @@ const PaperEditor: React.FC = () => {
                 rows={2}
               />
               <p className="mt-1 text-xs text-gray-500">Separate multiple keywords with commas</p>
+            </div>
+
+            {/* Research Stories Section */}
+            <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-200">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">Research Stories (Optional)</h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Make your research accessible to different audiences by writing 3 levels of explanation.
+                This is the core feature that makes complex research understandable for everyone.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    General Audience Level
+                  </label>
+                  <textarea
+                    value={storyDataGeneral}
+                    onChange={(e) => setStoryDataGeneral(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Explain your research in simple terms for everyone. Example: 'Scientists discovered that...' Focus on what it means for everyday life."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Academic/Intermediate Level
+                  </label>
+                  <textarea
+                    value={storyDataIntermediate}
+                    onChange={(e) => setStoryDataIntermediate(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Explain for students and educated readers. Include methodology and key findings, but explain technical terms."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Expert Level
+                  </label>
+                  <textarea
+                    value={storyDataExpert}
+                    onChange={(e) => setStoryDataExpert(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Full technical details for experts in your field. Include all technical terminology and precise methodology."
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
