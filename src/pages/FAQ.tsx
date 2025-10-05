@@ -19,8 +19,8 @@ const FAQ: React.FC = () => {
     {
       id: '1',
       category: 'general',
-      question: 'What is this research platform?',
-      answer: 'Our platform is a revolutionary way to discover, understand, and engage with scientific research. We transform complex academic papers into interactive stories that make research accessible to everyone, from students to experts.'
+      question: 'What is Mars\' Hill?',
+      answer: 'Mars\' Hill is a revolutionary way to discover, understand, and engage with scientific research. We transform complex academic papers into interactive stories that make research accessible to everyone, from students to experts.'
     },
     {
       id: '2',

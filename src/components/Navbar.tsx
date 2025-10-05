@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
 
           <div className="hidden lg:flex items-center space-x-6">
             <Link
-              to="/browse"
+              to="/library"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
             >
               Browse Papers
@@ -150,7 +150,7 @@ const Navbar: React.FC = () => {
         <div className="lg:hidden border-t border-gray-200 bg-white">
           <div className="px-4 py-3 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
             <Link
-              to="/browse"
+              to="/library"
               onClick={closeMobileMenu}
               className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
             >

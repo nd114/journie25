@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import PaperCard from "../components/PaperCard";
 import { apiClient } from "../services/apiClient";
 import { AdvancedSearchFilters, SearchFilters } from "../components/AdvancedSearchFilters";
@@ -411,6 +412,7 @@ const BrowsePapers: React.FC = () => {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 };
