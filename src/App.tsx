@@ -59,60 +59,64 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 function AppRoutes() {
+  const location = useLocation();
+  
   return (
-    <Suspense fallback={<PageLoader />}>
-      <ScrollToTop />
-      <Routes>
-      <Route path="/" element={<LibraryLanding />} />
-      <Route path="/library" element={<BrowsePapers />} />
-      <Route path="/paper/:id" element={<PaperDetail />} />
-      <Route path="/auth" element={<AuthPage />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/how-it-works" element={<HowItWorks />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/communities" element={<ResearchCommunities />} />
-      <Route path="/trending" element={<TrendingResearch />} />
-      {/* Redirect unimplemented pages to home */}
-      <Route path="/learning-paths" element={<Navigate to="/" replace />} />
-      <Route path="/tools" element={<Navigate to="/" replace />} />
-      <Route path="/privacy" element={<PrivacyPolicy />} />
-      <Route path="/terms" element={<TermsOfService />} />
-      <Route
-        path="/analytics"
-        element={
-          <ProtectedRoute>
-            <AnalyticsDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/workspace"
-        element={
-          <ProtectedRoute>
-            <WorkspaceDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/workspace/editor/:id?"
-        element={
-          <ProtectedRoute>
-            <PaperEditor />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <UserProfile />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-    </Suspense>
+    <ErrorBoundary key={location.pathname}>
+      <Suspense fallback={<PageLoader />}>
+        <ScrollToTop />
+        <Routes>
+        <Route path="/" element={<LibraryLanding />} />
+        <Route path="/library" element={<BrowsePapers />} />
+        <Route path="/paper/:id" element={<PaperDetail />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/communities" element={<ResearchCommunities />} />
+        <Route path="/trending" element={<TrendingResearch />} />
+        {/* Redirect unimplemented pages to home */}
+        <Route path="/learning-paths" element={<Navigate to="/" replace />} />
+        <Route path="/tools" element={<Navigate to="/" replace />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workspace"
+          element={
+            <ProtectedRoute>
+              <WorkspaceDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workspace/editor/:id?"
+          element={
+            <ProtectedRoute>
+              <PaperEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
