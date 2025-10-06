@@ -44,6 +44,18 @@ Preferred communication style: Simple, everyday language.
 - **INTEGRATION VERIFIED**: Confirmed backend-frontend integration working correctly (papers API, analytics, trending topics)
 - All navigation links tested and verified working without crashes
 
+**User Profile & Bookmark Enhancements (October 6, 2025):**
+- **PROFILE SCHEMA**: Added firstName, lastName, title, institution, department, website, location fields to users table
+- **SIGNUP FLOW**: Updated registration to collect structured profile data (first/last name, title, institution)
+- **BOOKMARK FOLDERS**: Implemented folder system for organizing saved papers
+  - Added bookmark_folders table with customizable names and colors
+  - Added folderId to user_bookmarks for folder assignment
+  - Backend API: Create, read, update, delete folders
+  - Backend API: Move bookmarks between folders
+  - Folders display bookmark counts
+  - Deleting a folder moves bookmarks to "unfiled" state
+- **NEXT**: Build frontend UI for bookmark folder management in workspace
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -121,7 +133,8 @@ Preferred communication style: Simple, everyday language.
 - institutions, institution_members, institution_invites
 - api_keys, api_usage
 - section_locks, paper_drafts
-- user_follows, user_bookmarks, user_analytics
+- user_follows, user_bookmarks, bookmark_folders
+- user_analytics
 
 **Data Relationships**
 - Many-to-many relationships via JSONB arrays
