@@ -47,14 +47,23 @@ Preferred communication style: Simple, everyday language.
 **User Profile & Bookmark Enhancements (October 6, 2025):**
 - **PROFILE SCHEMA**: Added firstName, lastName, title, institution, department, website, location fields to users table
 - **SIGNUP FLOW**: Updated registration to collect structured profile data (first/last name, title, institution)
-- **BOOKMARK FOLDERS**: Implemented folder system for organizing saved papers
+- **BOOKMARK FOLDERS COMPLETE**: Full folder system for organizing saved papers
   - Added bookmark_folders table with customizable names and colors
   - Added folderId to user_bookmarks for folder assignment
   - Backend API: Create, read, update, delete folders
-  - Backend API: Move bookmarks between folders
+  - Backend API: Move bookmarks between folders via paperId
   - Folders display bookmark counts
   - Deleting a folder moves bookmarks to "unfiled" state
-- **NEXT**: Build frontend UI for bookmark folder management in workspace
+  - **Frontend UI**: BookmarkFolderManager component with full CRUD
+  - **Workspace Integration**: Tabbed interface (My Papers / Saved Papers)
+  - **Features**: Create/edit/delete folders with color customization, move bookmarks via dropdown, unfiled bookmarks view
+
+**Header & Navigation Polish (October 6, 2025):**
+- **CONSISTENT STYLING**: All nav links now use same hover colors (indigo-600) and transitions
+- **VISUAL FEEDBACK**: Added hover:bg-indigo-50 background for better interactivity
+- **SIMPLIFIED NAV**: Removed extra links from desktop header for cleaner design
+- **MOBILE IMPROVEMENTS**: Better grouping and consistent styling in mobile menu
+- **USER MENU**: Added visual separator with border-left for clearer hierarchy
 
 ## System Architecture
 
