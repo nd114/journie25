@@ -1,4 +1,4 @@
-import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, apiKeys, apiUsage, subscriptions, paymentHistory, institutions, institutionMembers, institutionInvites, learningPaths, userLearningProgress, researchTools, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference, type ApiKey, type InsertApiKey, type ApiUsage, type InsertApiUsage, type Subscription, type InsertSubscription, type PaymentHistory, type InsertPaymentHistory, type Institution, type InsertInstitution, type InstitutionMember, type InsertInstitutionMember, type InstitutionInvite, type InsertInstitutionInvite } from "../shared/schema";
+import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, bookmarkFolders, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, apiKeys, apiUsage, subscriptions, paymentHistory, institutions, institutionMembers, institutionInvites, learningPaths, userLearningProgress, researchTools, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference, type ApiKey, type InsertApiKey, type ApiUsage, type InsertApiUsage, type Subscription, type InsertSubscription, type PaymentHistory, type InsertPaymentHistory, type Institution, type InsertInstitution, type InstitutionMember, type InsertInstitutionMember, type InstitutionInvite, type InsertInstitutionInvite } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -78,10 +78,17 @@ export interface IStorage {
   isFollowing(followerId: number, followingId: number): Promise<boolean>;
 
   // User bookmarks
-  addBookmark(userId: number, paperId: number): Promise<void>;
+  addBookmark(userId: number, paperId: number, folderId?: number): Promise<void>;
   removeBookmark(userId: number, paperId: number): Promise<void>;
-  getUserBookmarks(userId: number): Promise<any[]>;
+  getUserBookmarks(userId: number, folderId?: number): Promise<any[]>;
   isBookmarked(userId: number, paperId: number): Promise<boolean>;
+  moveBookmarkToFolder(userId: number, paperId: number, folderId: number | null): Promise<void>;
+
+  // Bookmark folders
+  createBookmarkFolder(userId: number, name: string, color?: string): Promise<any>;
+  getBookmarkFolders(userId: number): Promise<any[]>;
+  updateBookmarkFolder(folderId: number, userId: number, updates: { name?: string; color?: string }): Promise<any>;
+  deleteBookmarkFolder(folderId: number, userId: number): Promise<void>;
 
   // Activity feed
   getUserActivityFeed(userId: number, limit?: number): Promise<any[]>;
@@ -1105,7 +1112,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async addBookmark(userId: number, paperId: number) {
+  async addBookmark(userId: number, paperId: number, folderId?: number) {
     try {
       // Check if bookmark already exists
       const existing = await db.query.userBookmarks.findFirst({
@@ -1121,7 +1128,8 @@ export class DatabaseStorage implements IStorage {
 
       await db.insert(userBookmarks).values({
         userId,
-        paperId
+        paperId,
+        folderId: folderId || null
       });
     } catch (error) {
       console.error('Error adding bookmark:', error);
@@ -1278,6 +1286,108 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error checking bookmark status:', error);
       return false;
+    }
+  }
+
+  async moveBookmarkToFolder(userId: number, paperId: number, folderId: number | null) {
+    try {
+      await db.update(userBookmarks)
+        .set({ folderId })
+        .where(and(
+          eq(userBookmarks.userId, userId),
+          eq(userBookmarks.paperId, paperId)
+        ));
+    } catch (error) {
+      console.error('Error moving bookmark to folder:', error);
+      throw error;
+    }
+  }
+
+  // Bookmark folders
+  async createBookmarkFolder(userId: number, name: string, color: string = '#3b82f6') {
+    try {
+      const [folder] = await db.insert(bookmarkFolders).values({
+        userId,
+        name,
+        color
+      }).returning();
+      return folder;
+    } catch (error) {
+      console.error('Error creating bookmark folder:', error);
+      throw error;
+    }
+  }
+
+  async getBookmarkFolders(userId: number) {
+    try {
+      const folders = await db.query.bookmarkFolders.findMany({
+        where: eq(bookmarkFolders.userId, userId),
+        orderBy: [asc(bookmarkFolders.createdAt)]
+      });
+
+      // Get bookmark count for each folder
+      const foldersWithCounts = await Promise.all(
+        folders.map(async (folder) => {
+          const bookmarkCount = await db
+            .select({ count: sql<number>`count(*)` })
+            .from(userBookmarks)
+            .where(and(
+              eq(userBookmarks.userId, userId),
+              eq(userBookmarks.folderId, folder.id)
+            ));
+          
+          return {
+            ...folder,
+            bookmarkCount: Number(bookmarkCount[0]?.count || 0)
+          };
+        })
+      );
+
+      return foldersWithCounts;
+    } catch (error) {
+      console.error('Error getting bookmark folders:', error);
+      return [];
+    }
+  }
+
+  async updateBookmarkFolder(folderId: number, userId: number, updates: { name?: string; color?: string }) {
+    try {
+      const [folder] = await db.update(bookmarkFolders)
+        .set({
+          ...updates,
+          updatedAt: new Date()
+        })
+        .where(and(
+          eq(bookmarkFolders.id, folderId),
+          eq(bookmarkFolders.userId, userId)
+        ))
+        .returning();
+      return folder;
+    } catch (error) {
+      console.error('Error updating bookmark folder:', error);
+      throw error;
+    }
+  }
+
+  async deleteBookmarkFolder(folderId: number, userId: number) {
+    try {
+      // First, move all bookmarks in this folder to "unfiled" (null folder)
+      await db.update(userBookmarks)
+        .set({ folderId: null })
+        .where(and(
+          eq(userBookmarks.folderId, folderId),
+          eq(userBookmarks.userId, userId)
+        ));
+
+      // Then delete the folder
+      await db.delete(bookmarkFolders)
+        .where(and(
+          eq(bookmarkFolders.id, folderId),
+          eq(bookmarkFolders.userId, userId)
+        ));
+    } catch (error) {
+      console.error('Error deleting bookmark folder:', error);
+      throw error;
     }
   }
 

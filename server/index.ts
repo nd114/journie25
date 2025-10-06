@@ -1893,6 +1893,73 @@ app.delete("/api/bookmarks/:paperId", authenticateToken, async (req, res) => {
   }
 });
 
+// Move bookmark to folder
+app.put("/api/bookmarks/:paperId/folder", authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const paperId = parseInt(req.params.paperId);
+    const { folderId } = req.body;
+
+    await storage.moveBookmarkToFolder(userId, paperId, folderId);
+    res.json({ message: "Bookmark moved successfully" });
+  } catch (error) {
+    console.error("Error moving bookmark:", error);
+    res.status(500).json({ error: "Failed to move bookmark" });
+  }
+});
+
+// Bookmark folders
+app.get("/api/bookmark-folders", authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const folders = await storage.getBookmarkFolders(userId);
+    res.json(folders);
+  } catch (error) {
+    console.error("Error fetching folders:", error);
+    res.status(500).json({ error: "Failed to fetch folders" });
+  }
+});
+
+app.post("/api/bookmark-folders", authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const { name, color } = req.body;
+
+    const folder = await storage.createBookmarkFolder(userId, name, color);
+    res.json(folder);
+  } catch (error) {
+    console.error("Error creating folder:", error);
+    res.status(500).json({ error: "Failed to create folder" });
+  }
+});
+
+app.put("/api/bookmark-folders/:folderId", authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const folderId = parseInt(req.params.folderId);
+    const { name, color } = req.body;
+
+    const folder = await storage.updateBookmarkFolder(folderId, userId, { name, color });
+    res.json(folder);
+  } catch (error) {
+    console.error("Error updating folder:", error);
+    res.status(500).json({ error: "Failed to update folder" });
+  }
+});
+
+app.delete("/api/bookmark-folders/:folderId", authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const folderId = parseInt(req.params.folderId);
+
+    await storage.deleteBookmarkFolder(folderId, userId);
+    res.json({ message: "Folder deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting folder:", error);
+    res.status(500).json({ error: "Failed to delete folder" });
+  }
+});
+
 // User dashboard data
 app.get("/api/user/dashboard", authenticateToken, async (req: any, res) => {
   try {

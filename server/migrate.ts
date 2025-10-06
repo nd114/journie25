@@ -106,6 +106,18 @@ async function migrate() {
       )
     `;
 
+    // Create bookmark_folders table
+    await sql`
+      CREATE TABLE IF NOT EXISTS bookmark_folders (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(255) NOT NULL,
+        color VARCHAR(50) DEFAULT '#3b82f6',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
     // Create user_bookmarks table
     await sql`
       CREATE TABLE IF NOT EXISTS user_bookmarks (
@@ -114,6 +126,12 @@ async function migrate() {
         paper_id INTEGER REFERENCES papers(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT NOW()
       )
+    `;
+
+    // Add folder_id column to user_bookmarks if it doesn't exist
+    await sql`
+      ALTER TABLE user_bookmarks 
+      ADD COLUMN IF NOT EXISTS folder_id INTEGER REFERENCES bookmark_folders(id) ON DELETE SET NULL
     `;
 
     // Create Phase 3 gamification tables

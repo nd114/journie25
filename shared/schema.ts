@@ -296,10 +296,21 @@ export const researchTools = pgTable('research_tools', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Bookmark folders for organizing saved papers
+export const bookmarkFolders = pgTable('bookmark_folders', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  color: varchar('color', { length: 50 }).default('#3b82f6'), // Default blue color
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const userBookmarks = pgTable('user_bookmarks', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').references(() => users.id).notNull(),
   paperId: integer('paper_id').references(() => papers.id).notNull(),
+  folderId: integer('folder_id').references(() => bookmarkFolders.id), // Optional folder assignment
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
