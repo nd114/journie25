@@ -295,13 +295,18 @@ const authenticateApiKey = async (req: any, res: any, next: any) => {
 // Auth endpoints
 app.post("/api/auth/register", async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, firstName, lastName, title, institution, department, website, location } = req.body;
 
     // Server-side password validation
     if (!password || password.length < 8) {
       return res
         .status(400)
         .json({ error: "Password must be at least 8 characters long" });
+    }
+
+    // Validate required fields
+    if (!email || !name) {
+      return res.status(400).json({ error: "Email and name are required" });
     }
 
     const existingUser = await storage.getUserByEmail(email);
@@ -314,6 +319,13 @@ app.post("/api/auth/register", async (req, res) => {
       email,
       password: hashedPassword,
       name,
+      firstName: firstName || null,
+      lastName: lastName || null,
+      title: title || null,
+      institution: institution || null,
+      department: department || null,
+      website: website || null,
+      location: location || null,
     });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {

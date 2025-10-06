@@ -11,7 +11,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string, profileData?: any) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   error: string | null;
@@ -69,11 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (email: string, password: string, name: string, profileData?: any) => {
     setError(null);
     setLoading(true);
     try {
-      const response = await apiClient.register(email, password, name);
+      const response = await apiClient.register(email, password, name, profileData);
       if (response.error) {
         setError(response.error);
       } else if (response.data) {
