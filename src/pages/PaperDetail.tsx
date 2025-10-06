@@ -158,6 +158,15 @@ const PaperDetail: React.FC = () => {
         });
         if (response.ok) {
           setIsFollowingAuthor(false);
+        } else {
+          let errorMessage = `Failed to unfollow (${response.status})`;
+          try {
+            const errorData = await response.json();
+            errorMessage = `Failed to unfollow: ${errorData.error || errorMessage}`;
+          } catch {
+            // Response wasn't JSON, use status-based message
+          }
+          alert(errorMessage);
         }
       } else {
         const response = await fetch(`/api/users/${paper.createdBy}/follow`, {
@@ -168,10 +177,20 @@ const PaperDetail: React.FC = () => {
         });
         if (response.ok) {
           setIsFollowingAuthor(true);
+        } else {
+          let errorMessage = `Failed to follow (${response.status})`;
+          try {
+            const errorData = await response.json();
+            errorMessage = `Failed to follow: ${errorData.error || errorMessage}`;
+          } catch {
+            // Response wasn't JSON, use status-based message
+          }
+          alert(errorMessage);
         }
       }
     } catch (error) {
       console.error('Error toggling follow:', error);
+      alert('Failed to toggle follow. Please try again.');
     } finally {
       setFollowLoading(false);
     }

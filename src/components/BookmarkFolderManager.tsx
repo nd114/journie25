@@ -93,9 +93,19 @@ export const BookmarkFolderManager: React.FC = () => {
         setShowNewFolderDialog(false);
         setNewFolderName('');
         setNewFolderColor('#3b82f6');
+      } else {
+        let errorMessage = `Failed to create folder (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = `Failed to create folder: ${errorData.error || errorMessage}`;
+        } catch {
+          // Response wasn't JSON, use status-based message
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error creating folder:', error);
+      alert('Failed to create folder. Please try again.');
     }
   };
 
@@ -121,9 +131,19 @@ export const BookmarkFolderManager: React.FC = () => {
         setEditingFolder(null);
         setNewFolderName('');
         setNewFolderColor('#3b82f6');
+      } else {
+        let errorMessage = `Failed to update folder (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = `Failed to update folder: ${errorData.error || errorMessage}`;
+        } catch {
+          // Response wasn't JSON, use status-based message
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error updating folder:', error);
+      alert('Failed to update folder. Please try again.');
     }
   };
 
@@ -162,9 +182,19 @@ export const BookmarkFolderManager: React.FC = () => {
 
       if (response.ok) {
         await loadData();
+      } else {
+        let errorMessage = `Failed to move bookmark (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = `Failed to move bookmark: ${errorData.error || errorMessage}`;
+        } catch {
+          // Response wasn't JSON, use status-based message
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error moving bookmark:', error);
+      alert('Failed to move bookmark. Please try again.');
     }
   };
 
