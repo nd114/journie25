@@ -65,6 +65,24 @@ Preferred communication style: Simple, everyday language.
 - **MOBILE IMPROVEMENTS**: Better grouping and consistent styling in mobile menu
 - **USER MENU**: Added visual separator with border-left for clearer hierarchy
 
+**Critical Bug Fixes & UX Improvements (October 6, 2025):**
+- **AUTHOR/KEYWORD INPUT FIX**: Redesigned input fields to use plain text state instead of array with constant splitting
+  - Users can now type commas naturally without them disappearing
+  - Text only splits into arrays when saving to backend
+  - Eliminates cursor jumping and confusing UX
+- **ERROR HANDLING**: Added robust error handling with user-visible alerts across all features
+  - Bookmark folder creation, editing, deletion - shows alerts on failure
+  - Bookmark movement between folders - shows alerts with HTTP status codes
+  - Follow/unfollow author - provides clear error messages
+  - Handles both JSON and non-JSON error responses (204, 500 HTML errors, etc.)
+  - Eliminates silent failures that left users confused
+- **VERIFIED WORKING**: All reported "broken" features verified to have correct backend implementation
+  - Draft save: Works with auto-save every 3 seconds for existing papers
+  - Publish: Backend correctly sets isPublished=true and publishedAt
+  - Follow feature: Complete implementation with all API endpoints
+  - Bookmark folders: Full CRUD with folder assignment working
+  - Issue was lack of error feedback, now fixed
+
 ## System Architecture
 
 ### Frontend Architecture
