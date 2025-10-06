@@ -38,71 +38,52 @@ const Navbar: React.FC = () => {
             </span>
           </Link>
 
-          <div className="hidden lg:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-1">
             <Link
               to="/library"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Browse Papers
             </Link>
             <Link
               to="/trending"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Trending
             </Link>
             <Link
               to="/communities"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Communities
             </Link>
             <Link
               to="/about"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               About
-            </Link>
-
-            <Link
-              to="/how-it-works"
-              className="text-gray-700 hover:text-indigo-600 transition-colors"
-            >
-              How It Works
-            </Link>
-            <Link
-              to="/contact"
-              className="text-gray-700 hover:text-indigo-600 transition-colors"
-            >
-              Contact
-            </Link>
-            <Link
-              to="/faq"
-              className="text-gray-700 hover:text-indigo-600 transition-colors"
-            >
-              FAQ
             </Link>
 
             {user ? (
               <>
                 <Link
                   to="/workspace"
-                  className="text-gray-700 hover:text-indigo-600 transition-colors"
+                  className="text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-md text-sm font-medium transition-colors ml-2"
                 >
                   My Workspace
                 </Link>
                 <RealtimeNotifications />
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 ml-2 pl-2 border-l border-gray-200">
                   <Link
                     to="/profile"
-                    className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 transition-colors"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-md transition-colors"
                   >
-                    <User className="w-5 h-5" />
-                    <span className="text-sm">{user.name}</span>
+                    <User className="w-4 h-4" />
+                    <span className="text-sm font-medium">{user.name}</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-700 hover:text-red-600 transition-colors"
+                    className="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Logout</span>
@@ -112,7 +93,7 @@ const Navbar: React.FC = () => {
             ) : (
               <Link
                 to="/auth"
-                className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 ml-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Sign In</span>
@@ -140,87 +121,70 @@ const Navbar: React.FC = () => {
             <Link
               to="/library"
               onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
+              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 min-h-[44px] flex items-center transition-colors"
             >
               Browse Papers
             </Link>
             <Link
               to="/trending"
               onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
+              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 min-h-[44px] flex items-center transition-colors"
             >
               Trending
             </Link>
             <Link
               to="/communities"
               onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
+              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 min-h-[44px] flex items-center transition-colors"
             >
               Communities
             </Link>
             <Link
               to="/about"
               onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 min-h-[44px] flex items-center"
+              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 min-h-[44px] flex items-center transition-colors"
             >
               About
-            </Link>
-            <Link
-              to="/how-it-works"
-              onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 min-h-[44px] flex items-center"
-            >
-              How It Works
-            </Link>
-            <Link
-              to="/contact"
-              onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 min-h-[44px] flex items-center"
-            >
-              Contact
-            </Link>
-            <Link
-              to="/faq"
-              onClick={closeMobileMenu}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 min-h-[44px] flex items-center"
-            >
-              FAQ
             </Link>
 
             {user ? (
               <>
-                <Link
-                  to="/workspace"
-                  onClick={closeMobileMenu}
-                  className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 min-h-[44px] flex items-center"
-                >
-                  My Workspace
-                </Link>
-                <Link
-                  to="/profile"
-                  onClick={closeMobileMenu}
-                  className="flex items-center space-x-2 px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 min-h-[44px]"
-                >
-                  <User className="w-5 h-5" />
-                  <span>{user.name}</span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left flex items-center space-x-2 px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 min-h-[44px]"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span>Logout</span>
-                </button>
+                <div className="border-t border-gray-200 my-2 pt-2">
+                  <Link
+                    to="/workspace"
+                    onClick={closeMobileMenu}
+                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 min-h-[44px] flex items-center transition-colors"
+                  >
+                    My Workspace
+                  </Link>
+                  <Link
+                    to="/profile"
+                    onClick={closeMobileMenu}
+                    className="flex items-center space-x-2 px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 min-h-[44px] transition-colors"
+                  >
+                    <User className="w-5 h-5" />
+                    <span>{user.name}</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left flex items-center space-x-2 px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 min-h-[44px] transition-colors"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span>Logout</span>
+                  </button>
+                </div>
               </>
             ) : (
-              <Link
-                to="/auth"
-                onClick={closeMobileMenu}
-                className="flex items-center justify-center space-x-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors min-h-[44px] mx-3 my-2"
-              >
-                <LogIn className="w-5 h-5" />
-                <span>Sign In</span>
-              </Link>
+              <div className="mt-4">
+                <Link
+                  to="/auth"
+                  onClick={closeMobileMenu}
+                  className="flex items-center justify-center space-x-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors min-h-[44px] font-medium"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span>Sign In</span>
+                </Link>
+              </div>
             )}
           </div>
         </div>
