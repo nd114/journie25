@@ -36,6 +36,14 @@ Preferred communication style: Simple, everyday language.
 - Disabled failing background jobs temporarily (will re-enable with email service)
 - Verified Terms of Service and Privacy Policy pages are ready for launch
 
+**Stability & Performance Fixes (October 6, 2025):**
+- **CRASH FIX**: Added route-level ErrorBoundary with pathname key for automatic error recovery on navigation
+- **RATE LIMIT FIX**: Increased auth endpoint rate limit from 10 to 50 requests per 15 minutes to prevent login failures
+- **404 FIX**: Fixed missing favicon and icon references with inline SVG data URIs
+- **ERROR RECOVERY**: Implemented per-route error boundaries that automatically reset on page navigation
+- **INTEGRATION VERIFIED**: Confirmed backend-frontend integration working correctly (papers API, analytics, trending topics)
+- All navigation links tested and verified working without crashes
+
 ## System Architecture
 
 ### Frontend Architecture
