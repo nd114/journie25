@@ -18,9 +18,9 @@ const PaperEditor: React.FC = () => {
   const [title, setTitle] = useState('');
   const [abstract, setAbstract] = useState('');
   const [content, setContent] = useState('');
-  const [authors, setAuthors] = useState<string[]>(['']);
+  const [authorsText, setAuthorsText] = useState('');
   const [researchField, setResearchField] = useState('');
-  const [keywords, setKeywords] = useState<string[]>(['']);
+  const [keywordsText, setKeywordsText] = useState('');
   const [storyDataGeneral, setStoryDataGeneral] = useState('');
   const [storyDataIntermediate, setStoryDataIntermediate] = useState('');
   const [storyDataExpert, setStoryDataExpert] = useState('');
@@ -30,9 +30,9 @@ const PaperEditor: React.FC = () => {
     title,
     abstract,
     content,
-    authors,
+    authorsText,
     researchField,
-    keywords,
+    keywordsText,
     storyDataGeneral,
     storyDataIntermediate,
     storyDataExpert,
@@ -43,14 +43,14 @@ const PaperEditor: React.FC = () => {
       title,
       abstract,
       content,
-      authors,
+      authorsText,
       researchField,
-      keywords,
+      keywordsText,
       storyDataGeneral,
       storyDataIntermediate,
       storyDataExpert,
     };
-  }, [title, abstract, content, authors, researchField, keywords, storyDataGeneral, storyDataIntermediate, storyDataExpert]);
+  }, [title, abstract, content, authorsText, researchField, keywordsText, storyDataGeneral, storyDataIntermediate, storyDataExpert]);
 
   useEffect(() => {
     if (id) {
@@ -67,9 +67,9 @@ const PaperEditor: React.FC = () => {
       setTitle(paper.title);
       setAbstract(paper.abstract);
       setContent(paper.content || '');
-      setAuthors(paper.authors && paper.authors.length > 0 ? paper.authors : ['']);
+      setAuthorsText(paper.authors && paper.authors.length > 0 ? paper.authors.join(', ') : '');
       setResearchField(paper.researchField || '');
-      setKeywords(paper.keywords?.length > 0 ? paper.keywords : ['']);
+      setKeywordsText(paper.keywords?.length > 0 ? paper.keywords.join(', ') : '');
       setStoryDataGeneral(paper.storyData?.general || '');
       setStoryDataIntermediate(paper.storyData?.intermediate || '');
       setStoryDataExpert(paper.storyData?.expert || '');
@@ -78,7 +78,7 @@ const PaperEditor: React.FC = () => {
   };
 
   const handleAutoSave = useCallback(async () => {
-    const { title, abstract, content, authors, researchField, keywords, storyDataGeneral, storyDataIntermediate, storyDataExpert } = stateRef.current;
+    const { title, abstract, content, authorsText, researchField, keywordsText, storyDataGeneral, storyDataIntermediate, storyDataExpert } = stateRef.current;
     
     if (!id || !title.trim() || !abstract.trim()) return;
 
@@ -86,13 +86,16 @@ const PaperEditor: React.FC = () => {
     setAutoSaveError(null);
     
     try {
+      const authors = authorsText.split(',').map(a => a.trim()).filter(a => a);
+      const keywords = keywordsText.split(',').map(k => k.trim()).filter(k => k);
+      
       const paperData = {
         title,
         abstract,
         content,
-        authors: authors.filter(a => a.trim()),
+        authors,
         researchField,
-        keywords: keywords.filter(k => k.trim()),
+        keywords,
         status: 'draft' as const,
         storyData: {
           general: storyDataGeneral,
@@ -131,7 +134,7 @@ const PaperEditor: React.FC = () => {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [title, abstract, content, authors, researchField, keywords, storyDataGeneral, storyDataIntermediate, storyDataExpert, id, handleAutoSave]);
+  }, [title, abstract, content, authorsText, researchField, keywordsText, storyDataGeneral, storyDataIntermediate, storyDataExpert, id, handleAutoSave]);
 
   const handleSave = async (publishNow: boolean = false) => {
     if (!title.trim() || !abstract.trim()) {
@@ -140,13 +143,17 @@ const PaperEditor: React.FC = () => {
     }
 
     setSaving(true);
+    
+    const authors = authorsText.split(',').map(a => a.trim()).filter(a => a);
+    const keywords = keywordsText.split(',').map(k => k.trim()).filter(k => k);
+    
     const paperData = {
       title,
       abstract,
       content,
-      authors: authors.filter(a => a.trim()),
+      authors,
       researchField,
-      keywords: keywords.filter(k => k.trim()),
+      keywords,
       status: publishNow ? 'published' as const : 'draft' as const,
       storyData: {
         general: storyDataGeneral,
@@ -296,15 +303,8 @@ const PaperEditor: React.FC = () => {
                 Authors
               </label>
               <textarea
-                value={authors.join(', ')}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value.trim()) {
-                    setAuthors(value.split(',').map(a => a.trim()).filter(a => a));
-                  } else {
-                    setAuthors(['']);
-                  }
-                }}
+                value={authorsText}
+                onChange={(e) => setAuthorsText(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter author names separated by commas (e.g., John Smith, Jane Doe, Dr. Alex Johnson)"
                 rows={2}
@@ -380,15 +380,8 @@ const PaperEditor: React.FC = () => {
                 Keywords
               </label>
               <textarea
-                value={keywords.join(', ')}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value.trim()) {
-                    setKeywords(value.split(',').map(k => k.trim()).filter(k => k));
-                  } else {
-                    setKeywords(['']);
-                  }
-                }}
+                value={keywordsText}
+                onChange={(e) => setKeywordsText(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter keywords separated by commas (e.g., machine learning, neural networks, AI)"
                 rows={2}
