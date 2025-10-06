@@ -177,6 +177,29 @@ const PaperDetail: React.FC = () => {
     }
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: paper?.title || 'Research Paper',
+          text: paper?.abstract || '',
+          url: url
+        });
+      } catch (error) {
+        console.log('Error sharing:', error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        alert('Link copied to clipboard!');
+      } catch (error) {
+        console.error('Error copying to clipboard:', error);
+      }
+    }
+  };
+
   const handleAddComment = async (content: string, parentId?: number) => {
     if (!id || !user) {
       navigate("/auth");
@@ -317,7 +340,10 @@ const PaperDetail: React.FC = () => {
                 <span className="text-sm sm:text-base">{isFollowingAuthor ? 'Following' : 'Follow Author'}</span>
               </button>
             )}
-            <button className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors min-h-[44px]">
+            <button 
+              onClick={handleShare}
+              className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors min-h-[44px]"
+            >
               <Share2 className="w-4 h-4" />
               <span className="text-sm sm:text-base">Share</span>
             </button>

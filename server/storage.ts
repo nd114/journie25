@@ -1,6 +1,7 @@
 import { users, papers, comments, reviews, citations, paperVersions, paperInsights, paperViews, trendingTopics, userInteractions, userProgress, achievements, visualAbstracts, communities, communityMembers, userFollows, userBookmarks, peerReviewAssignments, peerReviewSubmissions, paperAnalytics, userAnalytics, analyticsEvents, sectionLocks, paperDrafts, notifications, notificationPreferences, apiKeys, apiUsage, subscriptions, paymentHistory, institutions, institutionMembers, institutionInvites, learningPaths, userLearningProgress, researchTools, type User, type InsertUser, type Paper, type InsertPaper, type Comment, type InsertComment, type Review, type InsertReview, type InsertCitation, type InsertPeerReviewAssignment, type InsertPeerReviewSubmission, type PaperAnalytics, type InsertPaperAnalytics, type UserAnalytics, type InsertUserAnalytics, type AnalyticsEvent, type InsertAnalyticsEvent, type SectionLock, type InsertSectionLock, type PaperDraft, type InsertPaperDraft, type Notification, type InsertNotification, type NotificationPreference, type InsertNotificationPreference, type ApiKey, type InsertApiKey, type ApiUsage, type InsertApiUsage, type Subscription, type InsertSubscription, type PaymentHistory, type InsertPaymentHistory, type Institution, type InsertInstitution, type InstitutionMember, type InsertInstitutionMember, type InstitutionInvite, type InsertInstitutionInvite } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, isNull, ne, sql, gte } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 type InsertPaperVersion = typeof paperVersions.$inferInsert;
 
@@ -384,7 +385,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Comment methods
-  async getComments(paperId: number): Promise<Comment[]> {
+  async getComments(paperId: number): Promise<any[]> {
     return db
       .select({
         id: comments.id,
@@ -394,8 +395,10 @@ export class DatabaseStorage implements IStorage {
         parentId: comments.parentId,
         createdAt: comments.createdAt,
         updatedAt: comments.updatedAt,
+        authorName: users.name,
       })
       .from(comments)
+      .leftJoin(users, eq(comments.userId, users.id))
       .where(eq(comments.paperId, paperId))
       .orderBy(comments.createdAt)
       .limit(100);

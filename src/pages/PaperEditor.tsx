@@ -322,14 +322,56 @@ const PaperEditor: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">Select a field</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Physics">Physics</option>
-                <option value="Biology">Biology</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Chemistry">Chemistry</option>
-                <option value="Climate Science">Climate Science</option>
-                <option value="Neuroscience">Neuroscience</option>
-                <option value="Psychology">Psychology</option>
+                <optgroup label="Physical Sciences">
+                  <option value="Physics">Physics</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Astronomy">Astronomy</option>
+                  <option value="Earth Sciences">Earth Sciences</option>
+                  <option value="Climate Science">Climate Science</option>
+                </optgroup>
+                <optgroup label="Life Sciences">
+                  <option value="Biology">Biology</option>
+                  <option value="Biochemistry">Biochemistry</option>
+                  <option value="Genetics">Genetics</option>
+                  <option value="Neuroscience">Neuroscience</option>
+                  <option value="Medicine">Medicine</option>
+                  <option value="Pharmacology">Pharmacology</option>
+                  <option value="Ecology">Ecology</option>
+                </optgroup>
+                <optgroup label="Formal Sciences">
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Statistics">Statistics</option>
+                  <option value="Computer Science">Computer Science</option>
+                  <option value="Information Science">Information Science</option>
+                  <option value="Data Science">Data Science</option>
+                </optgroup>
+                <optgroup label="Social Sciences">
+                  <option value="Psychology">Psychology</option>
+                  <option value="Sociology">Sociology</option>
+                  <option value="Economics">Economics</option>
+                  <option value="Political Science">Political Science</option>
+                  <option value="Anthropology">Anthropology</option>
+                  <option value="Education">Education</option>
+                </optgroup>
+                <optgroup label="Engineering & Technology">
+                  <option value="Mechanical Engineering">Mechanical Engineering</option>
+                  <option value="Electrical Engineering">Electrical Engineering</option>
+                  <option value="Civil Engineering">Civil Engineering</option>
+                  <option value="Biomedical Engineering">Biomedical Engineering</option>
+                  <option value="Artificial Intelligence">Artificial Intelligence</option>
+                  <option value="Robotics">Robotics</option>
+                </optgroup>
+                <optgroup label="Humanities">
+                  <option value="Philosophy">Philosophy</option>
+                  <option value="History">History</option>
+                  <option value="Linguistics">Linguistics</option>
+                  <option value="Literature">Literature</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="Interdisciplinary">Interdisciplinary</option>
+                  <option value="General Science">General Science</option>
+                  <option value="Other">Other</option>
+                </optgroup>
               </select>
             </div>
 

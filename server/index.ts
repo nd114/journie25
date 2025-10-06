@@ -973,6 +973,29 @@ app.get("/api/users/institutions", authenticateToken, async (req: any, res) => {
   }
 });
 
+app.get("/api/users/me/papers", authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { status } = req.query;
+    
+    const allPapers = await storage.getPapers({
+      page: 1,
+      limit: 1000,
+    });
+    
+    let userPapers = allPapers.papers.filter((p: any) => p.createdBy === userId);
+    
+    if (status) {
+      userPapers = userPapers.filter((p: any) => p.status === status);
+    }
+    
+    res.json({ papers: userPapers, total: userPapers.length });
+  } catch (error) {
+    console.error("Error fetching user papers:", error);
+    res.status(500).json({ error: "Failed to fetch user papers" });
+  }
+});
+
 // Paper endpoints
 app.get("/api/papers", async (req, res) => {
   try {

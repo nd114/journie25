@@ -27,26 +27,18 @@ const WorkspaceDashboard: React.FC = () => {
   const loadPapers = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.getPapers({});
-      if (response.error) {
-        console.error('Error loading papers:', response.error);
-        setPapers([]);
-      } else if (response.data) {
-        // Handle various response structures
-        let papersArray: Paper[] = [];
-        if (Array.isArray(response.data)) {
-          papersArray = response.data;
-        } else if (response.data.papers && Array.isArray(response.data.papers)) {
-          papersArray = response.data.papers;
-        } else if (typeof response.data === 'object') {
-          // Wrap single object in array
-          papersArray = [response.data];
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/users/me/papers', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-        
-        // Filter to only show current user's papers
-        // This requires the API to return createdBy field
-        setPapers(papersArray);
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPapers(data.papers || []);
       } else {
+        console.error('Error loading papers:', response.statusText);
         setPapers([]);
       }
     } catch (error) {
